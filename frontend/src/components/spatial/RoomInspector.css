@@ -1,0 +1,115 @@
+/* RoomInspector.css */
+
+.room-inspector-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  z-index: 400;
+}
+
+.room-inspector {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #ffffff;
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+  padding: 20px;
+  padding-bottom: max(20px, env(safe-area-inset-bottom));
+  z-index: 401;
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.15);
+  box-sizing: border-box;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.room-inspector__handle {
+  width: 36px;
+  height: 4px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 2px;
+  margin: 0 auto 16px;
+}
+
+.room-inspector__title {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0 0 12px;
+}
+
+.room-inspector__label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: rgba(0, 0, 0, 0.7);
+  margin-bottom: 10px;
+}
+
+.room-inspector__input {
+  min-height: 44px;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  padding: 0 12px;
+  font-size: 15px;
+  box-sizing: border-box;
+}
+
+.room-inspector__surface {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.75);
+  margin: 0 0 16px;
+}
+
+.room-inspector__section-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin: 0 0 8px;
+}
+
+.room-inspector__types {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.room-inspector__type {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: 2px solid transparent;
+  border-radius: 10px;
+  padding: 10px 8px;
+  min-height: 44px;
+  cursor: pointer;
+  font-size: 13px;
+  text-align: left;
+}
+.room-inspector__type--active {
+  border-color: #1c1c1c;
+}
+.room-inspector__type-icon {
+  font-size: 16px;
+}
+.room-inspector__type-label {
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.8);
+}
+
+.room-inspector__close-btn {
+  width: 100%;
+  min-height: 44px;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  background: #1c1c1c;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}

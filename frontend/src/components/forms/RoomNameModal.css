@@ -1,0 +1,81 @@
+/* RoomNameModal.css */
+
+.room-name-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  z-index: 400;
+}
+
+.room-name-modal {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #ffffff;
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+  padding: 20px;
+  padding-bottom: max(20px, env(safe-area-inset-bottom));
+  z-index: 401;
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.15);
+  box-sizing: border-box;
+}
+
+.room-name-modal__handle {
+  width: 36px;
+  height: 4px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 2px;
+  margin: 0 auto 16px;
+}
+
+.room-name-modal__title {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0 0 12px;
+}
+
+.room-name-modal__input {
+  width: 100%;
+  min-height: 44px;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  padding: 0 12px;
+  font-size: 15px;
+  box-sizing: border-box;
+  margin-bottom: 12px;
+}
+
+.room-name-modal__error {
+  font-size: 13px;
+  color: #b3261e;
+  margin: 0 0 12px;
+}
+
+.room-name-modal__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.room-name-modal__submit,
+.room-name-modal__cancel {
+  min-height: 44px;
+  border-radius: 8px;
+  font-size: 15px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.room-name-modal__submit {
+  background: #1c1c1c;
+  color: #fff;
+  border-color: #1c1c1c;
+}
+
+.room-name-modal__cancel {
+  background: #fff;
+  color: #1c1c1c;
+}

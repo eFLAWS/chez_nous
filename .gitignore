@@ -1,0 +1,29 @@
+# Dépendances (régénérées avec `npm install` dans frontend/)
+node_modules/
+
+# Build de production du frontend (`npm run build`) — régénérable
+frontend/dist/
+
+# Cache de Vite (régénéré automatiquement, pas besoin de le versionner)
+frontend/.vite/
+
+# Données réelles du foyer (comptes, mots de passe hachés, tâches...) —
+# jamais dans le dépôt, même haché. Chacun a ses propres données locales.
+backend/data/
+backend/logs/
+
+# Fichiers d'environnement (clés API, secrets) si tu en ajoutes plus tard
+.env
+.env.local
+*.local
+
+# Fichiers d'éditeur
+.vscode/
+.idea/
+
+# Fichiers système
+.DS_Store
+Thumbs.db
+
+# Logs npm en cas d'erreur d'installation
+npm-debug.log*

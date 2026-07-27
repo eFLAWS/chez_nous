@@ -1,0 +1,45 @@
+/* room-3d.css
+   Styles de FloorThumbnail.jsx : miniature isométrique statique, utilisée
+   uniquement dans les onglets du sélecteur d'étages (voir floor-plan.css
+   pour .floor-switcher__tab). Pas d'interaction ici, contrairement au
+   plan de travail 2D. */
+
+.floor-thumb {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  perspective: 400px;
+}
+.floor-thumb--empty {
+  background: rgba(0, 0, 0, 0.04);
+  border-radius: 6px;
+}
+
+.floor-thumb__scene {
+  position: absolute;
+  left: 50%;
+  top: 62%;
+  transform-style: preserve-3d;
+}
+
+.floor-thumb__room {
+  position: absolute;
+  transform-style: preserve-3d;
+}
+
+.floor-thumb__face {
+  position: absolute;
+  border: 0.5px solid rgba(0, 0, 0, 0.35);
+}
+.floor-thumb__face--front {
+  transform-origin: top;
+  transform: rotateX(-90deg);
+}
+.floor-thumb__face--right {
+  transform-origin: left;
+  transform: rotateY(90deg);
+}
+.floor-thumb__face--top {
+  border-color: rgba(0, 0, 0, 0.25);
+}

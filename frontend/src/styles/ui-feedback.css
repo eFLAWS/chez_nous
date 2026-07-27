@@ -1,0 +1,97 @@
+/* ui-feedback.css
+   Styles pour les indicateurs de chargement, bannières d'erreur et
+   notifications éphémères ajoutés aux composants Item*. */
+
+.spinner {
+  display: inline-block;
+  border: 2px solid rgba(0, 0, 0, 0.15);
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  vertical-align: middle;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Squelette de chargement (lecture initiale) */
+.item-card--skeleton {
+  pointer-events: none;
+}
+.skeleton-line {
+  height: 12px;
+  border-radius: 6px;
+  margin: 6px 0;
+  background: linear-gradient(90deg, #e7e7e7 25%, #f2f2f2 37%, #e7e7e7 63%);
+  background-size: 400% 100%;
+  animation: shimmer 1.4s ease infinite;
+}
+.skeleton-line--title { width: 60%; height: 16px; }
+.skeleton-line--meta { width: 85%; }
+.skeleton-line--actions { width: 40%; margin-top: 14px; }
+@keyframes shimmer {
+  0% { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
+
+/* Apparition en douceur des cartes (chargement initial + ajout) */
+.item-card {
+  animation: card-in 0.2s ease-out both;
+}
+@keyframes card-in {
+  from { opacity: 0; transform: translateY(6px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+.item-card--mutating {
+  opacity: 0.6;
+}
+.item-card__mutating {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85em;
+  color: #666;
+}
+
+/* Bannières d'erreur (lecture initiale bloquante, ou action ponctuelle refermable) */
+.banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  font-size: 0.9em;
+}
+.banner--error {
+  background: #fdecea;
+  color: #a4262c;
+  border: 1px solid #f3c6c6;
+}
+
+/* Notifications éphémères de succès */
+.toast-stack {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 1000;
+}
+.toast {
+  padding: 10px 16px;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 0.9em;
+  cursor: pointer;
+  animation: toast-in 0.25s ease-out both;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+.toast--success { background: #2e7d32; }
+.toast--error { background: #a4262c; }
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}

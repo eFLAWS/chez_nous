@@ -1,0 +1,50 @@
+/* ApartmentOverview2D.css
+   Grille CSS simple (pas de calcul de plan réel) : chaque pièce est
+   placée via room.layoutArea (gridColumn/gridRow définis dans
+   mockData.js), colorée avec sa propre couleur (room.color). */
+
+.overview-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  max-width: 100vw;
+  padding: 12px;
+  box-sizing: border-box;
+}
+
+.overview-hint {
+  font-size: 13px;
+  color: rgba(0, 0, 0, 0.6);
+  margin: 0;
+  text-align: center;
+}
+
+.overview-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-auto-rows: minmax(90px, auto);
+  gap: 10px;
+  width: 100%;
+  max-width: 420px;
+}
+
+.overview-room {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 10px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  min-height: 44px;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.overview-room__name {
+  font-size: 15px;
+  font-weight: 700;
+  color: rgba(0, 0, 0, 0.8);
+}

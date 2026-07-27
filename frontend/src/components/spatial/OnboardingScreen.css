@@ -1,0 +1,41 @@
+/* OnboardingScreen.css */
+
+.onboarding {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 60vh;
+  padding: 24px;
+  text-align: center;
+}
+
+.onboarding__emoji {
+  font-size: 48px;
+  margin: 0;
+}
+
+.onboarding__title {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.onboarding__text {
+  font-size: 14px;
+  color: rgba(0, 0, 0, 0.6);
+  margin: 0 0 12px;
+}
+
+.onboarding__cta {
+  min-height: 48px;
+  padding: 0 24px;
+  border-radius: 999px;
+  border: none;
+  background: #1c1c1c;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
