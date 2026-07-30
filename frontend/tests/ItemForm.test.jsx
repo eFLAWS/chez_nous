@@ -8,9 +8,9 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import ItemForm from "../src/components/items/ItemForm";
+import ItemForm from "../src/components/ui/ItemForm";
 
-vi.mock("../src/validators/formValidators", () => ({
+vi.mock("../src/utils/formValidators", () => ({
   validateTask: vi.fn((values) =>
     values.title ? { valid: true, errors: [] } : { valid: false, errors: ["title : chaîne non vide requise."] }
   ),

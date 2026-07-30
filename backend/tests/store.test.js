@@ -24,7 +24,7 @@ test("readStore : fichier absent -> succès, structure vide (pas une erreur)", a
   const res = await readStore();
   assert.equal(res.success, true);
   assert.deepEqual(res.data, {
-    users: [], projects: [], tasks: [], households: [], invitations: [], occupants: [], rooms: [], floors: [],
+    users: [], projects: [], tasks: [], households: [], invitations: [], occupants: [], rooms: [], floors: [], doors: [], passwordResets: [],
   });
 });
 

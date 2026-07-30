@@ -4,7 +4,7 @@
 // demandé : chaque ligne tient sur une seule ligne visuelle (statut,
 // contexte, échéance), pas de paragraphe.
 import { useState } from "react";
-import StatusBadge from "../common/StatusBadge";
+import StatusBadge from "../ui/StatusBadge";
 
 const DAY_MS = 86400000;
 

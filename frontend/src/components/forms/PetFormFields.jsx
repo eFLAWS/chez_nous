@@ -9,7 +9,7 @@
 // createOccupant. Construire l'écran complet (créer + lister + réclamer
 // un occupant) est un chantier séparé, déjà noté dans le README ("Ce qui
 // manque"). Ce composant est prêt pour ce jour-là, pas branché avant.
-import { PET_SPECIES } from "../../validators/formValidators";
+import { PET_SPECIES } from "../../utils/formValidators";
 
 export default function PetFormFields({ values, set }) {
   return (

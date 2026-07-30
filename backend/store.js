@@ -23,6 +23,8 @@ const EMPTY_STORE = {
   occupants: [],
   rooms: [],
   floors: [],
+  doors: [],
+  passwordResets: [],
 };
 
 function ensureDataDir() {
@@ -48,7 +50,7 @@ function serialize(task) {
 }
 
 const REQUIRED_ARRAYS = ["users", "projects", "tasks"];
-const OPTIONAL_ARRAYS = ["households", "invitations", "occupants", "rooms", "floors"];
+const OPTIONAL_ARRAYS = ["households", "invitations", "occupants", "rooms", "floors", "doors", "passwordResets"];
 
 function isValidShape(data) {
   if (!data || typeof data !== "object") return false;

@@ -23,23 +23,23 @@ const svc = require("../dataService");
 
 async function makeHousehold() {
   const signup = await svc.signup({ name: "Chloë", email: "chloe-floors@example.com", password: "Motdepasse123!" });
-  return signup.data.household.id;
+  return { householdId: signup.data.household.id, userId: signup.data.user.id };
 }
 
 test("createFloor : cas nominal", async () => {
   resetData();
-  const householdId = await makeHousehold();
-  const res = await svc.createFloor({ name: "Rez-de-chaussée", level: 0, householdId });
+  const { householdId, userId } = await makeHousehold();
+  const res = await svc.createFloor({ name: "Rez-de-chaussée", level: 0, householdId , userId });
   assert.equal(res.success, true);
   assert.equal(res.data.level, 0);
 });
 
 test("createFloor : level non entier ou hors bornes rejeté", async () => {
   resetData();
-  const householdId = await makeHousehold();
-  const notInt = await svc.createFloor({ name: "Étage", level: 1.5, householdId });
+  const { householdId, userId } = await makeHousehold();
+  const notInt = await svc.createFloor({ name: "Étage", level: 1.5, householdId , userId });
   assert.equal(notInt.success, false);
-  const tooHigh = await svc.createFloor({ name: "Étage", level: 999, householdId });
+  const tooHigh = await svc.createFloor({ name: "Étage", level: 999, householdId , userId });
   assert.equal(tooHigh.success, false);
 });
 
@@ -51,85 +51,86 @@ test("createFloor : householdId inexistant rejeté", async () => {
 
 test("createRoom : floorId inexistant rejeté", async () => {
   resetData();
-  const householdId = await makeHousehold();
-  const res = await svc.createRoom({ name: "Salon", width: 5, length: 4, householdId, floorId: "fantome" });
+  const { householdId, userId } = await makeHousehold();
+  const res = await svc.createRoom({ name: "Salon", type: "piece", width: 5, height: 4, householdId, floorId: "fantome" , userId });
   assert.equal(res.success, false);
   assert.match(res.error, /floorId/);
 });
 
 test("createRoom : sans floorId reste valide (logement de plain-pied)", async () => {
   resetData();
-  const householdId = await makeHousehold();
-  const res = await svc.createRoom({ name: "Salon", width: 5, length: 4, householdId });
+  const { householdId, userId } = await makeHousehold();
+  const res = await svc.createRoom({ name: "Salon", type: "piece", width: 5, height: 4, householdId , userId });
   assert.equal(res.success, true);
   assert.equal(res.data.floorId, null);
 });
 
 test("Le placement automatique est indépendant par étage (chaque étage recommence à x=0,y=0)", async () => {
   resetData();
-  const householdId = await makeHousehold();
-  const rdc = await svc.createFloor({ name: "Rez-de-chaussée", level: 0, householdId });
-  const etage1 = await svc.createFloor({ name: "Étage 1", level: 1, householdId });
+  const { householdId, userId } = await makeHousehold();
+  const rdc = await svc.createFloor({ name: "Rez-de-chaussée", level: 0, householdId , userId });
+  const etage1 = await svc.createFloor({ name: "Étage 1", level: 1, householdId , userId });
 
-  const salonRdc = await svc.createRoom({ name: "Salon", width: 5, length: 4, householdId, floorId: rdc.data.id });
+  const salonRdc = await svc.createRoom({ name: "Salon", type: "piece", width: 5, height: 4, householdId, floorId: rdc.data.id , userId });
   assert.equal(salonRdc.data.x, 0);
   assert.equal(salonRdc.data.y, 0);
 
   // Une chambre à l'étage 1 : nouvel étage, donc elle recommence aussi à (0,0),
   // même si le rez-de-chaussée a déjà une pièce là.
-  const chambreEtage1 = await svc.createRoom({ name: "Chambre", width: 4, length: 4, householdId, floorId: etage1.data.id });
+  const chambreEtage1 = await svc.createRoom({ name: "Chambre", type: "piece", width: 4, height: 4, householdId, floorId: etage1.data.id , userId });
   assert.equal(chambreEtage1.data.x, 0);
   assert.equal(chambreEtage1.data.y, 0);
 });
 
 test("updateRoomPosition : deux pièces à des étages DIFFÉRENTS peuvent partager les mêmes coordonnées", async () => {
   resetData();
-  const householdId = await makeHousehold();
-  const rdc = await svc.createFloor({ name: "Rez-de-chaussée", level: 0, householdId });
-  const etage1 = await svc.createFloor({ name: "Étage 1", level: 1, householdId });
+  const { householdId, userId } = await makeHousehold();
+  const rdc = await svc.createFloor({ name: "Rez-de-chaussée", level: 0, householdId , userId });
+  const etage1 = await svc.createFloor({ name: "Étage 1", level: 1, householdId , userId });
 
-  const salon = await svc.createRoom({ name: "Salon", width: 5, length: 4, householdId, floorId: rdc.data.id, x: 0, y: 0 });
-  const chambre = await svc.createRoom({ name: "Chambre", width: 5, length: 4, householdId, floorId: etage1.data.id, x: 10, y: 10 });
+  const salon = await svc.createRoom({ name: "Salon", type: "piece", width: 5, height: 4, householdId, floorId: rdc.data.id, x: 0, y: 0 , userId });
+  const chambre = await svc.createRoom({ name: "Chambre", type: "piece", width: 5, height: 4, householdId, floorId: etage1.data.id, x: 10, y: 10 , userId });
 
   // On déplace la chambre EXACTEMENT sur les mêmes coordonnées que le salon —
   // légitime puisqu'elle est à un étage différent (juste au-dessus).
-  const res = await svc.updateRoomPosition(chambre.data.id, { x: 0, y: 0 });
+  const res = await svc.updateRoomPosition(chambre.data.id, { x: 0, y: 0 }, userId);
   assert.equal(res.success, true, "des pièces à des étages différents ne doivent jamais se bloquer entre elles");
 });
 
 test("updateRoomPosition : deux pièces du MÊME étage restent bloquées en cas de chevauchement", async () => {
   resetData();
-  const householdId = await makeHousehold();
-  const rdc = await svc.createFloor({ name: "Rez-de-chaussée", level: 0, householdId });
+  const { householdId, userId } = await makeHousehold();
+  const rdc = await svc.createFloor({ name: "Rez-de-chaussée", level: 0, householdId , userId });
 
-  const salon = await svc.createRoom({ name: "Salon", width: 5, length: 4, householdId, floorId: rdc.data.id, x: 0, y: 0 });
-  const cuisine = await svc.createRoom({ name: "Cuisine", width: 3, length: 3, householdId, floorId: rdc.data.id, x: 10, y: 10 });
+  const salon = await svc.createRoom({ name: "Salon", type: "piece", width: 5, height: 4, householdId, floorId: rdc.data.id, x: 0, y: 0 , userId });
+  const cuisine = await svc.createRoom({ name: "Cuisine", type: "piece", width: 3, height: 3, householdId, floorId: rdc.data.id, x: 10, y: 10 , userId });
 
-  const res = await svc.updateRoomPosition(cuisine.data.id, { x: 1, y: 1 });
+  const res = await svc.updateRoomPosition(cuisine.data.id, { x: 1, y: 1 }, userId);
   assert.equal(res.success, false);
   assert.match(res.error, /Chevauchement/);
 });
 
 test("updateRoomPosition : une pièce SANS étage et une pièce AVEC étage ne se bloquent jamais entre elles", async () => {
   resetData();
-  const householdId = await makeHousehold();
-  const etage1 = await svc.createFloor({ name: "Étage 1", level: 1, householdId });
+  const { householdId, userId } = await makeHousehold();
+  const etage1 = await svc.createFloor({ name: "Étage 1", level: 1, householdId , userId });
 
-  const salonSansEtage = await svc.createRoom({ name: "Salon", width: 5, length: 4, householdId, x: 0, y: 0 });
-  const chambreEtage1 = await svc.createRoom({ name: "Chambre", width: 5, length: 4, householdId, floorId: etage1.data.id, x: 10, y: 10 });
+  const salonSansEtage = await svc.createRoom({ name: "Salon", type: "piece", width: 5, height: 4, householdId, x: 0, y: 0 , userId });
+  const chambreEtage1 = await svc.createRoom({ name: "Chambre", type: "piece", width: 5, height: 4, householdId, floorId: etage1.data.id, x: 10, y: 10 , userId });
 
-  const res = await svc.updateRoomPosition(chambreEtage1.data.id, { x: 0, y: 0 });
+  const res = await svc.updateRoomPosition(chambreEtage1.data.id, { x: 0, y: 0 }, userId);
   assert.equal(res.success, true);
 });
 
 test("listFloors : filtre bien par foyer", async () => {
   resetData();
-  const h1 = await makeHousehold();
+  const { householdId: h1, userId: userId1 } = await makeHousehold();
   const signup2 = await svc.signup({ name: "Paul", email: "paul-floors@example.com", password: "Motdepassepaul1!" });
   const h2 = signup2.data.household.id;
+  const userId2 = signup2.data.user.id;
 
-  await svc.createFloor({ name: "RDC foyer 1", level: 0, householdId: h1 });
-  await svc.createFloor({ name: "RDC foyer 2", level: 0, householdId: h2 });
+  await svc.createFloor({ name: "RDC foyer 1", level: 0, householdId: h1, userId: userId1 });
+  await svc.createFloor({ name: "RDC foyer 2", level: 0, householdId: h2, userId: userId2 });
 
   const onlyH1 = await svc.listFloors(h1);
   assert.equal(onlyH1.data.length, 1);
@@ -140,10 +141,10 @@ test("listFloors : filtre bien par foyer", async () => {
 
 test("deleteFloor : cas nominal, étage vide de pièces", async () => {
   resetData();
-  const householdId = await makeHousehold();
-  const floor = await svc.createFloor({ name: "Étage 1", level: 1, householdId });
+  const { householdId, userId } = await makeHousehold();
+  const floor = await svc.createFloor({ name: "Étage 1", level: 1, householdId , userId });
 
-  const res = await svc.deleteFloor(floor.data.id);
+  const res = await svc.deleteFloor(floor.data.id, userId);
   assert.equal(res.success, true);
 
   const list = await svc.listFloors(householdId);
@@ -152,14 +153,14 @@ test("deleteFloor : cas nominal, étage vide de pièces", async () => {
 
 test("deleteFloor : supprime en cascade ses pièces ET les tâches rattachées à ces pièces", async () => {
   resetData();
-  const householdId = await makeHousehold();
-  const floor = await svc.createFloor({ name: "Étage 1", level: 1, householdId });
-  const chambre = await svc.createRoom({ name: "Chambre", width: 4, length: 4, householdId, floorId: floor.data.id });
-  const bureau = await svc.createRoom({ name: "Bureau", width: 3, length: 3, householdId, floorId: floor.data.id });
+  const { householdId, userId } = await makeHousehold();
+  const floor = await svc.createFloor({ name: "Étage 1", level: 1, householdId , userId });
+  const chambre = await svc.createRoom({ name: "Chambre", type: "piece", width: 4, height: 4, householdId, floorId: floor.data.id , userId });
+  const bureau = await svc.createRoom({ name: "Bureau", type: "piece", width: 3, height: 3, householdId, floorId: floor.data.id , userId });
   await svc.createTask({ title: "Ranger", roomId: chambre.data.id });
   await svc.createTask({ title: "Dépoussiérer", roomId: bureau.data.id });
 
-  const res = await svc.deleteFloor(floor.data.id);
+  const res = await svc.deleteFloor(floor.data.id, userId);
   assert.equal(res.success, true);
   assert.equal(res.data.deletedRoomCount, 2);
   assert.equal(res.data.deletedTaskCount, 2);
@@ -172,14 +173,14 @@ test("deleteFloor : supprime en cascade ses pièces ET les tâches rattachées �
 
 test("deleteFloor : ne touche jamais aux pièces/tâches des AUTRES étages", async () => {
   resetData();
-  const householdId = await makeHousehold();
-  const rdc = await svc.createFloor({ name: "Rez-de-chaussée", level: 0, householdId });
-  const etage1 = await svc.createFloor({ name: "Étage 1", level: 1, householdId });
-  const salon = await svc.createRoom({ name: "Salon", width: 5, length: 4, householdId, floorId: rdc.data.id });
-  await svc.createRoom({ name: "Chambre", width: 4, length: 4, householdId, floorId: etage1.data.id });
+  const { householdId, userId } = await makeHousehold();
+  const rdc = await svc.createFloor({ name: "Rez-de-chaussée", level: 0, householdId , userId });
+  const etage1 = await svc.createFloor({ name: "Étage 1", level: 1, householdId , userId });
+  const salon = await svc.createRoom({ name: "Salon", type: "piece", width: 5, height: 4, householdId, floorId: rdc.data.id , userId });
+  await svc.createRoom({ name: "Chambre", type: "piece", width: 4, height: 4, householdId, floorId: etage1.data.id , userId });
   await svc.createTask({ title: "Nettoyer le sol", roomId: salon.data.id });
 
-  const res = await svc.deleteFloor(etage1.data.id);
+  const res = await svc.deleteFloor(etage1.data.id, userId);
   assert.equal(res.success, true);
   assert.equal(res.data.deletedRoomCount, 1);
   assert.equal(res.data.deletedTaskCount, 0);
@@ -193,10 +194,10 @@ test("deleteFloor : ne touche jamais aux pièces/tâches des AUTRES étages", as
 
 test("deleteFloor : un étage sans aucune pièce se supprime normalement (0 partout)", async () => {
   resetData();
-  const householdId = await makeHousehold();
-  const floor = await svc.createFloor({ name: "Étage vide", level: 2, householdId });
+  const { householdId, userId } = await makeHousehold();
+  const floor = await svc.createFloor({ name: "Étage vide", level: 2, householdId , userId });
 
-  const res = await svc.deleteFloor(floor.data.id);
+  const res = await svc.deleteFloor(floor.data.id, userId);
   assert.equal(res.success, true);
   assert.equal(res.data.deletedRoomCount, 0);
   assert.equal(res.data.deletedTaskCount, 0);
@@ -216,12 +217,12 @@ test("deleteFloor : id manquant ou inexistant rejeté proprement", async () => {
 
 test("deleteRoom : supprime en cascade les tâches qui lui sont rattachées", async () => {
   resetData();
-  const householdId = await makeHousehold();
-  const salon = await svc.createRoom({ name: "Salon", width: 5, length: 4, householdId });
+  const { householdId, userId } = await makeHousehold();
+  const salon = await svc.createRoom({ name: "Salon", type: "piece", width: 5, height: 4, householdId , userId });
   await svc.createTask({ title: "Passer l'aspirateur", roomId: salon.data.id });
   await svc.createTask({ title: "Nettoyer le sol", roomId: salon.data.id });
 
-  const res = await svc.deleteRoom(salon.data.id);
+  const res = await svc.deleteRoom(salon.data.id, userId);
   assert.equal(res.success, true);
   assert.equal(res.data.deletedTaskCount, 2);
 
@@ -231,13 +232,13 @@ test("deleteRoom : supprime en cascade les tâches qui lui sont rattachées", as
 
 test("deleteRoom : ne touche jamais aux tâches d'une AUTRE pièce", async () => {
   resetData();
-  const householdId = await makeHousehold();
-  const salon = await svc.createRoom({ name: "Salon", width: 5, length: 4, householdId });
-  const cuisine = await svc.createRoom({ name: "Cuisine", width: 3, length: 3, householdId });
+  const { householdId, userId } = await makeHousehold();
+  const salon = await svc.createRoom({ name: "Salon", type: "piece", width: 5, height: 4, householdId , userId });
+  const cuisine = await svc.createRoom({ name: "Cuisine", type: "piece", width: 3, height: 3, householdId , userId });
   await svc.createTask({ title: "Nettoyer le sol du salon", roomId: salon.data.id });
   await svc.createTask({ title: "Faire la vaisselle", roomId: cuisine.data.id });
 
-  const res = await svc.deleteRoom(salon.data.id);
+  const res = await svc.deleteRoom(salon.data.id, userId);
   assert.equal(res.success, true);
   assert.equal(res.data.deletedTaskCount, 1);
 
@@ -248,11 +249,11 @@ test("deleteRoom : ne touche jamais aux tâches d'une AUTRE pièce", async () =>
 
 test("deleteRoom : tâches non liées à une pièce (roomId null) jamais affectées", async () => {
   resetData();
-  const householdId = await makeHousehold();
-  const salon = await svc.createRoom({ name: "Salon", width: 5, length: 4, householdId });
+  const { householdId, userId } = await makeHousehold();
+  const salon = await svc.createRoom({ name: "Salon", type: "piece", width: 5, height: 4, householdId , userId });
   await svc.createTask({ title: "Rappel libre, sans pièce" });
 
-  const res = await svc.deleteRoom(salon.data.id);
+  const res = await svc.deleteRoom(salon.data.id, userId);
   assert.equal(res.success, true);
   assert.equal(res.data.deletedTaskCount, 0);
 
@@ -262,10 +263,10 @@ test("deleteRoom : tâches non liées à une pièce (roomId null) jamais affect�
 
 test("deleteRoom : une pièce sans aucune tâche se supprime normalement", async () => {
   resetData();
-  const householdId = await makeHousehold();
-  const salon = await svc.createRoom({ name: "Salon", width: 5, length: 4, householdId });
+  const { householdId, userId } = await makeHousehold();
+  const salon = await svc.createRoom({ name: "Salon", type: "piece", width: 5, height: 4, householdId , userId });
 
-  const res = await svc.deleteRoom(salon.data.id);
+  const res = await svc.deleteRoom(salon.data.id, userId);
   assert.equal(res.success, true);
   assert.equal(res.data.deletedTaskCount, 0);
 });
@@ -278,4 +279,73 @@ test("deleteRoom : id manquant ou inexistant rejeté proprement", async () => {
   const notFound = await svc.deleteRoom("fantome");
   assert.equal(notFound.success, false);
   assert.match(notFound.error, /Aucune pièce trouvée/);
+});
+
+/* ------------- Champs étendus de l'étage (nouveau, voir la conversation) ------------- */
+
+test("createFloor : shortLabel/avatarStart/gridWidth/gridHeight optionnels, acceptés si valides", async () => {
+  resetData();
+  const { householdId, userId } = await makeHousehold();
+  const res = await svc.createFloor({
+    name: "Rez-de-chaussée",
+    shortLabel: "RDC",
+    level: 0,
+    householdId,
+    userId,
+    avatarStart: { x: 2, y: 3 },
+    gridWidth: 13,
+    gridHeight: 8,
+  });
+  assert.equal(res.success, true);
+  assert.equal(res.data.shortLabel, "RDC");
+  assert.deepEqual(res.data.avatarStart, { x: 2, y: 3 });
+  assert.equal(res.data.gridWidth, 13);
+  assert.equal(res.data.gridHeight, 8);
+});
+
+test("createFloor : absents, retombent proprement sur null (pas d'erreur)", async () => {
+  resetData();
+  const { householdId, userId } = await makeHousehold();
+  const res = await svc.createFloor({ name: "Rez-de-chaussée", level: 0, householdId , userId });
+  assert.equal(res.success, true);
+  assert.equal(res.data.shortLabel, null);
+  assert.equal(res.data.avatarStart, null);
+  assert.equal(res.data.gridWidth, null);
+  assert.equal(res.data.gridHeight, null);
+});
+
+test("createFloor : avatarStart mal formé rejeté", async () => {
+  resetData();
+  const { householdId, userId } = await makeHousehold();
+  const res = await svc.createFloor({ name: "Étage", level: 0, householdId, avatarStart: { x: 1.5, y: 2 } });
+  assert.equal(res.success, false);
+  assert.match(res.error, /avatarStart/);
+});
+
+test("createFloor : gridWidth non entier ou hors bornes rejeté", async () => {
+  resetData();
+  const { householdId, userId } = await makeHousehold();
+  const notInt = await svc.createFloor({ name: "Étage", level: 0, householdId, gridWidth: 3.5 , userId });
+  assert.equal(notInt.success, false);
+
+  const tooBig = await svc.createFloor({ name: "Étage", level: 0, householdId, gridWidth: 10000 , userId });
+  assert.equal(tooBig.success, false);
+});
+
+test("updateFloorLayout : recalcule shortLabel/avatarStart/gridWidth/gridHeight sans toucher au reste", async () => {
+  resetData();
+  const { householdId, userId } = await makeHousehold();
+  const floor = await svc.createFloor({ name: "Rez-de-chaussée", level: 0, householdId , userId });
+
+  const res = await svc.updateFloorLayout(floor.data.id, { avatarStart: { x: 4, y: 4 }, gridWidth: 9, gridHeight: 9 }, userId);
+  assert.equal(res.success, true);
+  assert.deepEqual(res.data.avatarStart, { x: 4, y: 4 });
+  assert.equal(res.data.gridWidth, 9);
+  assert.equal(res.data.name, "Rez-de-chaussée", "le reste de l'étage ne doit pas changer");
+});
+
+test("updateFloorLayout : id inexistant rejeté proprement", async () => {
+  resetData();
+  const res = await svc.updateFloorLayout("fantome", { gridWidth: 10 });
+  assert.equal(res.success, false);
 });

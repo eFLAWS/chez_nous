@@ -12,10 +12,44 @@ const {
   validateHousehold,
   validateInvitation,
   validateOccupant,
+  isStrongPassword,
 } = require("../validators");
 const { hashPassword, verifyPassword, generateToken } = require("../auth");
+const { logInfo } = require("../logger");
 
 const INVITATION_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 jours
+const PASSWORD_RESET_TTL_MS = 60 * 60 * 1000; // 1 heure — plus court qu'une invitation, par sécurité
+
+/* --------------------- Limitation des tentatives de connexion -------------- */
+// En mémoire, PAS persisté sur disque : un redémarrage du serveur remet les
+// compteurs à zéro, ce qui est acceptable à notre échelle. Partagé entre
+// login() et acceptInvitationForExistingUser() (toutes deux vérifient un
+// mot de passe existant) via la même clé (email en minuscules).
+const loginAttempts = new Map(); // email -> { count, lockedUntil }
+const MAX_LOGIN_ATTEMPTS = 5;
+const LOGIN_LOCKOUT_MS = 15 * 60 * 1000; // 15 minutes
+
+function checkLoginLock(email) {
+  const attempt = loginAttempts.get(email);
+  if (attempt && attempt.lockedUntil && attempt.lockedUntil > Date.now()) {
+    const minutesLeft = Math.ceil((attempt.lockedUntil - Date.now()) / 60000);
+    return `Trop de tentatives échouées. Réessayez dans ${minutesLeft} minute(s).`;
+  }
+  return null;
+}
+
+function recordLoginFailure(email) {
+  const current = loginAttempts.get(email) || { count: 0, lockedUntil: null };
+  current.count += 1;
+  if (current.count >= MAX_LOGIN_ATTEMPTS) {
+    current.lockedUntil = Date.now() + LOGIN_LOCKOUT_MS;
+  }
+  loginAttempts.set(email, current);
+}
+
+function clearLoginAttempts(email) {
+  loginAttempts.delete(email);
+}
 
 /* ne renvoie jamais passwordHash au-delà de la couche service */
 function sanitizeUser(user) {
@@ -104,10 +138,33 @@ async function signup(input) {
   const { valid: uValid, errors: uErrors } = validateUser(user, { existingHouseholdIds });
   if (!uValid) return fail("auth.signup.user_validation", uErrors.join(" "));
 
+  // Occupant auto-créé ET auto-réclamé pour le nouveau compte, dans son
+  // propre nouveau foyer — "un compte = un occupant" (voir la
+  // conversation) : sans ça, `listHouseholdsForUser` ne retrouverait
+  // jamais CE foyer précis pour ce compte, même s'il vient de le créer.
+  // Cohérent avec `createHouseholdForUser`, qui fait la même chose pour
+  // un foyer supplémentaire créé plus tard.
+  const occupant = {
+    id: genId(),
+    name: user.name,
+    householdId: household.id,
+    type: "human",
+    species: null,
+    // Fondateur du foyer -> PROPRIETAIRE (voir la conversation) : seul
+    // habilité à modifier le plan, transférer la propriété, etc.
+    role: "PROPRIETAIRE",
+    claimedByUserId: userId,
+    createdAt: new Date().toISOString(),
+  };
+  const existingUserIds = new Set([...read.data.users.map((u) => u.id), userId]);
+  const { valid: oValid, errors: oErrors } = validateOccupant(occupant, { existingHouseholdIds, existingUserIds });
+  if (!oValid) return fail("auth.signup.occupant_validation", oErrors.join(" "));
+
   const next = {
     ...read.data,
     households: [...read.data.households, household],
     users: [...read.data.users, user],
+    occupants: [...read.data.occupants, occupant],
   };
   const write = await writeStore(next);
   if (!write.success) return fail("auth.signup.write", write.error);
@@ -126,17 +183,113 @@ async function login({ email, password } = {}) {
     return fail("auth.login.validation", "email et password sont requis.");
   }
 
+  const key = email.toLowerCase();
+  const lockMessage = checkLoginLock(key);
+  if (lockMessage) return fail("auth.login.locked", lockMessage);
+
   const read = await readStore();
   if (!read.success) return fail("auth.login", read.error);
 
   const user = read.data.users.find((u) => typeof u.email === "string" && u.email.toLowerCase() === email.toLowerCase());
   const GENERIC_ERROR = "Email ou mot de passe incorrect.";
-  if (!user || !user.passwordHash) return fail("auth.login.invalid", GENERIC_ERROR);
+  if (!user || !user.passwordHash) {
+    recordLoginFailure(key);
+    return fail("auth.login.invalid", GENERIC_ERROR);
+  }
 
   const okPassword = verifyPassword(password, user.passwordHash);
-  if (!okPassword) return fail("auth.login.invalid", GENERIC_ERROR);
+  if (!okPassword) {
+    recordLoginFailure(key);
+    return fail("auth.login.invalid", GENERIC_ERROR);
+  }
 
+  clearLoginAttempts(key);
   return ok("auth.login", sanitizeUser(user), `Connexion réussie pour ${user.email}.`);
+}
+
+/* ------------------------ Réinitialisation du mot de passe ------------------ */
+// Comme aucun vrai email n'est envoyé (voir README), le jeton de
+// réinitialisation n'est JAMAIS renvoyé dans la réponse HTTP — seulement
+// journalisé côté serveur (logInfo, visible dans le terminal qui fait
+// tourner `node server.js`). Le renvoyer au navigateur permettrait à
+// n'importe qui connaissant un email de réinitialiser son mot de passe
+// sans son accord. La réponse est aussi volontairement identique que le
+// compte existe ou non, pour ne pas révéler quels emails sont enregistrés.
+
+async function requestPasswordReset(email) {
+  const GENERIC_MESSAGE = "Si un compte existe pour cette adresse, un code de réinitialisation a été généré.";
+  if (typeof email !== "string" || !email.trim()) {
+    return fail("auth.passwordReset.request.validation", "email requis.");
+  }
+
+  const read = await readStore();
+  if (!read.success) return fail("auth.passwordReset.request", read.error);
+
+  const user = read.data.users.find((u) => typeof u.email === "string" && u.email.toLowerCase() === email.toLowerCase());
+  if (!user) {
+    return ok("auth.passwordReset.request", { message: GENERIC_MESSAGE });
+  }
+
+  const reset = {
+    id: genId(),
+    userId: user.id,
+    token: generateToken(),
+    used: false,
+    createdAt: new Date().toISOString(),
+    expiresAt: new Date(Date.now() + PASSWORD_RESET_TTL_MS).toISOString(),
+  };
+
+  const next = { ...read.data, passwordResets: [...read.data.passwordResets, reset] };
+  const write = await writeStore(next);
+  if (!write.success) return fail("auth.passwordReset.request.write", write.error);
+
+  logInfo(
+    "auth.passwordReset.token_generated",
+    `Jeton de réinitialisation pour ${user.email} : ${reset.token} (expire dans 1h)`
+  );
+
+  return ok("auth.passwordReset.request", { message: GENERIC_MESSAGE });
+}
+
+async function resetPassword({ token, newPassword } = {}) {
+  if (typeof token !== "string" || !token.trim()) {
+    return fail("auth.passwordReset.confirm.validation", "token manquant ou invalide.");
+  }
+  if (!isStrongPassword(newPassword)) {
+    return fail(
+      "auth.passwordReset.confirm.validation",
+      "Le nouveau mot de passe doit contenir au moins 8 caractères, une majuscule et un symbole."
+    );
+  }
+
+  const read = await readStore();
+  if (!read.success) return fail("auth.passwordReset.confirm", read.error);
+
+  const resetIndex = read.data.passwordResets.findIndex((r) => r.token === token);
+  if (resetIndex === -1) {
+    return fail("auth.passwordReset.confirm.not_found", "Code de réinitialisation invalide ou déjà utilisé.");
+  }
+  const reset = read.data.passwordResets[resetIndex];
+  if (reset.used) return fail("auth.passwordReset.confirm.used", "Ce code a déjà été utilisé.");
+  if (new Date(reset.expiresAt).getTime() < Date.now()) {
+    return fail("auth.passwordReset.confirm.expired", "Ce code a expiré.");
+  }
+
+  const userIndex = read.data.users.findIndex((u) => u.id === reset.userId);
+  if (userIndex === -1) return fail("auth.passwordReset.confirm.not_found", "Compte introuvable.");
+
+  const users = [...read.data.users];
+  users[userIndex] = { ...users[userIndex], passwordHash: hashPassword(newPassword) };
+
+  const passwordResets = [...read.data.passwordResets];
+  passwordResets[resetIndex] = { ...reset, used: true };
+
+  const write = await writeStore({ ...read.data, users, passwordResets });
+  if (!write.success) return fail("auth.passwordReset.confirm.write", write.error);
+
+  clearLoginAttempts(users[userIndex].email.toLowerCase());
+
+  return ok("auth.passwordReset.confirm", { email: users[userIndex].email }, "Mot de passe réinitialisé.");
 }
 
 /* ============================== Invitations =============================== */
@@ -311,10 +464,17 @@ async function acceptInvitationForExistingUser({ token, password } = {}) {
       "Aucun compte n'existe pour cette adresse — utilisez le formulaire de création de compte."
     );
   }
+
+  const key = invitation.email.toLowerCase();
+  const lockMessage = checkLoginLock(key);
+  if (lockMessage) return fail("invitation.acceptExisting.locked", lockMessage);
+
   const user = read.data.users[userIndex];
   if (!user.passwordHash || !verifyPassword(password, user.passwordHash)) {
+    recordLoginFailure(key);
     return fail("invitation.acceptExisting.invalid_credentials", GENERIC_ERROR);
   }
+  clearLoginAttempts(key);
 
   const updatedUser = { ...user, householdId: invitation.householdId };
   const users = [...read.data.users];
@@ -360,6 +520,12 @@ async function createOccupant(input) {
     householdId: input && input.householdId,
     type: input && input.type,
     species: (input && input.species) ?? null,
+    // Rôle (nouveau, voir la conversation) : un occupant humain ajouté
+    // ainsi (pas le fondateur, créé séparément via signup/
+    // createHouseholdForUser avec PROPRIETAIRE) est un membre ordinaire
+    // par défaut — LOCATAIRE, sauf si explicitement précisé autrement.
+    // Un animal n'a jamais de rôle (validateOccupant l'exige).
+    role: (input && input.type) === "human" ? (input && input.role) || "LOCATAIRE" : null,
     claimedByUserId: null,
     createdAt: new Date().toISOString(),
   };
@@ -379,10 +545,24 @@ async function createOccupant(input) {
 }
 
 /**
- * Relie un compte existant à un occupant humain non réclamé du même foyer.
- * Règles : un animal ne peut jamais être réclamé ; un occupant déjà
- * réclamé ne peut pas l'être une seconde fois ; un même compte ne peut
- * réclamer qu'un seul occupant (on est une seule personne à la fois).
+ * Relie un compte existant à un occupant humain non réclamé.
+ *
+ * MULTI-FOYERS (voir la conversation) : un même compte peut désormais
+ * réclamer un occupant dans PLUSIEURS foyers différents — la garde
+ * précédente ("already_has_one", un compte ne pouvait réclamer qu'UN
+ * SEUL occupant, tous foyers confondus) et la vérification
+ * `user.householdId !== occupant.householdId` (qui supposait qu'un
+ * compte n'appartient qu'à un seul foyer, le sien) ont toutes les deux
+ * été retirées. `user.householdId` reste le foyer "par défaut" (celui
+ * créé à l'inscription), mais n'est plus la SEULE source de vérité sur
+ * les foyers d'un compte — la vraie liste se calcule maintenant via
+ * `listHouseholdsForUser` (voir plus bas), qui interroge `occupants`.
+ *
+ * Règles qui restent : un animal ne peut jamais être réclamé ; un
+ * occupant déjà réclamé ne peut pas l'être une seconde fois ; UN COMPTE
+ * NE PEUT RÉCLAMER QU'UN SEUL OCCUPANT PAR FOYER (pas question de
+ * réclamer deux occupants différents du MÊME foyer — toujours "une
+ * seule personne à la fois", mais foyer par foyer).
  */
 async function claimOccupant(occupantId, userId) {
   if (typeof occupantId !== "string" || !occupantId.trim()) {
@@ -408,11 +588,15 @@ async function claimOccupant(occupantId, userId) {
 
   const user = read.data.users.find((u) => u.id === userId);
   if (!user) return fail("occupant.claim.not_found", `Aucun utilisateur trouvé avec l'id "${userId}".`);
-  if (user.householdId !== occupant.householdId) {
-    return fail("occupant.claim.wrong_household", "Cet utilisateur n'appartient pas au foyer de cet occupant.");
-  }
-  if (read.data.occupants.some((o) => o.claimedByUserId === userId)) {
-    return fail("occupant.claim.already_has_one", "Ce compte a déjà réclamé un autre occupant.");
+
+  // Un seul occupant réclamé PAR FOYER (pas "un seul, tous foyers
+  // confondus" comme avant) — toujours "une seule personne à la fois",
+  // mais foyer par foyer.
+  const alreadyHasOneInThisHousehold = read.data.occupants.some(
+    (o) => o.claimedByUserId === userId && o.householdId === occupant.householdId
+  );
+  if (alreadyHasOneInThisHousehold) {
+    return fail("occupant.claim.already_has_one", "Ce compte a déjà réclamé un autre occupant dans ce foyer.");
   }
 
   const occupants = [...read.data.occupants];
@@ -424,6 +608,86 @@ async function claimOccupant(occupantId, userId) {
   return ok("occupant.claim", occupants[index], `${occupant.name} est maintenant réclamé par ${user.name}.`);
 }
 
+/**
+ * Crée un NOUVEAU foyer pour un compte déjà existant (nouveau, voir la
+ * conversation) — jusqu'ici, un foyer n'était créé qu'à l'inscription
+ * (un seul, pour le tout premier compte). Crée le foyer ET un occupant
+ * humain pour le créateur, réclamé immédiatement en son nom (il est
+ * automatiquement occupant de son propre nouveau foyer). N'échoue PAS
+ * si le compte est déjà occupant d'autres foyers — c'est exactement le
+ * scénario multi-foyers que ce chantier vient de rendre possible.
+ */
+async function createHouseholdForUser({ userId, householdName } = {}) {
+  if (typeof userId !== "string" || !userId.trim()) {
+    return fail("household.createForUser.validation", "userId manquant ou invalide.");
+  }
+
+  const read = await readStore();
+  if (!read.success) return fail("household.createForUser", read.error);
+
+  const user = read.data.users.find((u) => u.id === userId);
+  if (!user) return fail("household.createForUser.not_found", `Aucun utilisateur trouvé avec l'id "${userId}".`);
+
+  const household = {
+    id: genId(),
+    name: (householdName && householdName.trim()) || `Foyer de ${user.name}`,
+    createdBy: userId,
+    createdAt: new Date().toISOString(),
+  };
+  const { valid: hValid, errors: hErrors } = validateHousehold(household);
+  if (!hValid) return fail("household.createForUser.household_validation", hErrors.join(" "));
+
+  const occupant = {
+    id: genId(),
+    name: user.name,
+    householdId: household.id,
+    type: "human",
+    species: null,
+    // Fondateur de CE foyer -> PROPRIETAIRE (voir la conversation).
+    role: "PROPRIETAIRE",
+    claimedByUserId: userId, // réclamé immédiatement par son créateur
+    createdAt: new Date().toISOString(),
+  };
+  const existingHouseholdIds = new Set([...read.data.households.map((h) => h.id), household.id]);
+  const existingUserIds = new Set(read.data.users.map((u) => u.id));
+  const { valid: oValid, errors: oErrors } = validateOccupant(occupant, { existingHouseholdIds, existingUserIds });
+  if (!oValid) return fail("household.createForUser.occupant_validation", oErrors.join(" "));
+
+  const next = {
+    ...read.data,
+    households: [...read.data.households, household],
+    occupants: [...read.data.occupants, occupant],
+  };
+  const write = await writeStore(next);
+  if (!write.success) return fail("household.createForUser.write", write.error);
+
+  return ok("household.createForUser", { household, occupant }, `Foyer "${household.name}" créé.`);
+}
+
+/**
+ * Liste tous les foyers dont un compte est occupant (nouveau, voir la
+ * conversation) — la vraie source de vérité pour "quels foyers cette
+ * personne peut-elle voir", maintenant qu'un compte peut en avoir
+ * plusieurs. Retourne les objets `household` complets (pas juste des
+ * ids), dédupliqués (un compte ne devrait avoir qu'un occupant par
+ * foyer, mais on déduplique quand même par sécurité).
+ */
+async function listHouseholdsForUser(userId) {
+  if (typeof userId !== "string" || !userId.trim()) {
+    return fail("household.listForUser.validation", "userId manquant ou invalide.");
+  }
+
+  const read = await readStore();
+  if (!read.success) return fail("household.listForUser", read.error);
+
+  const householdIds = new Set(
+    read.data.occupants.filter((o) => o.claimedByUserId === userId).map((o) => o.householdId)
+  );
+  const households = read.data.households.filter((h) => householdIds.has(h.id));
+
+  return ok("household.listForUser", households, `${households.length} foyer(s).`);
+}
+
 async function listOccupants(householdId, { onlyUnclaimed } = {}) {
   const read = await readStore();
   if (!read.success) return fail("occupant.list", read.error);
@@ -433,15 +697,187 @@ async function listOccupants(householdId, { onlyUnclaimed } = {}) {
   return ok("occupant.list", list, `${list.length} occupant(s).`);
 }
 
+/**
+ * "Quitter" un foyer (voir la conversation) : déréclame l'occupant de ce
+ * compte dans CE foyer précis (remet `claimedByUserId` à `null`), sans
+ * rien supprimer d'autre — le foyer et son plan restent intacts pour les
+ * autres occupants. Distinct de `deleteHousehold` (suppression réelle,
+ * réservée au dernier occupant).
+ */
+async function leaveHousehold(householdId, userId) {
+  if (typeof householdId !== "string" || !householdId.trim()) {
+    return fail("household.leave.validation", "householdId manquant ou invalide.");
+  }
+  if (typeof userId !== "string" || !userId.trim()) {
+    return fail("household.leave.validation", "userId manquant ou invalide.");
+  }
+
+  const read = await readStore();
+  if (!read.success) return fail("household.leave", read.error);
+
+  const index = read.data.occupants.findIndex((o) => o.householdId === householdId && o.claimedByUserId === userId);
+  if (index === -1) {
+    return fail("household.leave.not_found", "Ce compte n'est occupant d'aucun occupant réclamé dans ce foyer.");
+  }
+
+  // Un PROPRIETAIRE ne peut pas quitter le foyer tant que d'autres
+  // occupants y sont encore réclamés — voir la conversation
+  // (DATA_MODEL.md fourni par l'utilisateur, section "Logique de départ
+  // d'un foyer") : le foyer se retrouverait sans personne habilitée à
+  // modifier le plan. Doit d'abord transférer la propriété
+  // (transferOwnership) à l'un des autres occupants.
+  if (read.data.occupants[index].role === "PROPRIETAIRE") {
+    const otherClaimedOccupants = read.data.occupants.filter(
+      (o) => o.householdId === householdId && o.type === "human" && o.claimedByUserId && o.claimedByUserId !== userId
+    );
+    if (otherClaimedOccupants.length > 0) {
+      return fail(
+        "household.leave.must_transfer_first",
+        "Vous êtes propriétaire de ce foyer — transférez d'abord la propriété à un autre occupant avant de le quitter."
+      );
+    }
+  }
+
+  const occupants = [...read.data.occupants];
+  occupants[index] = { ...occupants[index], claimedByUserId: null };
+
+  const write = await writeStore({ ...read.data, occupants });
+  if (!write.success) return fail("household.leave.write", write.error);
+
+  return ok("household.leave", { householdId, userId }, "Foyer quitté.");
+}
+
+/**
+ * Transfère le rôle PROPRIETAIRE d'un compte à un autre occupant du MÊME
+ * foyer (voir la conversation) — l'ancien propriétaire redevient
+ * LOCATAIRE, ne perd pas son occupant pour autant (transférer n'est pas
+ * quitter ; les deux actions restent séparées et composables — un
+ * propriétaire peut transférer sans partir, ou transférer PUIS quitter
+ * via un second appel à leaveHousehold).
+ */
+async function transferOwnership(householdId, fromUserId, toUserId) {
+  if (typeof householdId !== "string" || !householdId.trim()) {
+    return fail("household.transferOwnership.validation", "householdId manquant ou invalide.");
+  }
+  if (typeof fromUserId !== "string" || !fromUserId.trim() || typeof toUserId !== "string" || !toUserId.trim()) {
+    return fail("household.transferOwnership.validation", "fromUserId/toUserId manquant ou invalide.");
+  }
+  if (fromUserId === toUserId) {
+    return fail("household.transferOwnership.validation", "Impossible de transférer la propriété à soi-même.");
+  }
+
+  const read = await readStore();
+  if (!read.success) return fail("household.transferOwnership", read.error);
+
+  const fromIndex = read.data.occupants.findIndex((o) => o.householdId === householdId && o.claimedByUserId === fromUserId);
+  if (fromIndex === -1 || read.data.occupants[fromIndex].role !== "PROPRIETAIRE") {
+    return fail("household.transferOwnership.forbidden", "Ce compte n'est pas propriétaire de ce foyer.");
+  }
+
+  const toIndex = read.data.occupants.findIndex((o) => o.householdId === householdId && o.claimedByUserId === toUserId);
+  if (toIndex === -1) {
+    return fail("household.transferOwnership.target_not_found", "Le compte cible n'est pas occupant réclamé de ce foyer.");
+  }
+
+  const occupants = [...read.data.occupants];
+  occupants[fromIndex] = { ...occupants[fromIndex], role: "LOCATAIRE" };
+  occupants[toIndex] = { ...occupants[toIndex], role: "PROPRIETAIRE" };
+
+  const write = await writeStore({ ...read.data, occupants });
+  if (!write.success) return fail("household.transferOwnership.write", write.error);
+
+  return ok("household.transferOwnership", { newOwner: occupants[toIndex], previousOwner: occupants[fromIndex] });
+}
+
+/**
+ * Supprime un foyer RÉELLEMENT, en cascade (occupants, étages, pièces,
+ * portes, tâches rattachées à ces pièces) — réservé au DERNIER occupant
+ * humain réclamé. Le compte du nombre d'occupants restants est TOUJOURS
+ * recalculé ici, jamais fait confiance au frontend (voir la
+ * conversation) : un frontend buggé ou malveillant ne doit jamais
+ * pouvoir effacer les données d'un foyer encore occupé par quelqu'un
+ * d'autre en mentant sur le nombre d'occupants.
+ */
+async function deleteHousehold(householdId, userId) {
+  if (typeof householdId !== "string" || !householdId.trim()) {
+    return fail("household.delete.validation", "householdId manquant ou invalide.");
+  }
+  if (typeof userId !== "string" || !userId.trim()) {
+    return fail("household.delete.validation", "userId manquant ou invalide.");
+  }
+
+  const read = await readStore();
+  if (!read.success) return fail("household.delete", read.error);
+
+  const household = read.data.households.find((h) => h.id === householdId);
+  if (!household) return fail("household.delete.not_found", `Aucun foyer trouvé avec l'id "${householdId}".`);
+
+  const requestingOccupant = read.data.occupants.find((o) => o.householdId === householdId && o.claimedByUserId === userId);
+  if (!requestingOccupant) {
+    return fail("household.delete.forbidden", "Ce compte n'est pas occupant de ce foyer.");
+  }
+  // Voir la conversation (DATA_MODEL.md fourni par l'utilisateur,
+  // matrice de droits) : "Supprimer le foyer" est réservé au
+  // PROPRIETAIRE, pas à n'importe quel occupant — même si, en pratique,
+  // le dernier occupant restant EST généralement le propriétaire (la
+  // règle de blocage dans leaveHousehold empêche normalement un
+  // propriétaire de partir avant d'avoir transféré) — jamais fait
+  // confiance à cette seule supposition, vérifié explicitement ici.
+  if (requestingOccupant.role !== "PROPRIETAIRE") {
+    return fail("household.delete.forbidden", "Seul le propriétaire du foyer peut le supprimer.");
+  }
+
+  const claimedHumanOccupants = read.data.occupants.filter(
+    (o) => o.householdId === householdId && o.type === "human" && o.claimedByUserId
+  );
+  if (claimedHumanOccupants.length > 1) {
+    return fail(
+      "household.delete.not_last_occupant",
+      "D'autres occupants sont encore réclamés dans ce foyer — utilise \"quitter le foyer\" plutôt que supprimer."
+    );
+  }
+
+  const roomIdsInHousehold = new Set(read.data.rooms.filter((r) => r.householdId === householdId).map((r) => r.id));
+
+  const households = read.data.households.filter((h) => h.id !== householdId);
+  const occupants = read.data.occupants.filter((o) => o.householdId !== householdId);
+  const floors = read.data.floors.filter((f) => f.householdId !== householdId);
+  const rooms = read.data.rooms.filter((r) => r.householdId !== householdId);
+  const doors = (read.data.doors || []).filter((d) => d.householdId !== householdId);
+  const tasks = read.data.tasks.filter((t) => !roomIdsInHousehold.has(t.roomId));
+
+  const write = await writeStore({ ...read.data, households, occupants, floors, rooms, doors, tasks });
+  if (!write.success) return fail("household.delete.write", write.error);
+
+  return ok(
+    "household.delete",
+    {
+      id: householdId,
+      deletedRoomCount: roomIdsInHousehold.size,
+      deletedFloorCount: read.data.floors.length - floors.length,
+      deletedDoorCount: (read.data.doors || []).length - doors.length,
+      deletedTaskCount: read.data.tasks.length - tasks.length,
+    },
+    `Foyer "${household.name}" supprimé.`
+  );
+}
+
 module.exports = {
   createUser,
   listUsers,
   signup,
   login,
+  requestPasswordReset,
+  resetPassword,
   inviteUser,
   acceptInvitation,
   getInvitationPreview,
   acceptInvitationForExistingUser,
+  createHouseholdForUser,
+  listHouseholdsForUser,
+  leaveHousehold,
+  transferOwnership,
+  deleteHousehold,
   listInvitations,
   createOccupant,
   claimOccupant,

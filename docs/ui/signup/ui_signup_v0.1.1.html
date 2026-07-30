@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chez nous - Connexion & Inscription</title>
+  
+  <!-- ================================================================= -->
+  <!-- DÉPENDANCES (Tailwind CSS + FontAwesome)                          -->
+  <!-- ================================================================= -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<!-- ARRIÈRE-PLAN : Dégradé vibrant Indigo / Violet / Rose -->
+<body class="bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100 min-h-screen flex items-center justify-center p-4 font-sans relative overflow-x-hidden">
+
+  <!-- ================================================================= -->
+  <!-- BULLES DE LUMIÈRE DÉCORATIVES EN ARRIÈRE-PLAN (GLOW EFFECT)       -->
+  <!-- ================================================================= -->
+  <div class="absolute top-1/4 -left-20 w-80 h-80 bg-purple-400/30 rounded-full blur-3xl pointer-events-none"></div>
+  <div class="absolute bottom-1/4 -right-20 w-80 h-80 bg-pink-400/30 rounded-full blur-3xl pointer-events-none"></div>
+
+  <!-- ================================================================= -->
+  <!-- CARTE PRINCIPALE DE CONNEXION / INSCRIPTION                       -->
+  <!-- ================================================================= -->
+  <div class="w-full max-w-md bg-white/85 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/60 p-6 md:p-8 space-y-6 relative z-10">
+
+    <!-- EN-TÊTE : LOGO ET TITRE -->
+    <div class="text-center space-y-2">
+      <!-- Badge / Icône de Marque -->
+      <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 text-white shadow-lg shadow-indigo-300/50 mb-1">
+        <i class="fa-solid fa-house-chimney-window text-2xl"></i>
+      </div>
+      <!-- Nom de l'application -->
+      <h1 class="text-2xl font-black text-slate-800 tracking-tight">Chez nous</h1>
+      <p id="sub-heading-text" class="text-xs font-semibold text-slate-500">Créez votre compte pour rejoindre votre foyer</p>
+    </div>
+
+    <!-- =============================================================== -->
+    <!-- ONGLETS DE COMMUTATION : S'INSCRIRE / SE CONNECTER              -->
+    <!-- =============================================================== -->
+    <div class="bg-slate-100/80 p-1.5 rounded-2xl flex relative border border-slate-200/60">
+      <!-- Bouton S'inscrire -->
+      <button id="tab-signup" onclick="switchTab('signup')" class="flex-1 py-2.5 text-xs font-extrabold rounded-xl transition duration-200 bg-white text-indigo-700 shadow-sm">
+        S'inscrire
+      </button>
+      <!-- Bouton Se connecter -->
+      <button id="tab-login" onclick="switchTab('login')" class="flex-1 py-2.5 text-xs font-extrabold rounded-xl transition duration-200 text-slate-500 hover:text-slate-800">
+        Se connecter
+      </button>
+    </div>
+
+    <!-- =============================================================== -->
+    <!-- FORMULAIRE DE SAISIE                                            -->
+    <!-- =============================================================== -->
+    <form id="auth-form" onsubmit="event.preventDefault();" class="space-y-4">
+
+      <!-- CHAMP : PRÉNOM & NOM (En grille 2 colonnes sur tablette/mobile) -->
+      <div id="group-name" class="grid grid-cols-2 gap-3 transition-all duration-300">
+        <!-- Prénom -->
+        <div>
+          <label class="block text-[11px] font-extrabold text-slate-700 uppercase tracking-wider mb-1">Prénom</label>
+          <div class="relative">
+            <i class="fa-solid fa-user absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+            <input type="text" placeholder="Jean" class="w-full pl-9 pr-3 py-2.5 bg-slate-50/70 border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition">
+          </div>
+        </div>
+        <!-- Nom -->
+        <div>
+          <label class="block text-[11px] font-extrabold text-slate-700 uppercase tracking-wider mb-1">Nom</label>
+          <div class="relative">
+            <i class="fa-regular fa-user absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+            <input type="text" placeholder="Dupont" class="w-full pl-9 pr-3 py-2.5 bg-slate-50/70 border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition">
+          </div>
+        </div>
+      </div>
+
+      <!-- CHAMP : EMAIL -->
+      <div>
+        <label class="block text-[11px] font-extrabold text-slate-700 uppercase tracking-wider mb-1">Email</label>
+        <div class="relative">
+          <i class="fa-solid fa-envelope absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+          <input type="email" placeholder="exemple@domaine.fr" class="w-full pl-9 pr-3 py-2.5 bg-slate-50/70 border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition">
+        </div>
+      </div>
+
+      <!-- CHAMP : MOT DE PASSE -->
+      <div>
+        <label class="block text-[11px] font-extrabold text-slate-700 uppercase tracking-wider mb-1">Mot de passe</label>
+        <div class="relative">
+          <i class="fa-solid fa-lock absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+          <input id="password-input" type="password" placeholder="••••••••" class="w-full pl-9 pr-10 py-2.5 bg-slate-50/70 border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition">
+          <!-- Bouton Afficher/Masquer le mot de passe -->
+          <button type="button" onclick="togglePassword('password-input', 'eye-icon-1')" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-indigo-600 transition p-1">
+            <i id="eye-icon-1" class="fa-solid fa-eye text-xs"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- CHAMP : CONFIRMER LE MOT DE PASSE -->
+      <div id="group-confirm-password" class="transition-all duration-300">
+        <label class="block text-[11px] font-extrabold text-slate-700 uppercase tracking-wider mb-1">Confirmer le mot de passe</label>
+        <div class="relative">
+          <i class="fa-solid fa-shield-halved absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+          <input id="confirm-password-input" type="password" placeholder="••••••••" class="w-full pl-9 pr-10 py-2.5 bg-slate-50/70 border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition">
+          <!-- Bouton Afficher/Masquer le mot de passe -->
+          <button type="button" onclick="togglePassword('confirm-password-input', 'eye-icon-2')" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-indigo-600 transition p-1">
+            <i id="eye-icon-2" class="fa-solid fa-eye text-xs"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- BOUTON PRINCIPAL D'ACTION -->
+      <button id="submit-btn" type="submit" class="w-full mt-2 py-3.5 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 text-white font-extrabold rounded-2xl shadow-lg shadow-indigo-300/50 hover:brightness-105 active:scale-[0.98] transition duration-200 flex items-center justify-center gap-2">
+        <span>Créer mon compte</span>
+        <i class="fa-solid fa-arrow-right text-xs"></i>
+      </button>
+
+    </form>
+
+    <!-- PIED DE CARTE (Mentions / Liens secondaires) -->
+    <p class="text-[11px] text-center text-slate-400 font-medium">
+      En continuant, vous acceptez les <a href="#" class="text-indigo-600 hover:underline font-bold">Conditions d'utilisation</a>.
+    </p>
+
+  </div>
+
+  <!-- ================================================================= -->
+  <!-- SCRIPTS JAVASCRIPT INTERACTIFS (COMMUTATION & MOT DE PASSE)      -->
+  <!-- ================================================================= -->
+  <script>
+    // 1. Fonction pour masquer / afficher le mot de passe
+    function togglePassword(inputId, eyeIconId) {
+      const input = document.getElementById(inputId);
+      const eyeIcon = document.getElementById(eyeIconId);
+
+      if (input.type === "password") {
+        input.type = "text";
+        eyeIcon.classList.remove("fa-eye");
+        eyeIcon.classList.add("fa-eye-slash");
+      } else {
+        input.type = "password";
+        eyeIcon.classList.remove("fa-eye-slash");
+        eyeIcon.classList.add("fa-eye");
+      }
+    }
+
+    // 2. Fonction pour basculer entre les onglets "S'inscrire" et "Se connecter"
+    function switchTab(mode) {
+      const tabSignup = document.getElementById('tab-signup');
+      const tabLogin = document.getElementById('tab-login');
+      const groupName = document.getElementById('group-name');
+      const groupConfirm = document.getElementById('group-confirm-password');
+      const submitBtnSpan = document.querySelector('#submit-btn span');
+      const subHeadingText = document.getElementById('sub-heading-text');
+
+      if (mode === 'login') {
+        // Mode Se connecter
+        tabLogin.className = "flex-1 py-2.5 text-xs font-extrabold rounded-xl transition duration-200 bg-white text-indigo-700 shadow-sm";
+        tabSignup.className = "flex-1 py-2.5 text-xs font-extrabold rounded-xl transition duration-200 text-slate-500 hover:text-slate-800";
+
+        // Masquer les champs inutiles
+        groupName.classList.add('hidden');
+        groupConfirm.classList.add('hidden');
+
+        // Changer les textes
+        submitBtnSpan.textContent = "Se connecter";
+        subHeadingText.textContent = "Ravi de vous revoir parmi nous !";
+      } else {
+        // Mode S'inscrire
+        tabSignup.className = "flex-1 py-2.5 text-xs font-extrabold rounded-xl transition duration-200 bg-white text-indigo-700 shadow-sm";
+        tabLogin.className = "flex-1 py-2.5 text-xs font-extrabold rounded-xl transition duration-200 text-slate-500 hover:text-slate-800";
+
+        // Réafficher les champs d'inscription
+        groupName.classList.remove('hidden');
+        groupConfirm.classList.remove('hidden');
+
+        // Changer les textes
+        submitBtnSpan.textContent = "Créer mon compte";
+        subHeadingText.textContent = "Créez votre compte pour rejoindre votre foyer";
+      }
+    }
+  </script>
+
+</body>
+</html>

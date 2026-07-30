@@ -8,10 +8,10 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useItems } from "../src/hooks/useItems";
-import ItemGrid from "../src/components/items/ItemGrid";
+import ItemGrid from "../src/components/ui/ItemGrid";
 import { api } from "../src/api";
 
-vi.mock("../src/validators/formValidators", () => ({
+vi.mock("../src/utils/formValidators", () => ({
   validateTask: vi.fn((values) =>
     values.title ? { valid: true, errors: [] } : { valid: false, errors: ["title : chaîne non vide requise."] }
   ),

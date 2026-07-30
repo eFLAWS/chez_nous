@@ -23,7 +23,7 @@ const SNAP_THRESHOLD_METERS = 16 / PIXELS_PER_METER; // ~16px de tolérance à l
 const PADDING_METERS = 2; // marge de respiration autour du plan pendant le glisser
 
 function rectsOverlap(a, b) {
-  return a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.length && a.y + a.length > b.y;
+  return a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
 }
 
 /* Ajuste (x, y) pour "coller" contre le bord d'une pièce voisine si l'écart
@@ -41,7 +41,7 @@ function applyMagnetism(tentative, others) {
     else if (Math.abs(right - oRight) <= SNAP_THRESHOLD_METERS) x = oRight - width;
   }
   for (const o of others) {
-    const oBottom = o.y + o.length;
+    const oBottom = o.y + o.height;
     if (Math.abs(bottom - o.y) <= SNAP_THRESHOLD_METERS) y = o.y - length;
     else if (Math.abs(y - oBottom) <= SNAP_THRESHOLD_METERS) y = oBottom;
     else if (Math.abs(y - o.y) <= SNAP_THRESHOLD_METERS) y = o.y;
@@ -98,11 +98,11 @@ export default function RoomFloorPlan({ rooms, tasks, onMove, onDelete }) {
 
     const dxM = (e.clientX - drag.startClientX) / PIXELS_PER_METER;
     const dyM = (e.clientY - drag.startClientY) / PIXELS_PER_METER;
-    const tentative = { x: drag.startX + dxM, y: drag.startY + dyM, width: room.width, length: room.length };
+    const tentative = { x: drag.startX + dxM, y: drag.startY + dyM, width: room.width, height: room.height };
 
     const others = rooms.filter((r) => r.id !== room.id).map((r) => ({ ...r, ...(positions[r.id] || {}) }));
     const snapped = applyMagnetism(tentative, others);
-    const candidateRect = { ...snapped, width: room.width, length: room.length };
+    const candidateRect = { ...snapped, width: room.width, height: room.height };
 
     const collides = others.some((o) => rectsOverlap(candidateRect, o));
     const finalPos = collides ? drag.lastValid : snapped;
@@ -143,7 +143,7 @@ export default function RoomFloorPlan({ rooms, tasks, onMove, onDelete }) {
   };
 
   const maxX = Math.max(...rooms.map((r) => posFor(r).x + r.width)) + PADDING_METERS;
-  const maxY = Math.max(...rooms.map((r) => posFor(r).y + r.length)) + PADDING_METERS;
+  const maxY = Math.max(...rooms.map((r) => posFor(r).y + r.height)) + PADDING_METERS;
 
   return (
     <div
@@ -165,7 +165,7 @@ export default function RoomFloorPlan({ rooms, tasks, onMove, onDelete }) {
               left: pos.x * PIXELS_PER_METER,
               top: pos.y * PIXELS_PER_METER,
               width: room.width * PIXELS_PER_METER,
-              height: room.length * PIXELS_PER_METER,
+              height: room.height * PIXELS_PER_METER,
               background: room.color,
               touchAction: "none",
               cursor: isDragging ? "grabbing" : "grab",
@@ -204,7 +204,7 @@ export default function RoomFloorPlan({ rooms, tasks, onMove, onDelete }) {
                 </button>
                 <span className="floor-plan__room-name">{room.name}</span>
                 <span className="floor-plan__room-dims">
-                  {room.width} × {room.length} m
+                  {room.width} × {room.height} m
                 </span>
               </>
             )}

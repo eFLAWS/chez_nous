@@ -8,12 +8,12 @@
 import { useState, useEffect } from "react";
 import { useItems } from "../../hooks/useItems";
 import { useToast } from "../../hooks/useToast";
-import { validateFloor } from "../../validators/formValidators";
-import ItemGrid from "../items/ItemGrid";
+import { validateFloor } from "../../utils/formValidators";
+import ItemGrid from "../ui/ItemGrid";
 import RoomFloorPlan from "./RoomFloorPlan";
 import FloorThumbnail from "./FloorThumbnail";
-import ToastStack from "../common/Toast";
-import Spinner from "../common/Spinner";
+import ToastStack from "../ui/Toast";
+import Spinner from "../ui/Spinner";
 
 export default function FloorPlanSection({ householdId, roomState, tasks }) {
   const floorState = useItems("floor", { householdId });

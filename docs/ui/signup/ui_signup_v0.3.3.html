@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="fr" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Chez nous - Inscription</title>
+  
+  <!-- Tailwind CSS & FontAwesome Icons -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body class="bg-slate-950 text-slate-100 min-h-screen flex justify-center items-center font-sans antialiased selection:bg-emerald-500 selection:text-white">
+
+  <!-- ================================================================= -->
+  <!-- CONTENEUR MOBILE (Fixe, centré et fluide)                        -->
+  <!-- ================================================================= -->
+  <div class="w-full max-w-md min-h-screen sm:min-h-[760px] sm:h-[820px] sm:rounded-[40px] bg-slate-900/90 border border-slate-800/80 shadow-2xl relative overflow-hidden flex flex-col justify-between p-6 md:p-8 backdrop-blur-2xl">
+
+    <!-- HALOS DE LUMIÈRE DÉCORATIFS (Glow Vert Émeraude / Lime) -->
+    <div class="absolute -top-24 -left-24 w-72 h-72 bg-emerald-500/20 rounded-full blur-[90px] pointer-events-none"></div>
+    <div class="absolute -bottom-24 -right-24 w-72 h-72 bg-lime-400/15 rounded-full blur-[90px] pointer-events-none"></div>
+
+    <!-- =============================================================== -->
+    <!-- EN-TÊTE : LOGO + TITRE + ONGLETS DE NAVIGATION                  -->
+    <!-- =============================================================== -->
+    <div class="space-y-5 relative z-10 pt-2">
+      
+      <!-- LOGO & TITRE -->
+      <div class="text-center space-y-1.5">
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-emerald-500 via-teal-500 to-lime-400 text-slate-950 shadow-lg shadow-emerald-500/25 mb-1">
+          <i class="fa-solid fa-house-chimney-window text-3xl"></i>
+        </div>
+        <h1 class="text-3xl font-black tracking-tight text-white">Chez nous</h1>
+        <p class="text-xs font-semibold text-emerald-400/90 tracking-wide">
+          Bienvenue ! Créez votre foyer
+        </p>
+      </div>
+
+      <!-- COMMUTATEUR : S'INSCRIRE (ACTIF) / SE CONNECTER (LIEN PAGE) -->
+      <div class="bg-slate-950/80 p-1.5 rounded-2xl flex border border-slate-800/80 shadow-inner">
+        <span class="flex-1 text-center py-3 text-xs font-black rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 shadow-md shadow-emerald-500/20 cursor-default">
+          S'inscrire
+        </span>
+        <a href="login.html" class="flex-1 text-center py-3 text-xs font-bold rounded-xl text-slate-400 hover:text-white transition duration-200">
+          Se connecter
+        </a>
+      </div>
+
+    </div>
+
+    <!-- =============================================================== -->
+    <!-- FORMULAIRE D'INSCRIPTION                                        -->
+    <!-- =============================================================== -->
+    <form action="/api/signup" method="POST" class="space-y-4 relative z-10 my-auto py-2">
+
+      <!-- PRÉNOM & NOM -->
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-1.5">Prénom</label>
+          <div class="relative">
+            <i class="fa-solid fa-user absolute left-3.5 top-1/2 -translate-y-1/2 text-emerald-400 text-xs"></i>
+            <input type="text" name="firstName" required placeholder="Alex" class="w-full pl-9 pr-3 py-3 bg-slate-950/60 border border-slate-800 rounded-xl text-xs font-semibold text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition">
+          </div>
+        </div>
+        <div>
+          <label class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-1.5">Nom</label>
+          <div class="relative">
+            <i class="fa-regular fa-user absolute left-3.5 top-1/2 -translate-y-1/2 text-emerald-400 text-xs"></i>
+            <input type="text" name="lastName" required placeholder="Martin" class="w-full pl-9 pr-3 py-3 bg-slate-950/60 border border-slate-800 rounded-xl text-xs font-semibold text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition">
+          </div>
+        </div>
+      </div>
+
+      <!-- EMAIL -->
+      <div>
+        <label class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-1.5">Email</label>
+        <div class="relative">
+          <i class="fa-solid fa-envelope absolute left-3.5 top-1/2 -translate-y-1/2 text-emerald-400 text-xs"></i>
+          <input type="email" name="email" required placeholder="alex@foyer.fr" class="w-full pl-9 pr-3 py-3 bg-slate-950/60 border border-slate-800 rounded-xl text-xs font-semibold text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition">
+        </div>
+      </div>
+
+      <!-- MOT DE PASSE -->
+      <div>
+        <label class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-1.5">Mot de passe</label>
+        <div class="relative">
+          <i class="fa-solid fa-lock absolute left-3.5 top-1/2 -translate-y-1/2 text-emerald-400 text-xs"></i>
+          <input id="password-input" type="password" name="password" required placeholder="••••••••" class="w-full pl-9 pr-10 py-3 bg-slate-950/60 border border-slate-800 rounded-xl text-xs font-semibold text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition">
+          <button type="button" onclick="togglePassword('password-input', 'eye-icon-1')" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-emerald-400 transition p-1">
+            <i id="eye-icon-1" class="fa-solid fa-eye text-xs"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- CONFIRMER LE MOT DE PASSE -->
+      <div>
+        <label class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-1.5">Confirmer le mot de passe</label>
+        <div class="relative">
+          <i class="fa-solid fa-shield-halved absolute left-3.5 top-1/2 -translate-y-1/2 text-emerald-400 text-xs"></i>
+          <input id="confirm-password-input" type="password" name="confirmPassword" required placeholder="••••••••" class="w-full pl-9 pr-10 py-3 bg-slate-950/60 border border-slate-800 rounded-xl text-xs font-semibold text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition">
+          <button type="button" onclick="togglePassword('confirm-password-input', 'eye-icon-2')" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-emerald-400 transition p-1">
+            <i id="eye-icon-2" class="fa-solid fa-eye text-xs"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- BOUTON PRINCIPAL D'ACTION -->
+      <button type="submit" class="w-full py-4 bg-gradient-to-r from-emerald-400 via-teal-300 to-lime-400 hover:brightness-110 active:scale-[0.98] text-slate-950 font-black text-sm rounded-2xl shadow-lg shadow-emerald-500/20 transition duration-200 border border-emerald-300/50 flex items-center justify-center gap-2">
+        <span>Créer mon compte</span>
+        <i class="fa-solid fa-arrow-right text-xs"></i>
+      </button>
+
+    </form>
+
+    <!-- =============================================================== -->
+    <!-- PIED DE PAGE / MENTIONS                                         -->
+    <!-- =============================================================== -->
+    <div class="text-center pt-2 pb-2 relative z-10">
+      <p class="text-[11px] text-slate-500 font-medium">
+        En continuant, vous acceptez les <a href="#" class="text-emerald-400 hover:underline font-bold">Règles du foyer</a>.
+      </p>
+    </div>
+
+  </div>
+
+  <!-- SCRIPT MASQUAGE MOT DE PASSE -->
+  <script>
+    function togglePassword(inputId, eyeIconId) {
+      const input = document.getElementById(inputId);
+      const eyeIcon = document.getElementById(eyeIconId);
+
+      if (input.type === "password") {
+        input.type = "text";
+        eyeIcon.classList.remove("fa-eye");
+        eyeIcon.classList.add("fa-eye-slash");
+      } else {
+        input.type = "password";
+        eyeIcon.classList.remove("fa-eye-slash");
+        eyeIcon.classList.add("fa-eye");
+      }
+    }
+  </script>
+
+</body>
+</html>

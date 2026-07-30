@@ -4,7 +4,10 @@
 // appellent des fonctions, et reçoivent toujours la même forme que
 // dataService côté serveur : { success, data, error }.
 
-const BASE_URL = "/api";
+// `VITE_API_URL` (voir .env.example à la racine) — si absent, retombe
+// sur "/api" (chemin relatif géré par le proxy de vite.config.js en
+// développement), pour ne rien casser tant qu'aucun .env n'a été créé.
+const BASE_URL = import.meta.env.VITE_API_URL || "/api";
 
 async function request(path, options) {
   try {
@@ -52,5 +55,22 @@ export const api = {
 
   listFloors: (householdId) => request(`/floors${householdId ? `?householdId=${householdId}` : ""}`),
   createFloor: (input) => request("/floors", { method: "POST", body: JSON.stringify(input) }),
+  updateFloorLayout: (id, patch) => request(`/floors/${id}/layout`, { method: "PATCH", body: JSON.stringify(patch) }),
   deleteFloor: (id) => request(`/floors/${id}`, { method: "DELETE" }),
+
+  listDoors: (floorId) => request(`/doors${floorId ? `?floorId=${floorId}` : ""}`),
+  createDoor: (input) => request("/doors", { method: "POST", body: JSON.stringify(input) }),
+  deleteDoor: (id) => request(`/doors/${id}`, { method: "DELETE" }),
+
+  // Multi-foyers (voir la conversation) : un compte peut être occupant de
+  // plusieurs foyers — ces fonctions remplacent le mock localStorage
+  // précédent (housingStorage.js) par de vrais appels au backend.
+  listHouseholdsForUser: (userId) => request(`/households?userId=${encodeURIComponent(userId)}`),
+  createHouseholdForUser: (input) => request("/households", { method: "POST", body: JSON.stringify(input) }),
+  leaveHousehold: (householdId, userId) =>
+    request(`/households/${householdId}/leave`, { method: "POST", body: JSON.stringify({ userId }) }),
+  deleteHousehold: (householdId, userId) =>
+    request(`/households/${householdId}?userId=${encodeURIComponent(userId)}`, { method: "DELETE" }),
+  listOccupants: (householdId, onlyUnclaimed) =>
+    request(`/occupants?householdId=${encodeURIComponent(householdId)}${onlyUnclaimed ? "&onlyUnclaimed=true" : ""}`),
 };

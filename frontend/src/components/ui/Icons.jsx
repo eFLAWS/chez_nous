@@ -1,0 +1,174 @@
+// src/components/ui/Icons.jsx
+// Pictogrammes minimalistes (traits fins, sans remplissage), teintables
+// via `currentColor` — voir la conversation : les émoji gardent leurs
+// couleurs natives et ne peuvent pas être teintés pour respecter le
+// thème couleur de l'app, remplacés ici par du SVG en ligne.
+//
+// DÉPLACÉ depuis features/auth/AuthIcons.jsx (voir la conversation) :
+// utilisé maintenant aussi par HousingDashboard.jsx, pas seulement les
+// écrans de connexion/inscription — sa place est dans components/ui/
+// (UI générique, réutilisable par n'importe quelle feature), pas dans
+// un dossier spécifique à une seule feature.
+//
+// Style volontairement minimal : contours simples, `stroke-width="2"`,
+// pas de détails superflus — pas une reproduction fidèle des icônes
+// FontAwesome des prototypes (qui ont un style "solide"), mais leur
+// équivalent le plus proche en traits fins.
+//
+// `size`/`className` optionnels pour s'adapter à chaque emplacement.
+const base = { fill: "none", stroke: "currentColor", strokeWidth: 2, strokeLinecap: "round", strokeLinejoin: "round" };
+
+export function HouseIcon({ size = 24, className }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" className={className} {...base}>
+      <path d="M4 11.5 12 4l8 7.5" />
+      <path d="M6 10v9a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-9" />
+      <path d="M10 20v-5h4v5" />
+    </svg>
+  );
+}
+
+/* Maison + occupant (badge "Mes logements") — distincte de HouseIcon
+   (badge de connexion/inscription) pour respecter le prototype fourni,
+   qui utilise deux icônes différentes à ces deux emplacements. */
+export function HouseUserIcon({ size = 24, className }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" className={className} {...base}>
+      <path d="M4 11.5 12 4l8 7.5" />
+      <path d="M6 10v9a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-9" />
+      <circle cx="12" cy="14.2" r="1.8" />
+      <path d="M9.3 19.5c0-1.8 1.2-3 2.7-3s2.7 1.2 2.7 3" />
+    </svg>
+  );
+}
+
+export function UserIcon({ size = 16, className }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" className={className} {...base}>
+      <circle cx="12" cy="8" r="3.5" />
+      <path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6" />
+    </svg>
+  );
+}
+
+export function EnvelopeIcon({ size = 16, className }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" className={className} {...base}>
+      <rect x="3.5" y="5.5" width="17" height="13" rx="2" />
+      <path d="M4 6.5 12 12l8-5.5" />
+    </svg>
+  );
+}
+
+export function LockIcon({ size = 16, className }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" className={className} {...base}>
+      <rect x="4.5" y="11" width="15" height="9" rx="2" />
+      <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+    </svg>
+  );
+}
+
+export function ShieldIcon({ size = 16, className }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" className={className} {...base}>
+      <path d="M12 3.5 5 6v5.5c0 4.5 3 7.5 7 9 4-1.5 7-4.5 7-9V6z" />
+    </svg>
+  );
+}
+
+export function EyeIcon({ size = 14, className }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" className={className} {...base}>
+      <path d="M2 12s3.5-6.5 10-6.5S22 12 22 12s-3.5 6.5-10 6.5S2 12 2 12Z" />
+      <circle cx="12" cy="12" r="2.6" />
+    </svg>
+  );
+}
+
+export function EyeOffIcon({ size = 14, className }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" className={className} {...base}>
+      <path d="M2 12s3.5-6.5 10-6.5c1.9 0 3.5.5 4.8 1.2M22 12s-1.2 2.2-3.4 4M9.3 9.3a2.6 2.6 0 0 0 3.6 3.6" />
+      <path d="M6.5 6.5 3 3m18 18-3.5-3.5" />
+    </svg>
+  );
+}
+
+export function ArrowRightIcon({ size = 14, className }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" className={className} {...base}>
+      <path d="M4 12h16M13 5l7 7-7 7" />
+    </svg>
+  );
+}
+
+export function PlusIcon({ size = 18, className }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" className={className} {...base}>
+      <path d="M12 4v16M4 12h16" />
+    </svg>
+  );
+}
+
+export function LinkIcon({ size = 16, className }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" className={className} {...base}>
+      <path d="M9.5 14.5 14.5 9.5" />
+      <path d="M11 6.5 13 4.5a3.5 3.5 0 0 1 5 5l-2 2" />
+      <path d="M13 17.5 11 19.5a3.5 3.5 0 0 1-5-5l2-2" />
+    </svg>
+  );
+}
+
+export function ChevronRightIcon({ size = 14, className }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" className={className} {...base}>
+      <path d="M9 5l7 7-7 7" />
+    </svg>
+  );
+}
+
+/* Chevron unique, pointant vers le bas — pivote via `transform: rotate`
+   en CSS selon l'état déplié/replié plutôt que d'avoir deux icônes
+   distinctes (haut/bas). */
+export function ChevronDownIcon({ size = 14, className }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" className={className} {...base}>
+      <path d="M6 9l6 6 6-6" />
+    </svg>
+  );
+}
+
+export function CloudUploadIcon({ size = 20, className }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" className={className} {...base}>
+      <path d="M7 18h10a4 4 0 0 0 .5-7.97A5.5 5.5 0 0 0 7.1 9.1 4 4 0 0 0 7 18Z" />
+      <path d="M12 11v6M9.5 13.5 12 11l2.5 2.5" />
+    </svg>
+  );
+}
+
+export function LogoutIcon({ size = 14, className }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" className={className} {...base}>
+      <path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3" />
+      <path d="M10 8l-4 4 4 4" />
+      <path d="M6 12h11" />
+    </svg>
+  );
+}
+
+/* Cadre de visée (coins ouverts), pour "Scanner un plan" — motif
+   minimaliste courant pour une action de scan/photo. */
+export function ScanIcon({ size = 20, className }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" className={className} {...base}>
+      <path d="M4 8V6a2 2 0 0 1 2-2h2" />
+      <path d="M16 4h2a2 2 0 0 1 2 2v2" />
+      <path d="M20 16v2a2 2 0 0 1-2 2h-2" />
+      <path d="M8 20H6a2 2 0 0 1-2-2v-2" />
+      <rect x="7.5" y="7.5" width="9" height="9" rx="1.5" />
+    </svg>
+  );
+}

@@ -1,25 +1,26 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
-import ApartmentSpatialMvp from "./components/spatial/ApartmentSpatialMvp";
-import "./styles/ui-feedback.css";
-import "./styles/visual-hierarchy.css";
-import "./styles/floor-plan.css";
-import "./styles/task-overview.css";
-import "./styles/room-3d.css";
+import HouseholdRoot from "./features/household/HouseholdRoot";
+import "./assets/theme.css";
+import "./assets/ui-feedback.css";
+import "./assets/visual-hierarchy.css";
+import "./assets/floor-plan.css";
+import "./assets/task-overview.css";
+import "./assets/room-3d.css";
 
 // -----------------------------------------------------------------------
-// MVP TEMPORAIRE : affiche directement ApartmentSpatialMvp (données mock,
-// pas de connexion/backend) pour tester le commutateur Vue Ensemble / Vue
-// Pièce immédiatement au lancement, comme demandé. App.jsx (le vrai flux
-// inscription/connexion) n'est PAS touché — juste momentanément pas
-// monté depuis ce fichier.
+// MVP TEMPORAIRE : affiche HouseholdRoot (vrai login/inscription ->
+// Dashboard -> ApartmentSpatialMvp, tous les deux branchés sur le vrai
+// backend désormais). App.jsx (le vrai flux applicatif d'origine,
+// tâches/projets/etc.) n'est PAS touché — juste momentanément pas monté
+// depuis ce fichier.
 //
-// Pour revenir à l'application réelle : remplacer <ApartmentSpatialMvp />
+// Pour revenir à l'application réelle : remplacer <HouseholdRoot />
 // par <App /> ci-dessous, et retirer l'import devenu inutile.
 // -----------------------------------------------------------------------
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <ApartmentSpatialMvp />
+    <HouseholdRoot />
   </React.StrictMode>
 );

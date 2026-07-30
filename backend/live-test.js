@@ -71,34 +71,34 @@ async function main() {
   console.log("\nPOST /occupants/:id/claim (colocataire se réclame l'occupant libre) ->", JSON.stringify(claimColoc));
 
   // 7. Étages : un rez-de-chaussée et un étage
-  const rdc = await post("/floors", { name: "Rez-de-chaussée", level: 0, householdId });
-  const etage1 = await post("/floors", { name: "Étage 1", level: 1, householdId });
+  const rdc = await post("/floors", { name: "Rez-de-chaussée", level: 0, householdId, userId: signup.data.user.id });
+  const etage1 = await post("/floors", { name: "Étage 1", level: 1, householdId, userId: signup.data.user.id });
   console.log("\nPOST /floors x2 ->", rdc.success && etage1.success);
 
   // 8. Un salon au RDC, une chambre à l'étage 1 — mêmes coordonnées, pas de conflit
-  const salon = await post("/rooms", { name: "Salon", width: 5, length: 4, householdId, floorId: rdc.data.id });
-  const chambre = await post("/rooms", { name: "Chambre", width: 5, length: 4, householdId, floorId: etage1.data.id });
+  const salon = await post("/rooms", { name: "Salon", type: "salon", width: 5, height: 4, householdId, floorId: rdc.data.id, userId: signup.data.user.id });
+  const chambre = await post("/rooms", { name: "Chambre", type: "chambre", width: 5, height: 4, householdId, floorId: etage1.data.id, userId: signup.data.user.id });
   console.log("\nPOST /rooms (Salon RDC, Chambre étage 1) -> positions:", salon.data.x, salon.data.y, "|", chambre.data.x, chambre.data.y);
 
-  const moveChambre = await patch(`/rooms/${chambre.data.id}/position`, { x: salon.data.x, y: salon.data.y });
+  const moveChambre = await patch(`/rooms/${chambre.data.id}/position`, { x: salon.data.x, y: salon.data.y, userId: signup.data.user.id });
   console.log("\nPATCH chambre (étage 1) sur EXACTEMENT les coordonnées du salon (RDC) ->", JSON.stringify(moveChambre));
   console.log("   -> autorisé car étages différents ?", moveChambre.success === true);
 
   // 9. Une deuxième pièce au RDC : le chevauchement doit, lui, être bloqué
-  const cuisine = await post("/rooms", { name: "Cuisine", width: 3, length: 3, householdId, floorId: rdc.data.id });
-  const collideRes = await patch(`/rooms/${cuisine.data.id}/position`, { x: salon.data.x, y: salon.data.y });
+  const cuisine = await post("/rooms", { name: "Cuisine", type: "cuisine", width: 3, height: 3, householdId, floorId: rdc.data.id, userId: signup.data.user.id });
+  const collideRes = await patch(`/rooms/${cuisine.data.id}/position`, { x: salon.data.x, y: salon.data.y, userId: signup.data.user.id });
   console.log("\nPATCH cuisine (même étage que le salon) sur ses coordonnées -> refusé ?", collideRes.success === false, JSON.stringify(collideRes));
 
   // 10. Suppression en cascade : une tâche sur la cuisine, puis on supprime la cuisine
   await post("/tasks", { title: "Faire la vaisselle", roomId: cuisine.data.id });
   const beforeDeleteRoom = await get(`/tasks`);
-  const deleteRoomRes = await del(`/rooms/${cuisine.data.id}`);
+  const deleteRoomRes = await del(`/rooms/${cuisine.data.id}?userId=${signup.data.user.id}`);
   console.log("\nDELETE /rooms/:id (Cuisine, avec 1 tâche) ->", JSON.stringify(deleteRoomRes));
   const afterDeleteRoom = await get(`/tasks`);
   console.log("   -> tâches avant/après :", beforeDeleteRoom.body.data.length, "->", afterDeleteRoom.body.data.length);
 
   // 11. Suppression en cascade : on supprime l'étage 1 (qui contient la Chambre)
-  const deleteFloorRes = await del(`/floors/${etage1.data.id}`);
+  const deleteFloorRes = await del(`/floors/${etage1.data.id}?userId=${signup.data.user.id}`);
   console.log("\nDELETE /floors/:id (Étage 1, avec la Chambre) ->", JSON.stringify(deleteFloorRes));
   const roomsAfterFloorDelete = await get(`/rooms?householdId=${householdId}`);
   console.log("   -> pièces restantes :", roomsAfterFloorDelete.body.data.map((r) => r.name));

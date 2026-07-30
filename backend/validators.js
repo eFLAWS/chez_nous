@@ -190,6 +190,20 @@ function validateSignup(input) {
   return { valid: errors.length === 0, errors };
 }
 
+/**
+ * Valide un nouveau mot de passe seul (réinitialisation) — mêmes règles
+ * de force que validateSignup, sans nom/email à vérifier.
+ */
+function validateNewPassword(password) {
+  const errors = [];
+  if (!isStrongPassword(password)) {
+    errors.push(
+      `password : au moins ${MIN_PASSWORD_LENGTH} caractères, avec au moins une majuscule et un symbole.`
+    );
+  }
+  return { valid: errors.length === 0, errors };
+}
+
 /* ------------------------------ Invitation ------------------------------ */
 
 function validateInvitation(input, { existingHouseholdIds } = {}) {
@@ -220,6 +234,12 @@ function validateInvitation(input, { existingHouseholdIds } = {}) {
 
 const OCCUPANT_TYPES = ["human", "pet"];
 const PET_SPECIES = ["chien", "chat", "oiseau", "rongeur", "poisson", "reptile", "autre"];
+// PROPRIETAIRE : seul habilité à modifier le plan, transférer la
+// propriété, expulser un membre, supprimer le foyer. LOCATAIRE : accès
+// complet aux autres modules (tâches...), plan en lecture seule. Voir
+// la conversation (USER_FLOW_ONBOARDING.md / DATA_MODEL.md fournis par
+// l'utilisateur) pour la matrice de droits complète.
+const OCCUPANT_ROLES = ["PROPRIETAIRE", "LOCATAIRE"];
 
 function validateOccupant(input, { existingHouseholdIds, existingUserIds } = {}) {
   const errors = [];
@@ -252,6 +272,16 @@ function validateOccupant(input, { existingHouseholdIds, existingUserIds } = {})
     errors.push("species : ne s'applique qu'aux occupants de type \"pet\".");
   }
 
+  // Rôle (nouveau, voir la conversation) : ne concerne que les occupants
+  // humains — un animal ne peut jamais avoir d'autorité sur le foyer.
+  if (input.type === "human") {
+    if (!OCCUPANT_ROLES.includes(input.role)) {
+      errors.push(`role : doit être l'une des valeurs suivantes : ${OCCUPANT_ROLES.join(", ")}.`);
+    }
+  } else if (input.role !== undefined && input.role !== null) {
+    errors.push("role : ne s'applique qu'aux occupants de type \"human\".");
+  }
+
   if (input.claimedByUserId !== undefined && input.claimedByUserId !== null) {
     if (!isNonEmptyString(input.claimedByUserId)) {
       errors.push("claimedByUserId : doit être une chaîne si fourni.");
@@ -272,6 +302,7 @@ function validateOccupant(input, { existingHouseholdIds, existingUserIds } = {})
 
 const MIN_FLOOR_LEVEL = -5;
 const MAX_FLOOR_LEVEL = 200;
+const MAX_GRID_DIMENSION = 200; // cases de grille — largement au-dessus de tout plan réaliste
 
 function validateFloor(input, { existingHouseholdIds } = {}) {
   const errors = [];
@@ -298,21 +329,67 @@ function validateFloor(input, { existingHouseholdIds } = {}) {
     errors.push(`level : doit être un entier entre ${MIN_FLOOR_LEVEL} et ${MAX_FLOOR_LEVEL} (0 = rez-de-chaussée).`);
   }
 
+  // Champs ajoutés pour correspondre au modèle du frontend (Plan 2D /
+  // Vue 2.5D — voir la conversation) : tous optionnels à la création
+  // (un étage peut exister sans qu'aucune pièce n'y ait encore été
+  // tracée, donc sans dimensions de grille connues), mais valides s'ils
+  // sont fournis.
+  if (input.shortLabel !== undefined && input.shortLabel !== null && !isNonEmptyString(input.shortLabel, 50)) {
+    errors.push("shortLabel : chaîne non vide (50 caractères max) si fournie.");
+  }
+
+  if (input.avatarStart !== undefined && input.avatarStart !== null) {
+    const a = input.avatarStart;
+    if (
+      !a ||
+      typeof a !== "object" ||
+      Array.isArray(a) ||
+      typeof a.x !== "number" ||
+      !Number.isInteger(a.x) ||
+      typeof a.y !== "number" ||
+      !Number.isInteger(a.y)
+    ) {
+      errors.push("avatarStart : doit être un objet { x, y } avec des entiers si fourni.");
+    }
+  }
+
+  if (input.gridWidth !== undefined && input.gridWidth !== null) {
+    if (!Number.isInteger(input.gridWidth) || input.gridWidth < 1 || input.gridWidth > MAX_GRID_DIMENSION) {
+      errors.push(`gridWidth : doit être un entier entre 1 et ${MAX_GRID_DIMENSION} si fourni.`);
+    }
+  }
+  if (input.gridHeight !== undefined && input.gridHeight !== null) {
+    if (!Number.isInteger(input.gridHeight) || input.gridHeight < 1 || input.gridHeight > MAX_GRID_DIMENSION) {
+      errors.push(`gridHeight : doit être un entier entre 1 et ${MAX_GRID_DIMENSION} si fourni.`);
+    }
+  }
+
   return { valid: errors.length === 0, errors };
 }
 
 /* --------------------------------- Pièces --------------------------------- */
-// Le plan de l'appartement : chaque pièce a un nom, des dimensions réelles
-// (largeur/longueur en mètres), une couleur, une position (X, Y) — calculée
-// automatiquement à la création, modifiable par glisser-déposer — et
-// optionnellement un étage (floorId).
+// Le plan de l'appartement : chaque pièce a un nom, un type/icône
+// (Salon, Cuisine...), des dimensions en CASES DE GRILLE (width/height,
+// entiers — 1 case = 1 mètre par convention, voir layoutGeneration.js
+// côté frontend, TILE_SIZE_METERS), une couleur, une position (X, Y) —
+// calculée automatiquement à la création, modifiable par
+// glisser-déposer — et optionnellement un étage (floorId).
+//
+// RENOMMÉ `length` -> `height` (voir la conversation) : pour
+// correspondre au modèle du frontend (LayoutEditor.jsx). Les anciens
+// composants du floorplan historique (`components/floorplan/`) ont été
+// mis à jour en conséquence, pas laissés cassés silencieusement.
 
 const HEX_COLOR_RE = /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
-const MIN_ROOM_DIMENSION = 0.5; // mètres
-const MAX_ROOM_DIMENSION = 30; // mètres
+const MIN_ROOM_DIMENSION = 1; // cases de grille (= mètres)
+const MAX_ROOM_DIMENSION = 30; // cases de grille (= mètres)
 
 function isFiniteNumber(v) {
   return typeof v === "number" && Number.isFinite(v);
+}
+
+function isValidRoomDimension(v) {
+  return typeof v === "number" && Number.isInteger(v) && v >= MIN_ROOM_DIMENSION && v <= MAX_ROOM_DIMENSION;
 }
 
 function validateRoom(input, { existingHouseholdIds, existingFloorIds } = {}) {
@@ -337,19 +414,69 @@ function validateRoom(input, { existingHouseholdIds, existingFloorIds } = {}) {
     }
   }
 
-  if (!isFiniteNumber(input.width) || input.width < MIN_ROOM_DIMENSION || input.width > MAX_ROOM_DIMENSION) {
-    errors.push(`width : doit être un nombre entre ${MIN_ROOM_DIMENSION} et ${MAX_ROOM_DIMENSION} (mètres).`);
+  if (!isValidRoomDimension(input.width)) {
+    errors.push(`width : doit être un entier entre ${MIN_ROOM_DIMENSION} et ${MAX_ROOM_DIMENSION} (cases de grille).`);
   }
-  if (!isFiniteNumber(input.length) || input.length < MIN_ROOM_DIMENSION || input.length > MAX_ROOM_DIMENSION) {
-    errors.push(`length : doit être un nombre entre ${MIN_ROOM_DIMENSION} et ${MAX_ROOM_DIMENSION} (mètres).`);
+  if (!isValidRoomDimension(input.height)) {
+    errors.push(`height : doit être un entier entre ${MIN_ROOM_DIMENSION} et ${MAX_ROOM_DIMENSION} (cases de grille).`);
+  }
+
+  // `type`/`icon` (nouveau) : la liste précise des types valides
+  // (Salon, Cuisine...) vit côté frontend (roomTypes.js) — le backend ne
+  // la duplique volontairement pas, pour ne jamais risquer une dérive
+  // entre deux listes qui devraient rester identiques. Juste une chaîne
+  // non vide, pas une liste fermée vérifiée ici.
+  if (!isNonEmptyString(input.type, 50)) {
+    errors.push("type : chaîne non vide (50 caractères max) requise.");
+  }
+  if (input.icon !== undefined && input.icon !== null && !isNonEmptyString(input.icon, 10)) {
+    errors.push("icon : chaîne non vide (10 caractères max) si fournie.");
   }
 
   if (input.color !== undefined && input.color !== null && !HEX_COLOR_RE.test(input.color)) {
     errors.push("color : doit être une couleur hexadécimale valide (#RRGGBB ou #RGB).");
   }
 
-  if (input.x !== undefined && !isFiniteNumber(input.x)) errors.push("x : doit être un nombre si fourni.");
-  if (input.y !== undefined && !isFiniteNumber(input.y)) errors.push("y : doit être un nombre si fourni.");
+  if (input.x !== undefined && (!isFiniteNumber(input.x) || !Number.isInteger(input.x))) {
+    errors.push("x : doit être un entier si fourni.");
+  }
+  if (input.y !== undefined && (!isFiniteNumber(input.y) || !Number.isInteger(input.y))) {
+    errors.push("y : doit être un entier si fourni.");
+  }
+
+  return { valid: errors.length === 0, errors };
+}
+
+/* --------------------------------- Portes ---------------------------------- */
+// Nouveau concept (voir la conversation) : une porte est une case de
+// mur (x, y) transformée en passage libre entre deux pièces, sur un
+// étage donné — voir generateFloorTiles côté frontend, qui dérive les
+// murs/portes à partir des pièces + de cette liste de portes.
+// Volontairement minimal : juste la position, pas de validation des
+// deux pièces qu'elle relie (le frontend calcule ça lui-même,
+// géométriquement, à partir des rectangles de pièces).
+
+function validateDoor(input, { existingHouseholdIds, existingFloorIds } = {}) {
+  const errors = [];
+  if (!input || typeof input !== "object" || Array.isArray(input)) {
+    return { valid: false, errors: ["Le corps de la requête doit être un objet."] };
+  }
+  if (!isNonEmptyString(input.id)) errors.push("id : chaîne non vide requise.");
+
+  if (!isNonEmptyString(input.householdId)) {
+    errors.push("householdId : identifiant de foyer requis.");
+  } else if (existingHouseholdIds && !existingHouseholdIds.has(input.householdId)) {
+    errors.push(`householdId "${input.householdId}" ne correspond à aucun foyer existant.`);
+  }
+
+  if (!isNonEmptyString(input.floorId)) {
+    errors.push("floorId : identifiant d'étage requis.");
+  } else if (existingFloorIds && !existingFloorIds.has(input.floorId)) {
+    errors.push(`floorId "${input.floorId}" ne correspond à aucun étage existant.`);
+  }
+
+  if (typeof input.x !== "number" || !Number.isInteger(input.x)) errors.push("x : doit être un entier.");
+  if (typeof input.y !== "number" || !Number.isInteger(input.y)) errors.push("y : doit être un entier.");
 
   return { valid: errors.length === 0, errors };
 }
@@ -360,18 +487,23 @@ module.exports = {
   validateTask,
   validateHousehold,
   validateSignup,
+  validateNewPassword,
   validateInvitation,
   validateOccupant,
   validateFloor,
   validateRoom,
+  validateDoor,
   TASK_STATUSES,
   PET_SPECIES,
   OCCUPANT_TYPES,
+  OCCUPANT_ROLES,
   MIN_ROOM_DIMENSION,
   MAX_ROOM_DIMENSION,
+  MAX_GRID_DIMENSION,
   MIN_FLOOR_LEVEL,
   MAX_FLOOR_LEVEL,
   MIN_RECURRENCE_DAYS,
   MAX_RECURRENCE_DAYS,
   MAX_DESCRIPTION_LENGTH,
+  isStrongPassword,
 };

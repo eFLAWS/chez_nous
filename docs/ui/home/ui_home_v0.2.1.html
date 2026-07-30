@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestion du Foyer - Application</title>
+  <!-- CDN Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome pour les icônes -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-slate-200 min-h-screen flex items-center justify-center p-0 md:p-6 font-sans">
+
+  <!-- Frame Simulateur Mobile -->
+  <div class="w-full max-w-md bg-slate-50 min-h-[880px] rounded-[40px] shadow-2xl border-[8px] border-slate-900 overflow-hidden flex flex-col justify-between relative">
+
+    <!-- BARRE SUPÉRIEURE (HEADER) -->
+    <div class="p-5 bg-white border-b border-slate-100 shadow-sm flex items-center justify-between z-10">
+      
+      <!-- Bouton Sélection du Foyer (Remplace le profil) -->
+      <button class="flex items-center gap-2 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-900 px-3 py-2 rounded-xl transition font-semibold text-sm">
+        <div class="w-7 h-7 rounded-lg bg-emerald-600 text-white flex items-center justify-center text-xs">
+          <i class="fa-solid fa-house-user"></i>
+        </div>
+        <div class="text-left">
+          <p class="text-[10px] text-emerald-600 uppercase tracking-wider font-bold leading-none">Foyer actif</p>
+          <span class="text-xs font-bold flex items-center gap-1">
+            Mon Appartement
+            <i class="fa-solid fa-chevron-down text-[10px] text-emerald-700"></i>
+          </span>
+        </div>
+      </button>
+
+      <!-- Actions à droite (Flamme Streak + Notifications) -->
+      <div class="flex items-center gap-2">
+        <!-- Bouton Flamme / Tracker de Série quotidiennes -->
+        <button title="Série de ménage quotidienne" class="flex items-center gap-1.5 bg-amber-50 border border-amber-200 text-amber-700 px-3 py-1.5 rounded-xl font-bold text-xs shadow-sm hover:bg-amber-100 transition">
+          <i class="fa-solid fa-fire text-amber-500 animate-pulse text-sm"></i>
+          <span>5 j</span>
+        </button>
+
+        <!-- Bouton Notifications -->
+        <button class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center relative transition">
+          <i class="fa-regular fa-bell text-sm"></i>
+          <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-white"></span>
+        </button>
+      </div>
+    </div>
+
+    <!-- CONTENU PRINCIPAL DE L'APPLICATION -->
+    <div class="p-4 space-y-5 overflow-y-auto flex-1 pb-24">
+
+      <!-- CARTE APERÇU FOYER / VUE SPATIALE -->
+      <div class="bg-gradient-to-br from-slate-900 to-indigo-950 text-white p-4 rounded-3xl shadow-lg relative overflow-hidden">
+        <div class="flex justify-between items-center mb-3">
+          <div class="flex items-center gap-2">
+            <span class="bg-emerald-500/20 text-emerald-300 text-[11px] font-semibold px-2.5 py-1 rounded-full border border-emerald-500/30">
+              3 zones actives
+            </span>
+          </div>
+          <button class="text-xs text-slate-300 hover:text-white flex items-center gap-1 bg-white/10 px-2.5 py-1 rounded-lg backdrop-blur-sm transition">
+            <i class="fa-solid fa-expand text-[10px]"></i> Plein écran
+          </button>
+        </div>
+
+        <!-- Simulation Vue 2.5D des pièces -->
+        <div class="bg-slate-800/80 rounded-2xl p-4 my-3 border border-slate-700/50 flex flex-col items-center justify-center min-h-[120px] relative">
+          <div class="flex flex-wrap justify-center gap-2 w-full">
+            <span class="bg-emerald-500/90 text-white text-xs px-3 py-1.5 rounded-lg font-medium shadow-sm flex items-center gap-1">
+              <i class="fa-solid fa-circle-check text-[10px]"></i> Cuisine (Propre)
+            </span>
+            <span class="bg-amber-500/90 text-white text-xs px-3 py-1.5 rounded-lg font-medium shadow-sm flex items-center gap-1">
+              <i class="fa-solid fa-clock text-[10px]"></i> Salon (1 Tâche)
+            </span>
+            <span class="bg-rose-500/90 text-white text-xs px-3 py-1.5 rounded-lg font-medium shadow-sm flex items-center gap-1">
+              <i class="fa-solid fa-circle-exclamation text-[10px]"></i> SDB (À faire)
+            </span>
+          </div>
+          <p class="text-[11px] text-slate-400 mt-3 flex items-center gap-1">
+            <i class="fa-solid fa-hand-pointer text-[10px]"></i> Toucher une pièce pour interagir
+          </p>
+        </div>
+
+        <!-- Barre de propreté globale -->
+        <div class="mt-2">
+          <div class="flex justify-between text-xs mb-1">
+            <span class="text-slate-300 font-medium">Propreté globale</span>
+            <span class="text-emerald-400 font-bold">78%</span>
+          </div>
+          <div class="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+            <div class="bg-gradient-to-r from-emerald-500 to-teal-400 h-2 rounded-full" style="width: 78%"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STATISTIQUES RAPIDES -->
+      <div class="grid grid-cols-2 gap-3">
+        <div class="bg-white p-3.5 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center font-bold text-lg">
+            <i class="fa-solid fa-hourglass-half"></i>
+          </div>
+          <div>
+            <p class="text-[11px] text-slate-400 font-medium">En attente</p>
+            <p class="text-base font-extrabold text-slate-800">4 Tâches</p>
+          </div>
+        </div>
+
+        <div class="bg-white p-3.5 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold text-lg">
+            <i class="fa-solid fa-circle-check"></i>
+          </div>
+          <div>
+            <p class="text-[11px] text-slate-400 font-medium">Terminées</p>
+            <p class="text-base font-extrabold text-slate-800">12 cette semaine</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION TÂCHES DU JOUR + DÉLAIS ET DETTES -->
+      <div>
+        <div class="flex justify-between items-center mb-3">
+          <h2 class="font-extrabold text-slate-800 text-base">Tâches du jour</h2>
+          <button class="text-xs text-indigo-600 hover:text-indigo-800 font-bold">Voir tout (8)</button>
+        </div>
+
+        <div class="space-y-2.5">
+
+          <!-- Tâche 1 : Tâche normale avec délai avant dette -->
+          <div class="bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-sm hover:border-slate-300 transition">
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex items-start gap-3">
+                <input type="checkbox" class="mt-1 w-5 h-5 accent-emerald-600 rounded cursor-pointer">
+                <div>
+                  <h3 class="font-bold text-slate-800 text-sm">Nettoyer la table du salon</h3>
+                  
+                  <div class="flex flex-wrap items-center gap-1.5 mt-2">
+                    <!-- Zone -->
+                    <span class="bg-slate-100 text-slate-600 text-[10px] font-semibold px-2 py-0.5 rounded-md">
+                      Salon
+                    </span>
+                    <!-- Récurrence -->
+                    <span class="bg-indigo-50 text-indigo-600 text-[10px] font-semibold px-2 py-0.5 rounded-md flex items-center gap-1">
+                      <i class="fa-solid fa-rotate-right text-[9px]"></i> Quotidien
+                    </span>
+                    <!-- Horaire -->
+                    <span class="text-slate-500 text-[11px] flex items-center gap-1">
+                      <i class="fa-regular fa-clock text-[10px]"></i> Avant 18h
+                    </span>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Avatar assigné -->
+              <div class="w-7 h-7 rounded-full bg-indigo-100 border border-indigo-200 text-indigo-700 text-xs font-bold flex items-center justify-center shrink-0">
+                AL
+              </div>
+            </div>
+
+            <!-- Indicateur Délai / Dette de ménage -->
+            <div class="mt-2.5 pt-2 border-t border-slate-100 flex items-center justify-between text-[10px]">
+              <span class="text-amber-600 font-medium flex items-center gap-1">
+                <i class="fa-solid fa-hourglass-start"></i> Délai de grâce : +6h
+              </span>
+              <span class="text-slate-400">Archivage en dette à 00:00</span>
+            </div>
+          </div>
+
+          <!-- Tâche 2 : Tâche urgente proche de passer en dette -->
+          <div class="bg-white p-3.5 rounded-2xl border-l-4 border-l-rose-500 border-y border-r border-slate-200/80 shadow-sm">
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex items-start gap-3">
+                <input type="checkbox" class="mt-1 w-5 h-5 accent-emerald-600 rounded cursor-pointer">
+                <div>
+                  <h3 class="font-bold text-slate-800 text-sm">Vider le lave-vaisselle</h3>
+                  
+                  <div class="flex flex-wrap items-center gap-1.5 mt-2">
+                    <span class="bg-slate-100 text-slate-600 text-[10px] font-semibold px-2 py-0.5 rounded-md">
+                      Cuisine
+                    </span>
+                    <span class="bg-indigo-50 text-indigo-600 text-[10px] font-semibold px-2 py-0.5 rounded-md flex items-center gap-1">
+                      <i class="fa-solid fa-rotate-right text-[9px]"></i> Tous les 2j
+                    </span>
+                    <span class="text-rose-600 font-bold text-[11px] flex items-center gap-1">
+                      <i class="fa-regular fa-clock text-[10px]"></i> Dépassement !
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="w-7 h-7 rounded-full bg-emerald-100 border border-emerald-200 text-emerald-700 text-xs font-bold flex items-center justify-center shrink-0">
+                TH
+              </div>
+            </div>
+
+            <!-- Alerte Dette de Ménage -->
+            <div class="mt-2.5 pt-2 border-t border-rose-100 bg-rose-50/50 -mx-3.5 -mb-3.5 p-2 px-3.5 rounded-b-2xl flex items-center justify-between text-[10px] text-rose-700 font-semibold">
+              <span class="flex items-center gap-1">
+                <i class="fa-solid fa-triangle-exclamation text-rose-500"></i> Risque Dette de Ménage
+              </span>
+              <span>Devient une dette dans 1h30</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+    <!-- BOUTON D'ACTION FLOTTANT (AJOUTER) -->
+    <button class="absolute bottom-20 right-5 w-12 h-12 rounded-full bg-emerald-600 text-white shadow-lg hover:bg-emerald-700 active:scale-95 flex items-center justify-center transition z-20">
+      <i class="fa-solid fa-plus text-xl"></i>
+    </button>
+
+    <!-- BARRE DE NAVIGATION INFÉRIEURE -->
+    <div class="absolute bottom-0 left-0 right-0 bg-white border-t border-slate-200 px-4 py-2.5 flex justify-around items-center z-20">
+      
+      <!-- Onglet 1: Accueil -->
+      <button class="flex flex-col items-center text-emerald-600 font-bold gap-0.5">
+        <i class="fa-solid fa-house text-lg"></i>
+        <span class="text-[10px]">Accueil</span>
+      </button>
+
+      <!-- Onglet 2: Voir Foyer (Anciennement Vue 2.5D) -->
+      <button class="flex flex-col items-center text-slate-400 hover:text-slate-600 gap-0.5">
+        <i class="fa-solid fa-cubes text-lg"></i>
+        <span class="text-[10px]">Voir foyer</span>
+      </button>
+
+      <!-- Onglet 3: Liste de Courses (Remplace Tâches) -->
+      <button class="flex flex-col items-center text-slate-400 hover:text-slate-600 gap-0.5">
+        <i class="fa-solid fa-cart-shopping text-lg"></i>
+        <span class="text-[10px]">Courses</span>
+      </button>
+
+      <!-- Onglet 4: Réglages -->
+      <button class="flex flex-col items-center text-slate-400 hover:text-slate-600 gap-0.5">
+        <i class="fa-solid fa-gear text-lg"></i>
+        <span class="text-[10px]">Réglages</span>
+      </button>
+
+    </div>
+
+  </div>
+
+</body>
+</html>

@@ -14,12 +14,12 @@ import { useState } from "react";
 import { useItems } from "../../hooks/useItems";
 import { useToast } from "../../hooks/useToast";
 import { api } from "../../api";
-import Dashboard from "./Dashboard";
+import Dashboard from "../../features/household/Dashboard";
 import TaskOverview from "../tasks/TaskOverview";
-import ItemGrid from "../items/ItemGrid";
+import ItemGrid from "../ui/ItemGrid";
 import FloorPlanSection from "../floorplan/FloorPlanSection";
-import InviteForm from "../auth/InviteForm";
-import ToastStack from "../common/Toast";
+import InviteForm from "../../features/auth/InviteForm";
+import ToastStack from "../ui/Toast";
 
 export default function AppShell({ users, householdId, currentUserId }) {
   const taskState = useItems("task");

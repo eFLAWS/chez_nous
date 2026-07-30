@@ -34,7 +34,7 @@ export default function FloorThumbnail({ rooms }) {
       >
         {rooms.map((room) => {
           const w = room.width * PIXELS_PER_METER;
-          const d = room.length * PIXELS_PER_METER;
+          const d = room.height * PIXELS_PER_METER;
           const h = HEIGHT_METERS * PIXELS_PER_METER;
           return (
             <div

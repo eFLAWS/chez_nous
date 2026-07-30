@@ -24,7 +24,7 @@ const svc = require("../dataService");
 async function makeHouseholdWithRoomAndPet() {
   const signup = await svc.signup({ name: "Chloë", email: "chloe-tasks@example.com", password: "Motdepasse123!" });
   const householdId = signup.data.household.id;
-  const room = await svc.createRoom({ name: "Salon", width: 5, length: 4, householdId });
+  const room = await svc.createRoom({ name: "Salon", type: "salon", width: 5, height: 4, householdId, userId: signup.data.user.id });
   const pet = await svc.createOccupant({ name: "Miel", type: "pet", species: "chat", householdId });
   return { householdId, userId: signup.data.user.id, roomId: room.data.id, petId: pet.data.id };
 }

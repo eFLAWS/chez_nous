@@ -1,0 +1,64 @@
+/* PlaceholderModal.css
+   Thème Dark Mode néon — mêmes tokens globaux que HouseholdRoot.css
+   (theme.css). Une feuille du bas EST censée se détacher visuellement
+   du fond (patron d'interface différent des pages pleine écran "sans
+   encadré") — utilise donc bien --bg-card ici, à dessein. */
+
+.placeholder-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 400;
+}
+
+.placeholder-modal {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--bg-card);
+  border-top: 1px solid var(--border-color);
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  padding: 20px;
+  padding-bottom: max(20px, env(safe-area-inset-bottom));
+  z-index: 401;
+  box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.5);
+  box-sizing: border-box;
+}
+
+.placeholder-modal__handle {
+  width: 36px;
+  height: 4px;
+  background: var(--border-color);
+  border-radius: 2px;
+  margin: 0 auto 16px;
+}
+
+.placeholder-modal__title {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0 0 8px;
+}
+
+.placeholder-modal__hint {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin: 0 0 16px;
+}
+
+.placeholder-modal__close-btn {
+  width: 100%;
+  min-height: 44px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 700;
+  box-sizing: border-box;
+  background: var(--bg-input);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+}

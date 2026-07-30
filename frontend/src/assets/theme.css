@@ -1,0 +1,29 @@
+/* theme.css
+   Design System & Tokens de couleur — "Chez nous", direction Dark Mode
+   néon (Vert Émeraude / Teal / Lime), fournie par l'utilisateur
+   (code_couleur.md). Déclarés en :root comme demandé explicitement,
+   pour être réutilisables par de futures pages — appliqués pour
+   l'instant uniquement à l'écran de connexion/inscription (voir
+   HouseholdRoot.css/AuthForm.css), le reste de l'app garde son thème
+   clair existant tant qu'un changement plus large n'est pas demandé.
+
+   Valeurs recopiées telles quelles depuis le document fourni — pas de
+   token réinventé ici. */
+:root {
+  /* --- SURFACES & FONDS --- */
+  --bg-app: #090d16; /* Dark Slate très profond (fond principal) */
+  --bg-card: rgba(15, 23, 42, 0.9); /* Surface carte / conteneur mobile */
+  --bg-input: rgba(2, 6, 23, 0.6); /* Champs de saisie */
+  --border-color: #1e293b; /* Bordures subtiles */
+
+  /* --- COULEURS DE MARQUE & ACCENTS --- */
+  --color-emerald: #10b981; /* Couleur principale (icônes, focus, actif) */
+  --color-teal: #14b8a6; /* Transition de dégradé */
+  --color-lime: #84cc16; /* Accent dynamique & points forts */
+  --color-amber: #f59e0b; /* Accent secondaire & alertes douces */
+
+  /* --- TYPOGRAPHIE & CONTRASTES --- */
+  --text-primary: #ffffff; /* Titres & textes principaux */
+  --text-muted: #94a3b8; /* Labels & sous-titres */
+  --text-on-accent: #090d16; /* Texte très sombre sur les boutons néon */
+}

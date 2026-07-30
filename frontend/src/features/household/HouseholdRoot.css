@@ -1,0 +1,170 @@
+/* HouseholdRoot.css
+   Thème Dark Mode néon (émeraude/teal/lime) — v0.3.3, deuxième direction
+   visuelle fournie par l'utilisateur (remplace le thème clair précédent).
+   Utilise les tokens globaux de theme.css (:root) — voir la conversation
+   pour le raisonnement complet sur pourquoi ces tokens sont globaux mais
+   pour l'instant seulement UTILISÉS ici (le reste du MVP garde son thème
+   clair existant, pas de changement plus large demandé). */
+
+.household-root__auth {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  box-sizing: border-box;
+  overflow: hidden;
+  background: var(--bg-app);
+}
+
+/* Halos lumineux de fond — l'élément signature de ce thème (glow
+   émeraude + lime sur fond très sombre), avec le badge en dégradé
+   ci-dessous. */
+.household-root__glow {
+  position: absolute;
+  width: 280px;
+  height: 280px;
+  border-radius: 50%;
+  filter: blur(90px);
+  pointer-events: none;
+}
+.household-root__glow--emerald {
+  top: -40px;
+  left: -60px;
+  background: rgba(16, 185, 129, 0.2);
+}
+.household-root__glow--amber {
+  /* Renommé dans les faits (lime, pas ambre) mais la classe reste
+     --amber pour ne pas devoir toucher HouseholdRoot.jsx : ce fichier
+     ne fait QUE changer les couleurs associées à chaque halo existant. */
+  bottom: -40px;
+  right: -60px;
+  background: rgba(132, 204, 22, 0.15);
+}
+
+/* PAS de conteneur encadré (voir la conversation, retour explicite de
+   l'utilisateur) : le fond thématique de la page EST la seule surface
+   visible — ce bloc ne sert plus qu'à limiter la largeur du contenu sur
+   grand écran et l'espacer, jamais à dessiner une "boîte" par-dessus le
+   fond (pas de background, bordure, ombre ou flou de verre ici).
+   Occupe toute la hauteur de l'écran (min-height: 100vh) et répartit
+   son contenu du haut vers le bas (justify-content: space-between) —
+   c'est ce qui corrige le souci de "recentrage" signalé sur la page de
+   connexion : le cadre garde TOUJOURS la même hauteur/position, que le
+   formulaire soit court (connexion) ou long (inscription) ; seul le
+   pied de page se rapproche ou s'éloigne du formulaire, jamais le
+   contraire. */
+.household-root__auth-card {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 380px;
+  min-height: 100vh;
+  padding: 32px 24px 20px;
+  box-sizing: border-box;
+}
+
+.household-root__auth-top {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.household-root__auth-footer {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+  margin: 20px 0 0;
+}
+
+.household-root__auth-footer-link {
+  color: var(--color-emerald);
+  font-weight: 700;
+  text-decoration: none;
+}
+.household-root__auth-footer-link:hover {
+  text-decoration: underline;
+}
+
+.household-root__auth-header {
+  text-align: center;
+}
+
+.household-root__auth-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, var(--color-emerald), var(--color-teal) 55%, var(--color-lime));
+  box-shadow: 0 10px 22px rgba(16, 185, 129, 0.3);
+  margin-bottom: 8px;
+  color: var(--text-on-accent);
+}
+
+.household-root__auth-title {
+  font-size: 26px;
+  font-weight: 900;
+  color: var(--text-primary);
+  margin: 0 0 4px;
+  letter-spacing: -0.02em;
+}
+
+.household-root__auth-subtitle {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-emerald);
+  margin: 0;
+}
+
+.household-root__auth-tabs {
+  display: flex;
+  gap: 6px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 6px;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+.household-root__auth-tab {
+  flex: 1;
+  border: none;
+  background: none;
+  padding: 11px 14px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-muted);
+  cursor: pointer;
+  min-height: 40px;
+  transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+.household-root__auth-tab:hover {
+  color: var(--text-primary);
+}
+
+.household-root__auth-tab--active {
+  background: linear-gradient(90deg, var(--color-emerald), var(--color-teal));
+  color: var(--text-on-accent);
+  font-weight: 800;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+}
+.household-root__auth-tab--active:hover {
+  color: var(--text-on-accent);
+}
+
+.household-root__loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  font-size: 14px;
+  color: var(--text-muted);
+  background: var(--bg-app);
+}

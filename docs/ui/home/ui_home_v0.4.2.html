@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="fr" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Chez nous - Accueil</title>
+  
+  <!-- Tailwind CSS & FontAwesome Icons -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    /* Masquer la barre de défilement tout en gardant le scroll fonctionnel */
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+</head>
+
+<body class="bg-slate-950 text-slate-100 min-h-screen flex justify-center items-center font-sans antialiased selection:bg-emerald-500 selection:text-white">
+
+  <!-- ================================================================= -->
+  <!-- CONTENEUR MOBILE                                                  -->
+  <!-- ================================================================= -->
+  <div class="w-full max-w-md h-screen sm:h-[820px] sm:min-h-[760px] sm:rounded-[40px] bg-slate-900/90 border border-slate-800/80 shadow-2xl relative overflow-hidden flex flex-col justify-between p-6 md:p-8 backdrop-blur-2xl">
+
+    <!-- HALOS DE LUMIÈRE DÉCORATIFS (Glow Vert Émeraude / Lime) -->
+    <div class="absolute -top-24 -left-24 w-72 h-72 bg-emerald-500/20 rounded-full blur-[90px] pointer-events-none"></div>
+    <div class="absolute -bottom-24 -right-24 w-72 h-72 bg-lime-400/15 rounded-full blur-[90px] pointer-events-none"></div>
+
+    <!-- =============================================================== -->
+    <!-- HEADER FIXE : PROFIL, SÉLECTEUR FOYER, STREAK, SCORE, NOTIFS    -->
+    <!-- =============================================================== -->
+    <header class="relative z-30 pb-4 pt-1 border-b border-slate-800/50 flex items-center justify-between shrink-0">
+      
+      <!-- Gauche : Avatar (Bouton Profil) + Sélecteur Foyer Déroulant -->
+      <div class="flex items-center gap-3">
+        <!-- Avatar / Bouton vers Profil -->
+        <!--
+        <a href="profile.html" title="Voir mon profil" class="relative group block">
+          <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-slate-950 font-black text-base shadow-md shadow-emerald-500/20 group-hover:scale-105 transition transform">
+            A
+          </div>
+          <span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-400 border-2 border-slate-900 rounded-full"></span>
+        </a>
+        -->
+        <!-- Sélecteur de Foyer (Menu déroulant) -->
+        <div class="relative">
+
+          <button id="household-dropdown-btn" onclick="toggleHouseholdMenu()" class="flex items-center gap-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-3.5 py-2 rounded-2xl shadow-md shadow-emerald-200 hover:brightness-105 transition">
+            <div class="w-7 h-7 rounded-xl bg-white/20 flex items-center justify-center text-sm">
+              <i class="fa-solid fa-house-chimney"></i>
+            </div>
+            <div class="text-left">
+              <p class="text-[9px] uppercase tracking-wider font-extrabold text-emerald-100 leading-none">Foyer actif</p>
+              <span class="text-xs font-bold flex items-center gap-1.5">
+            Super Coloc
+                <i class="fa-solid fa-chevron-down text-[9px] opacity-80"></i>
+              </span>
+            </div>
+          </button>
+
+          <!-- Menu Déroulant Foyers -->
+          <div id="household-menu" class="hidden absolute left-0 mt-2 w-48 bg-slate-950 border border-slate-800 rounded-2xl shadow-xl p-2 z-50 backdrop-blur-xl">
+            <div class="text-[9px] font-extrabold text-slate-500 uppercase px-2 py-1">Vos foyers</div>
+            
+            <button class="w-full text-left px-3 py-2 rounded-xl bg-emerald-500/10 text-emerald-400 font-bold text-xs flex items-center justify-between">
+              <span>Super Coloc</span>
+              <i class="fa-solid fa-check text-xs"></i>
+            </button>
+            
+            <button class="w-full text-left px-3 py-2 rounded-xl text-slate-300 hover:bg-slate-900 font-semibold text-xs transition">
+              Coloc Vacances
+            </button>
+            
+            <div class="border-t border-slate-800 my-1"></div>
+            
+            <button class="w-full text-left px-3 py-2 rounded-xl text-emerald-400 hover:bg-slate-900 font-bold text-xs flex items-center gap-2 transition">
+              <i class="fa-solid fa-plus text-xs"></i>
+              <span>Ajouter un foyer</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Droite : Streak 🔥 + Score Saphir 💎 + Notifications 🔔 -->
+      <div class="flex items-center gap-2">
+        
+        <!-- Streak Ménage (Flamme) -->
+        <div class="flex items-center gap-1.5 bg-amber-500/10 border border-amber-500/30 px-2.5 py-1.5 rounded-xl text-amber-400 font-black text-xs shadow-sm">
+          <i class="fa-solid fa-fire text-amber-500 animate-pulse"></i>
+          <span>5</span>
+        </div>
+
+        <!-- Score Ménage (Saphir Bleu) -->
+        <div class="flex items-center gap-1.5 bg-sky-500/10 border border-sky-500/30 px-2.5 py-1.5 rounded-xl text-sky-400 font-black text-xs shadow-sm">
+          <i class="fa-solid fa-gem text-sky-400"></i>
+          <span>320</span>
+        </div>
+
+        <!-- Cloche de Notifications -->
+        <button type="button" class="relative w-9 h-9 rounded-xl bg-slate-950/60 border border-slate-800/80 flex items-center justify-center text-slate-300 hover:text-white hover:border-emerald-500/50 transition">
+          <i class="fa-regular fa-bell text-xs"></i>
+          <span class="absolute top-2 right-2 w-2 h-2 bg-lime-400 rounded-full"></span>
+        </button>
+
+      </div>
+
+    </header>
+
+    <!-- =============================================================== -->
+    <!-- CŒUR DE L'APP (ZONE SCROLLABLE CONSERVÉE TEL QUEL)              -->
+    <!-- =============================================================== -->
+    <main class="space-y-6 relative z-10 overflow-y-auto no-scrollbar my-auto py-4 pr-0.5 flex-1">
+
+      <!-- BANNIÈRE VUE ISOMÉTRIQUE / PLAN DU FOYER -->
+      <div class="relative rounded-3xl bg-slate-950/70 border border-slate-800/90 p-5 overflow-visible group shadow-inner">
+        <div class="absolute -right-8 -bottom-8 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl group-hover:bg-emerald-500/20 transition"></div>
+        
+        <div class="relative z-10 flex flex-col justify-start gap-3 min-h-[9rem]">
+          <div class="flex justify-between items-start">
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[10px] font-bold">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> 3 pièces actives
+            </span>
+            <i class="fa-solid fa-cubes text-slate-700 text-3xl"></i>
+          </div>
+
+        <!-- Interface vue top/down des pièces avec des taches à faire -->
+        <div class="bg-white/10 backdrop-blur-md rounded-2xl p-4 my-2 border border-white/20 flex flex-col items-start justify-start gap-3 w-full relative z-10">
+          <div class="flex flex-wrap items-start gap-2 w-full">
+            <span class="bg-emerald-400 text-slate-900 font-extrabold text-xs px-3 py-1.5 rounded-xl shadow-lg flex items-center gap-1.5">
+              <i class="fa-solid fa-circle-check text-emerald-800"></i> Cuisine (Propre)
+            </span>
+            <span class="bg-amber-300 text-slate-900 font-extrabold text-xs px-3 py-1.5 rounded-xl shadow-lg flex items-center gap-1.5">
+              <i class="fa-solid fa-clock text-amber-800"></i> Salon (1 Tâche)
+            </span>
+            <span class="bg-rose-400 text-white font-extrabold text-xs px-3 py-1.5 rounded-xl shadow-lg flex items-center gap-1.5">
+              <i class="fa-solid fa-triangle-exclamation text-rose-100"></i> SDB (À faire)
+            </span>
+          </div>
+          <p class="text-[11px] text-indigo-100 font-medium flex items-center gap-1 w-full">
+            <i class="fa-solid fa-hand-pointer text-[10px] animate-pulse"></i> Toucher une pièce pour interagir
+          </p>
+
+           <!-- Propreté Globale -->
+        <div class="mt-1 relative z-10 w-full" style="display:block; clear:both;">
+          <div class="flex justify-between items-center text-xs font-bold mb-1">
+            <span class="text-indigo-100">Propreté globale</span>
+            <span class="text-emerald-300 bg-emerald-950/40 px-2 py-0.5 rounded-md">78%</span>
+          </div>
+          <div
+            role="progressbar"
+            aria-valuemin="0"
+            aria-valuemax="100"
+            aria-valuenow="78"
+            style="width:100%; height:12px; border-radius:999px; border:1px solid rgba(255,255,255,0.16); background:rgba(15,23,42,0.95); padding:2px; box-sizing:border-box; overflow:hidden; display:block; position:relative; box-shadow:inset 0 1px 2px rgba(255,255,255,0.08);"
+          >
+            <div style="width:78%; height:100%; border-radius:999px; background:linear-gradient(90deg, #86efac 0%, #34d399 100%); display:block; position:relative; z-index:1;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+      <!-- RACCOURCIS / RÉCAPITULATIF DES MODULES -->
+      <div class="space-y-3">
+        <div class="flex justify-between items-center px-1">
+          <h3 class="text-xs font-extrabold text-slate-400 uppercase tracking-wider">Aperçu rapide</h3>
+          <a href="#" class="text-[11px] font-bold text-emerald-400 hover:underline">Tout voir</a>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+
+          <!-- Carte Tâches -->
+          <div class="p-4 rounded-2xl bg-slate-950/60 border border-slate-800/80 space-y-3 hover:border-emerald-500/40 transition">
+            <div class="flex justify-between items-center">
+              <div class="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center">
+                <i class="fa-solid fa-list-check text-xs"></i>
+              </div>
+              <span class="text-xs font-black text-emerald-400">3 du jour</span>
+            </div>
+            <div>
+              <p class="text-xs font-bold text-white">Tâches ménagères</p>
+              <p class="text-[10px] text-slate-400 mt-0.5">Prochaine : Vaisselle</p>
+            </div>
+          </div>
+
+          <!-- Carte Courses -->
+          <div class="p-4 rounded-2xl bg-slate-950/60 border border-slate-800/80 space-y-3 hover:border-emerald-500/40 transition">
+            <div class="flex justify-between items-center">
+              <div class="w-8 h-8 rounded-lg bg-teal-500/10 border border-teal-500/20 text-teal-400 flex items-center justify-center">
+                <i class="fa-solid fa-cart-shopping text-xs"></i>
+              </div>
+              <span class="text-xs font-black text-teal-400">5 articles</span>
+            </div>
+            <div>
+              <p class="text-xs font-bold text-white">Liste de courses</p>
+              <p class="text-[10px] text-slate-400 mt-0.5">Dernier ajout : Lait</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- SECTION : MEMBRES DU FOYER -->
+      <div class="space-y-3">
+        <h3 class="text-xs font-extrabold text-slate-400 uppercase tracking-wider px-1">Membres du foyer</h3>
+
+        <div class="p-3.5 rounded-2xl bg-slate-950/60 border border-slate-800/80 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="flex -space-x-2">
+              <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 text-slate-950 font-bold text-xs flex items-center justify-center border-2 border-slate-900">A</div>
+              <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-teal-400 to-lime-400 text-slate-950 font-bold text-xs flex items-center justify-center border-2 border-slate-900">M</div>
+            </div>
+            <div>
+              <p class="text-xs font-bold text-white">Alex & Marie</p>
+              <p class="text-[10px] text-emerald-400 font-semibold">Actifs actuellement</p>
+            </div>
+          </div>
+
+          <button type="button" class="w-8 h-8 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 hover:text-white transition">
+            <i class="fa-solid fa-plus text-xs"></i>
+          </button>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- =============================================================== -->
+    <!-- FOOTER FIXE : 6 ONGLETS DE NAVIGATION                           -->
+    <!-- =============================================================== -->
+    <footer class="relative z-30 pt-3 pb-1 shrink-0">
+      <nav class="bg-slate-950/95 border border-slate-800/80 backdrop-blur-xl p-1.5 rounded-2xl flex justify-between items-center shadow-2xl">
+        
+        <!-- 1. Accueil (Actif) -->
+        <a href="home.html" class="flex-1 flex flex-col items-center gap-1 py-1.5 text-emerald-400">
+          <i class="fa-solid fa-house text-base"></i>
+          <span class="text-[9px] font-bold">Accueil</span>
+        </a>
+
+        <!-- 2. Plan -->
+        <a href="#" class="flex-1 flex flex-col items-center gap-1 py-1.5 text-slate-500 hover:text-slate-200 transition">
+          <i class="fa-solid fa-cubes text-base"></i>
+          <span class="text-[9px] font-bold">Plan</span>
+        </a>
+
+        <!-- 3. Tâches -->
+        <a href="#" class="flex-1 flex flex-col items-center gap-1 py-1.5 text-slate-500 hover:text-slate-200 transition">
+          <i class="fa-solid fa-check-double text-base"></i>
+          <span class="text-[9px] font-bold">Tâches</span>
+        </a>
+
+        <!-- 4. Calendrier -->
+        <a href="#" class="flex-1 flex flex-col items-center gap-1 py-1.5 text-slate-500 hover:text-slate-200 transition">
+          <i class="fa-solid fa-calendar-days text-base"></i>
+          <span class="text-[9px] font-bold">Calendrier</span>
+        </a>
+
+        <!-- 5. Liste de Courses (Nouveau) -->
+        <a href="#" class="flex-1 flex flex-col items-center gap-1 py-1.5 text-slate-500 hover:text-slate-200 transition">
+          <i class="fa-solid fa-rectangle-list text-base"></i>
+          <span class="text-[9px] font-bold">Courses</span>
+        </a>
+
+        <!-- 6. Vie de foyer (Nouveau nom + icône multi-personnes) -->
+        <a href="#" class="flex-1 flex flex-col items-center gap-1 py-1.5 text-slate-500 hover:text-slate-200 transition">
+          <i class="fa-solid fa-users text-base"></i>
+          <span class="text-[9px] font-bold">Vie du foyer</span>
+        </a>
+
+      </nav>
+    </footer>
+
+  </div>
+
+  <!-- SCRIPT INTERACTION MENU DÉROULANT FOYER -->
+  <script>
+    function toggleHouseholdMenu() {
+      const menu = document.getElementById('household-menu');
+      menu.classList.toggle('hidden');
+    }
+
+    // Fermer le menu au clic en dehors
+    document.addEventListener('click', function(event) {
+      const btn = document.getElementById('household-dropdown-btn');
+      const menu = document.getElementById('household-menu');
+      if (btn && menu && !btn.contains(event.target) && !menu.contains(event.target)) {
+        menu.classList.add('hidden');
+      }
+    });
+  </script>
+
+</body>
+</html>

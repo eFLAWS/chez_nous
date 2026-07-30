@@ -53,6 +53,16 @@ const routes = [
 
   { method: "POST", pattern: /^\/api\/auth\/signup$/, handler: (req, body) => dataService.signup(body) },
   { method: "POST", pattern: /^\/api\/auth\/login$/, handler: (req, body) => dataService.login(body) },
+  {
+    method: "POST",
+    pattern: /^\/api\/auth\/password-reset\/request$/,
+    handler: (req, body) => dataService.requestPasswordReset(body.email),
+  },
+  {
+    method: "POST",
+    pattern: /^\/api\/auth\/password-reset\/confirm$/,
+    handler: (req, body) => dataService.resetPassword(body),
+  },
 
   { method: "POST", pattern: /^\/api\/invitations$/, handler: (req, body) => dataService.inviteUser(body) },
   {
@@ -80,18 +90,71 @@ const routes = [
     handler: (req, body, m) => dataService.claimOccupant(m[1], body.userId),
   },
 
+  // Multi-foyers (nouveau, voir la conversation) : un compte existant
+  // peut créer un foyer SUPPLÉMENTAIRE (pas juste celui de l'inscription),
+  // et lister TOUS les foyers dont il est occupant.
+  { method: "POST", pattern: /^\/api\/households$/, handler: (req, body) => dataService.createHouseholdForUser(body) },
+  {
+    method: "GET",
+    pattern: /^\/api\/households$/,
+    handler: (req, body, m, query) => dataService.listHouseholdsForUser(query.get("userId")),
+  },
+  {
+    method: "POST",
+    pattern: /^\/api\/households\/([^/]+)\/leave$/,
+    handler: (req, body, m) => dataService.leaveHousehold(m[1], body.userId),
+  },
+  {
+    method: "POST",
+    pattern: /^\/api\/households\/([^/]+)\/transfer-ownership$/,
+    handler: (req, body, m) => dataService.transferOwnership(m[1], body.fromUserId, body.toUserId),
+  },
+  {
+    method: "DELETE",
+    pattern: /^\/api\/households\/([^/]+)$/,
+    handler: (req, body, m, query) => dataService.deleteHousehold(m[1], query.get("userId")),
+  },
+
   { method: "GET", pattern: /^\/api\/floors$/, handler: (req, body, m, query) => dataService.listFloors(query.get("householdId")) },
   { method: "POST", pattern: /^\/api\/floors$/, handler: (req, body) => dataService.createFloor(body) },
-  { method: "DELETE", pattern: /^\/api\/floors\/([^/]+)$/, handler: (req, body, m) => dataService.deleteFloor(m[1]) },
+  {
+    method: "PATCH",
+    pattern: /^\/api\/floors\/([^/]+)\/layout$/,
+    handler: (req, body, m) => {
+      const { userId, ...patch } = body || {};
+      return dataService.updateFloorLayout(m[1], patch, userId);
+    },
+  },
+  {
+    method: "DELETE",
+    pattern: /^\/api\/floors\/([^/]+)$/,
+    handler: (req, body, m, query) => dataService.deleteFloor(m[1], query.get("userId")),
+  },
+
+  // Portes (nouveau, voir la conversation).
+  { method: "GET", pattern: /^\/api\/doors$/, handler: (req, body, m, query) => dataService.listDoors(query.get("floorId")) },
+  { method: "POST", pattern: /^\/api\/doors$/, handler: (req, body) => dataService.createDoor(body) },
+  {
+    method: "DELETE",
+    pattern: /^\/api\/doors\/([^/]+)$/,
+    handler: (req, body, m, query) => dataService.deleteDoor(m[1], query.get("userId")),
+  },
 
   { method: "GET", pattern: /^\/api\/rooms$/, handler: (req, body, m, query) => dataService.listRooms(query.get("householdId")) },
   { method: "POST", pattern: /^\/api\/rooms$/, handler: (req, body) => dataService.createRoom(body) },
   {
     method: "PATCH",
     pattern: /^\/api\/rooms\/([^/]+)\/position$/,
-    handler: (req, body, m) => dataService.updateRoomPosition(m[1], body),
+    handler: (req, body, m) => {
+      const { userId, ...patch } = body || {};
+      return dataService.updateRoomPosition(m[1], patch, userId);
+    },
   },
-  { method: "DELETE", pattern: /^\/api\/rooms\/([^/]+)$/, handler: (req, body, m) => dataService.deleteRoom(m[1]) },
+  {
+    method: "DELETE",
+    pattern: /^\/api\/rooms\/([^/]+)$/,
+    handler: (req, body, m, query) => dataService.deleteRoom(m[1], query.get("userId")),
+  },
 ];
 
 const server = http.createServer(async (req, res) => {

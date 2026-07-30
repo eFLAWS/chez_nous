@@ -12,10 +12,10 @@
 // au-delà de ta propre machine.
 import { useState, useEffect } from "react";
 import { api } from "./api";
-import SignupForm from "./components/auth/SignupForm";
-import LoginForm from "./components/auth/LoginForm";
-import ForgotPasswordForm from "./components/auth/ForgotPasswordForm";
-import AcceptInvitationForm from "./components/auth/AcceptInvitationForm";
+import SignupForm from "./features/auth/SignupForm";
+import LoginForm from "./features/auth/LoginForm";
+import ForgotPasswordForm from "./features/auth/ForgotPasswordForm";
+import AcceptInvitationForm from "./features/auth/AcceptInvitationForm";
 import AppShell from "./components/layout/AppShell";
 
 const SESSION_KEY = "chez-nous-session";
