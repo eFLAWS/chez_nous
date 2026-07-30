@@ -2453,3 +2453,4 @@ frontend). Audit complet des imports sans problème.
   (inviter, créer des occupants, etc.).
 - **La grille du plan 2D est virtuelle**, pas liée à une surface réelle du
   logement (largeur de mise en page arbitraire pour le retour à la ligne).
+
