@@ -7,7 +7,7 @@
 // d'inscription (Créer un foyer / Rejoindre un foyer) est une étape
 // séparée de la feuille de route (point 4).
 import { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 
 export default function LoginPage() {
@@ -74,6 +74,10 @@ export default function LoginPage() {
         <button type="submit" disabled={submitting}>
           {submitting ? 'Connexion…' : 'Se connecter'}
         </button>
+
+        <p className="login-page__switch">
+          Pas encore de compte ? <Link to="/signup">S'inscrire</Link>
+        </p>
       </form>
     </div>
   );

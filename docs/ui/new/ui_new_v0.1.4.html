@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="fr" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Chez nous - Créer un logement</title>
+  
+  <!-- Tailwind CSS & FontAwesome Icons -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+</head>
+
+<body class="bg-slate-950 text-slate-100 min-h-screen flex justify-center items-center font-sans antialiased selection:bg-emerald-500 selection:text-white p-0 sm:p-4">
+
+  <!-- CONTENEUR PRINCIPAL MOBILE -->
+  <div class="w-full max-w-md h-screen sm:h-[820px] sm:min-h-[760px] sm:rounded-[40px] bg-slate-900/90 border border-slate-800/80 shadow-2xl relative overflow-hidden flex flex-col justify-between p-6 md:p-8 backdrop-blur-2xl">
+
+    <!-- HALOS DE LUMIÈRE DÉCORATIFS -->
+    <div class="absolute -top-24 -left-24 w-72 h-72 bg-emerald-500/15 rounded-full blur-[90px] pointer-events-none"></div>
+    <div class="absolute -bottom-24 -right-24 w-72 h-72 bg-lime-400/10 rounded-full blur-[90px] pointer-events-none"></div>
+
+    <!-- EN-TÊTE : PROFIL & DÉCONNEXION -->
+    <header class="flex items-center justify-between relative z-10 pt-1 shrink-0">
+      <div class="flex items-center gap-2.5 bg-slate-950/60 border border-slate-800/80 px-3 py-1.5 rounded-full">
+        <div class="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xs font-bold">
+          A
+        </div>
+        <span class="text-xs font-semibold text-slate-300">admin</span>
+      </div>
+
+      <button type="button" class="flex items-center gap-2 text-xs font-bold text-slate-400 hover:text-rose-400 transition-colors duration-200 bg-slate-950/40 hover:bg-slate-950/80 px-3 py-1.5 rounded-full border border-slate-800/50">
+        <i class="fa-solid fa-arrow-right-from-bracket text-xs"></i>
+        <span>Déconnexion</span>
+      </button>
+    </header>
+
+    <!-- ZONE DÉFILANTE (TITRE + ACCORDÉONS) -->
+    <main class="relative z-10 overflow-y-auto no-scrollbar my-auto py-4 space-y-5 flex-1 flex flex-col justify-center">
+      
+      <!-- TITRE & SOUS-TITRE -->
+      <div class="text-center space-y-2">
+        <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-slate-950 border border-slate-800 text-emerald-400 shadow-inner mb-1">
+          <i class="fa-solid fa-house-user text-2xl"></i>
+        </div>
+        <h1 class="text-2xl font-black text-white tracking-tight">Créer un logement</h1>
+        <p class="text-xs text-slate-400 max-w-[260px] mx-auto font-medium leading-relaxed">
+          Vous n'avez aucun foyer actif pour le moment. Créez-en un ou rejoignez-en un !
+        </p>
+      </div>
+
+      <!-- ACCORDÉON DES 3 VRAIES OPTIONS -->
+      <div class="space-y-3">
+
+        <!-- OPTION 1 : CRÉER UN LOGEMENT -->
+        <div id="card-create" class="option-card rounded-2xl border border-slate-800/80 bg-slate-950/50 transition-all duration-200 overflow-hidden">
+          <button type="button" onclick="selectOption('create')" class="w-full p-4 flex items-center justify-between text-left transition-colors">
+            <div class="flex items-center gap-3.5">
+              <div id="icon-create" class="option-icon w-11 h-11 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 flex items-center justify-center transition-all duration-200">
+                <i class="fa-solid fa-plus text-base"></i>
+              </div>
+              <div>
+                <h3 class="text-sm font-extrabold text-white">Créer un logement</h3>
+                <p class="text-[10px] text-slate-500 font-medium">Partir d'une feuille blanche</p>
+              </div>
+            </div>
+            <i id="chevron-create" class="fa-solid fa-chevron-down text-slate-500 text-xs transition-transform duration-200"></i>
+          </button>
+
+          <!-- DÉTAILS DÉROULANTS -->
+          <div id="details-create" class="hidden px-4 pb-4 pt-1 border-t border-slate-800/50 space-y-3">
+            <p class="text-[11px] text-slate-400">Commencez par nommer votre logement pour ouvrir l'éditeur de plan.</p>
+            <input type="text" placeholder="Ex: Appartement Paris 11" class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs font-semibold text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500">
+          </div>
+        </div>
+
+        <!-- OPTION 2 : SCANNER UN PLAN -->
+        <div id="card-scan" class="option-card rounded-2xl border border-slate-800/80 bg-slate-950/50 transition-all duration-200 overflow-hidden">
+          <button type="button" onclick="selectOption('scan')" class="w-full p-4 flex items-center justify-between text-left transition-colors">
+            <div class="flex items-center gap-3.5">
+              <div id="icon-scan" class="option-icon w-11 h-11 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 flex items-center justify-center transition-all duration-200">
+                <i class="fa-solid fa-expand text-base"></i>
+              </div>
+              <div>
+                <div class="flex items-center gap-2">
+                  <h3 class="text-sm font-extrabold text-white">Scanner un plan</h3>
+                  <span class="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Bientôt</span>
+                </div>
+                <p class="text-[10px] text-slate-500 font-medium">Générer depuis une photo / croquis</p>
+              </div>
+            </div>
+            <i id="chevron-scan" class="fa-solid fa-chevron-down text-slate-500 text-xs transition-transform duration-200"></i>
+          </button>
+
+          <!-- DÉTAILS DÉROULANTS -->
+          <div id="details-scan" class="hidden px-4 pb-4 pt-1 border-t border-slate-800/50 space-y-3">
+            <p class="text-[11px] text-slate-400">Nommez votre logement et importez une photo de votre croquis papier.</p>
+            <input type="text" placeholder="Ex: Appartement Paris 11" class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs font-semibold text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500">
+            
+            <div class="border-2 border-dashed border-slate-800 rounded-xl p-4 text-center cursor-pointer hover:border-emerald-500/50 transition">
+              <i class="fa-solid fa-cloud-arrow-up text-slate-500 text-lg mb-1"></i>
+              <p class="text-[11px] font-semibold text-slate-400">Glisser-déposer votre image ici</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- OPTION 3 : REJOINDRE UN LOGEMENT -->
+        <div id="card-join" class="option-card rounded-2xl border border-slate-800/80 bg-slate-950/50 transition-all duration-200 overflow-hidden">
+          <button type="button" onclick="selectOption('join')" class="w-full p-4 flex items-center justify-between text-left transition-colors">
+            <div class="flex items-center gap-3.5">
+              <div id="icon-join" class="option-icon w-11 h-11 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 flex items-center justify-center transition-all duration-200">
+                <i class="fa-solid fa-link text-base"></i>
+              </div>
+              <div>
+                <div class="flex items-center gap-2">
+                  <h3 class="text-sm font-extrabold text-white">Rejoindre un logement</h3>
+                  <span class="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Bientôt</span>
+                </div>
+                <p class="text-[10px] text-slate-500 font-medium">Via un code ou lien d'invitation</p>
+              </div>
+            </div>
+            <i id="chevron-join" class="fa-solid fa-chevron-down text-slate-500 text-xs transition-transform duration-200"></i>
+          </button>
+
+          <!-- DÉTAILS DÉROULANTS -->
+          <div id="details-join" class="hidden px-4 pb-4 pt-1 border-t border-slate-800/50 space-y-3">
+            <p class="text-[11px] text-slate-400">Saisissez le code à 6 caractères partagé par un membre de votre foyer.</p>
+            <input type="text" placeholder="Ex: ABC-123" class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs font-mono font-bold text-center tracking-widest text-emerald-400 uppercase focus:outline-none focus:border-emerald-500">
+          </div>
+        </div>
+
+      </div>
+
+    </main>
+
+    <!-- PIED DE PAGE : BOUTONS DE ACTION -->
+    <footer class="space-y-3 relative z-10 pt-2 shrink-0">
+
+      <!-- BOUTON CONTINUER (DÉSACTIVÉ PAR DÉFAUT) -->
+      <button id="btn-continue" disabled class="w-full py-3.5 bg-slate-800 text-slate-500 font-extrabold text-xs rounded-2xl shadow-none transition duration-200 border border-slate-800 flex items-center justify-center gap-2 cursor-not-allowed">
+        <span>Continuer</span>
+        <i class="fa-solid fa-arrow-right text-xs"></i>
+      </button>
+
+      <!-- OPTION ÉCHAPPEMENT : FAIRE PLUS TARD -->
+      <div class="text-center pt-1">
+        <a href="home.html" class="inline-flex items-center gap-1.5 text-xs font-extrabold text-slate-400 hover:text-emerald-400 transition-colors py-1 px-3 rounded-xl hover:bg-slate-950/60">
+          <span>Faire plus tard</span>
+          <span class="text-[10px] text-slate-500 font-normal">(Découvrir l'application)</span>
+          <i class="fa-solid fa-chevron-right text-[10px]"></i>
+        </a>
+      </div>
+
+      <!-- LIEN D'AIDE -->
+      <div class="text-center pt-1">
+        <p class="text-[11px] text-slate-600 font-medium">
+          Besoin d'aide ? <a href="#" class="text-emerald-400/80 hover:text-emerald-400 hover:underline font-bold transition-colors">Consulter le guide</a>
+        </p>
+      </div>
+
+    </footer>
+
+  </div>
+
+  <!-- SCRIPT DE GESTION DES OPTIONS -->
+  <script>
+    let currentSelection = null;
+
+    function selectOption(optionId) {
+      const options = ['create', 'scan', 'join'];
+
+      if (currentSelection === optionId) {
+        currentSelection = null;
+      } else {
+        currentSelection = optionId;
+      }
+
+      options.forEach(id => {
+        const card = document.getElementById(`card-${id}`);
+        const icon = document.getElementById(`icon-${id}`);
+        const chevron = document.getElementById(`chevron-${id}`);
+        const details = document.getElementById(`details-${id}`);
+
+        if (id === currentSelection) {
+          card.className = "option-card rounded-2xl border border-emerald-500/50 bg-emerald-500/5 shadow-lg shadow-emerald-500/10 transition-all duration-200 overflow-hidden";
+          icon.className = "option-icon w-11 h-11 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 text-slate-950 font-black shadow-md shadow-emerald-500/20 flex items-center justify-center transition-all duration-200";
+          chevron.className = "fa-solid fa-chevron-up text-emerald-400 text-xs transition-transform duration-200";
+          details.classList.remove('hidden');
+        } else {
+          card.className = "option-card rounded-2xl border border-slate-800/80 bg-slate-950/50 transition-all duration-200 overflow-hidden";
+          icon.className = "option-icon w-11 h-11 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 flex items-center justify-center transition-all duration-200";
+          chevron.className = "fa-solid fa-chevron-down text-slate-500 text-xs transition-transform duration-200";
+          details.classList.add('hidden');
+        }
+      });
+
+      const btnContinue = document.getElementById('btn-continue');
+      if (currentSelection) {
+        btnContinue.disabled = false;
+        btnContinue.className = "w-full py-3.5 bg-gradient-to-r from-emerald-400 via-teal-300 to-lime-400 hover:brightness-110 active:scale-[0.98] text-slate-950 font-black text-xs rounded-2xl shadow-lg shadow-emerald-500/20 transition duration-200 border border-emerald-300/50 flex items-center justify-center gap-2 cursor-pointer";
+      } else {
+        btnContinue.disabled = true;
+        btnContinue.className = "w-full py-3.5 bg-slate-800 text-slate-500 font-extrabold text-xs rounded-2xl shadow-none transition duration-200 border border-slate-800 flex items-center justify-center gap-2 cursor-not-allowed";
+      }
+    }
+  </script>
+
+</body>
+</html>

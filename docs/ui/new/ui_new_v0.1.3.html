@@ -120,6 +120,26 @@
         </div>
       </div>
 
+      <!-- OPTION 4 : CONTINUER SANS CREER -->
+      <div id="card-nojoin" class="option-card group rounded-2xl border border-slate-800/60 bg-slate-950/10 text-slate-500/70 transition-all duration-200 overflow-hidden">
+        <button onclick="selectOption('nojoin')" class="w-full p-4 flex items-center justify-between text-left transition-colors opacity-30 group-hover:opacity-100 group-focus-within:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 text-slate-400 hover:text-slate-200">
+          <div class="flex items-center gap-3.5">
+            <div id="icon-nojoin" class="option-icon w-11 h-11 rounded-xl bg-slate-900/50 border border-slate-800 text-slate-500/80 flex items-center justify-center transition-all duration-200">
+              <i class="fa-solid fa-xmark text-base"></i>
+            </div>
+            <div>
+              <h3 class="text-sm font-extrabold text-slate-300">Faire plus tard</h3>
+            </div>
+          </div>
+          <i id="chevron-nojoin" class="fa-solid fa-chevron-down text-slate-500 text-xs transition-transform duration-200"></i>
+        </button>
+
+        <!-- DÉTAILS DÉROULANTS -->
+        <div id="details-nojoin" class="hidden px-4 pb-4 pt-1 border-t border-slate-800/50 space-y-3">
+          <p class="text-[11px] text-slate-400">Continuez sans créer ou rejoindre de logement pour l'instant.</p>
+        </div>
+      </div>
+
     </div>
 
     <!-- BOUTON CONTINUER & FOOTER -->
@@ -147,7 +167,7 @@
     let currentSelection = null;
 
     function selectOption(optionId) {
-      const options = ['create', 'scan', 'join'];
+      const options = ['create', 'scan', 'join', 'nojoin'];
 
       if (currentSelection === optionId) {
         currentSelection = null;
@@ -166,6 +186,11 @@
           icon.className = "option-icon w-11 h-11 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 text-slate-950 font-black shadow-md shadow-emerald-500/20 flex items-center justify-center transition-all duration-200";
           chevron.className = "fa-solid fa-chevron-up text-emerald-400 text-xs transition-transform duration-200";
           details.classList.remove('hidden');
+        } else if (id === 'nojoin') {
+          card.className = "option-card rounded-2xl border border-slate-800/70 bg-slate-950/15 text-slate-500/80 transition-all duration-200 overflow-hidden";
+          icon.className = "option-icon w-11 h-11 rounded-xl bg-slate-900/40 border border-slate-800 text-slate-500/80 flex items-center justify-center transition-all duration-200";
+          chevron.className = "fa-solid fa-chevron-down text-slate-500 text-xs transition-transform duration-200";
+          details.classList.add('hidden');
         } else {
           card.className = "option-card rounded-2xl border border-slate-800/80 bg-slate-950/50 transition-all duration-200 overflow-hidden";
           icon.className = "option-icon w-11 h-11 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 flex items-center justify-center transition-all duration-200";
