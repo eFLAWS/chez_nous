@@ -9,14 +9,11 @@ import "./assets/task-overview.css";
 import "./assets/room-3d.css";
 
 // -----------------------------------------------------------------------
-// AppRouter gère maintenant le point d'entrée : /login (Supabase Auth,
-// AuthProvider + LoginPage) puis, une fois connecté, HouseholdRoot
-// (inchangé) derrière RequireAuth. Voir AppRouter.jsx pour le détail
-// des routes, et sa note sur l'état transitoire (double écran de
-// connexion tant que HouseholdRoot garde son auth interne).
-//
-// Ancien montage direct de <HouseholdRoot /> retiré d'ici — l'historique
-// Git garde une trace de l'ancienne version si besoin d'y revenir.
+// AppRouter gère le point d'entrée : /login, /signup (Supabase Auth),
+// /onboarding (création de foyer), /households + /households/:id (le
+// vrai dashboard Supabase). Depuis l'étape 4 du routing, HouseholdRoot
+// n'est plus monté du tout — voir AppRouter.jsx pour le détail des
+// routes.
 // -----------------------------------------------------------------------
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
