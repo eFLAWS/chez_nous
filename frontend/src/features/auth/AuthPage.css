@@ -1,0 +1,135 @@
+/* AuthPage.css — commun à LoginPage.jsx et SignupPage.jsx
+   Palette officielle : docs/ui/code_couelur.md
+   Maquette de référence : docs/ui/login/ui_login_v.0.1.2.html */
+.login-page {
+  --bg-app: #090d16;
+  --bg-card: rgba(15, 23, 42, 0.9);
+  --bg-input: rgba(2, 6, 23, 0.6);
+  --border-color: #1e293b;
+  --color-emerald: #10b981;
+  --color-teal: #14b8a6;
+  --color-lime: #84cc16;
+  --text-primary: #ffffff;
+  --text-muted: #94a3b8;
+  --text-on-accent: #090d16;
+
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-app);
+  padding: 1.5rem;
+}
+
+.login-page__form {
+  width: 100%;
+  max-width: 26rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 1.75rem;
+  padding: 2rem 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  position: relative;
+  overflow: hidden;
+}
+
+.login-page__form::before {
+  content: '';
+  position: absolute;
+  top: -6rem;
+  left: -6rem;
+  width: 18rem;
+  height: 18rem;
+  background: rgba(16, 185, 129, 0.15);
+  border-radius: 999px;
+  filter: blur(90px);
+  pointer-events: none;
+}
+
+.login-page__form h1 {
+  text-align: center;
+  font-size: 1.6rem;
+  font-weight: 900;
+  color: var(--text-primary);
+  margin: 0 0 0.25rem;
+  position: relative;
+}
+
+.login-page__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  position: relative;
+}
+
+.login-page__field input {
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: 0.85rem;
+  padding: 0.75rem 1rem;
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.login-page__field input:focus {
+  outline: none;
+  border-color: var(--color-emerald);
+}
+
+.login-page__error {
+  background: rgba(244, 63, 94, 0.1);
+  border: 1px solid rgba(244, 63, 94, 0.3);
+  color: #fca5a5;
+  padding: 0.6rem 0.9rem;
+  border-radius: 0.75rem;
+  font-size: 0.75rem;
+  text-align: center;
+  position: relative;
+}
+
+.login-page__form button[type='submit'] {
+  margin-top: 0.5rem;
+  padding: 0.9rem;
+  border-radius: 1rem;
+  border: none;
+  background: linear-gradient(to right, var(--color-emerald), var(--color-teal), var(--color-lime));
+  color: var(--text-on-accent);
+  font-weight: 900;
+  font-size: 0.85rem;
+  cursor: pointer;
+  position: relative;
+}
+
+.login-page__form button[type='submit']:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.login-page__switch {
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin: 0;
+  position: relative;
+}
+
+.login-page__switch a {
+  color: var(--color-emerald);
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.login-page__switch a:hover {
+  text-decoration: underline;
+}

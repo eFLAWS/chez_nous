@@ -1,0 +1,130 @@
+/* HouseholdViewPage.css
+   Mêmes tokens officiels que HouseholdDashboardPage.css. */
+.household-view-page {
+  --bg-app: #090d16;
+  --bg-card: rgba(15, 23, 42, 0.9);
+  --bg-input: rgba(2, 6, 23, 0.6);
+  --border-color: #1e293b;
+  --color-emerald: #10b981;
+  --color-teal: #14b8a6;
+  --color-lime: #84cc16;
+  --color-amber: #f59e0b;
+  --text-primary: #ffffff;
+  --text-muted: #94a3b8;
+  --text-on-accent: #090d16;
+
+  min-height: 100vh;
+  padding: 1.5rem;
+  background: var(--bg-app);
+  color: var(--text-primary);
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.household-view-page__status {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  padding: 1.5rem;
+}
+
+.household-view-page__status--error {
+  color: #fca5a5;
+}
+
+.household-view-page__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.household-view-page__back {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0.4rem 0;
+}
+
+.household-view-page__role-badge {
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-emerald);
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  padding: 0.25rem 0.7rem;
+  border-radius: 999px;
+}
+
+.household-view-page h1 {
+  font-size: 1.4rem;
+  font-weight: 900;
+  margin: 0;
+}
+
+.household-view-page__invite {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 1rem;
+  padding: 0.9rem 1.1rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.household-view-page__invite strong {
+  color: var(--color-lime);
+  font-family: monospace;
+  font-size: 0.95rem;
+  letter-spacing: 0.05em;
+}
+
+.household-view-page__members h2 {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  margin: 0 0 0.6rem;
+}
+
+.household-view-page__members ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.household-view-page__members li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 0.85rem;
+  padding: 0.7rem 1rem;
+  font-size: 0.8rem;
+}
+
+.household-view-page__member-role {
+  font-size: 0.6rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.household-view-page__plan-placeholder {
+  border: 1px dashed var(--border-color);
+  border-radius: 1rem;
+  padding: 2rem 1.2rem;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}

@@ -3,17 +3,15 @@
 // (ex. mode = "onboarding"). Supporte la navigation mobile (bouton
 // "Retour") et les liens directs.
 //
-// Ordre des gardes sur la route principale : RequireAuth (session
-// Supabase valide) → RequireHousehold (au moins un foyer Supabase) →
-// HouseholdRoot.
+// Ordre des gardes : RequireAuth (session Supabase valide) →
+// RequireHousehold (au moins un foyer Supabase) → contenu.
 //
-// ⚠️ ÉTAT TRANSITOIRE CONNU : HouseholdRoot conserve pour l'instant son
-// propre écran de connexion interne (ancien backend Node.js), totalement
-// indépendant de Supabase. Après /onboarding, tu passeras donc les deux
-// gardes Supabase (auth + foyer), mais tomberas ensuite sur l'écran de
-// connexion INTERNE de HouseholdRoot — vérifie la réussite de la
-// création de foyer directement dans le Table Editor de Supabase
-// (households / household_members) plutôt que dans l'UI à ce stade.
+// /households et /households/:householdId sont les VRAIES pages
+// Supabase (étapes 1 et 2 du plan de routing). Le fallback "/*" vers
+// HouseholdRoot reste en place pour l'instant — le retrait de
+// HouseholdRoot du flux principal est l'étape 4, une fois 1 et 2
+// vérifiées. Les deux coexistent : navigue manuellement vers
+// /households pour tester le nouveau système.
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './features/auth/AuthContext';
 import RequireAuth from './features/auth/RequireAuth';
@@ -21,6 +19,8 @@ import LoginPage from './features/auth/LoginPage';
 import SignupPage from './features/auth/SignupPage';
 import RequireHousehold from './features/household/RequireHousehold';
 import CreateHouseholdPage from './features/household/CreateHouseholdPage';
+import HouseholdDashboardPage from './features/household/HouseholdDashboardPage';
+import HouseholdViewPage from './features/household/HouseholdViewPage';
 import HouseholdRoot from './features/household/HouseholdRoot';
 
 export default function AppRouter() {
@@ -35,6 +35,26 @@ export default function AppRouter() {
             element={
               <RequireAuth>
                 <CreateHouseholdPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/households"
+            element={
+              <RequireAuth>
+                <RequireHousehold>
+                  <HouseholdDashboardPage />
+                </RequireHousehold>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/households/:householdId"
+            element={
+              <RequireAuth>
+                <RequireHousehold>
+                  <HouseholdViewPage />
+                </RequireHousehold>
               </RequireAuth>
             }
           />

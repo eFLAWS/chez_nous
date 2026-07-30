@@ -12,7 +12,7 @@ import { supabase } from '../../lib/supabaseClient';
 export async function listMyHouseholds(userId) {
   const { data, error } = await supabase
     .from('household_members')
-    .select('household_id, role, households ( id, name, created_at )')
+    .select('household_id, role, households ( id, name, invite_code, created_at )')
     .eq('user_id', userId);
 
   if (error) return { success: false, error: error.message };
@@ -20,6 +20,7 @@ export async function listMyHouseholds(userId) {
   const households = (data ?? []).map((row) => ({
     id: row.households.id,
     name: row.households.name,
+    inviteCode: row.households.invite_code,
     createdAt: row.households.created_at,
     role: row.role,
   }));
@@ -52,4 +53,35 @@ export async function createHousehold({ name, userId }) {
   }
 
   return { success: true, data: household };
+}
+
+export async function getHouseholdDetail(householdId) {
+  const { data: household, error: householdError } = await supabase
+    .from('households')
+    .select('id, name, invite_code, created_at')
+    .eq('id', householdId)
+    .single();
+
+  if (householdError) return { success: false, error: householdError.message };
+
+  const { data: members, error: membersError } = await supabase
+    .from('household_members')
+    .select('user_id, role, joined_at, users ( display_name, email )')
+    .eq('household_id', householdId);
+
+  if (membersError) return { success: false, error: membersError.message };
+
+  return {
+    success: true,
+    data: {
+      ...household,
+      members: (members ?? []).map((m) => ({
+        userId: m.user_id,
+        role: m.role,
+        joinedAt: m.joined_at,
+        displayName: m.users?.display_name,
+        email: m.users?.email,
+      })),
+    },
+  };
 }

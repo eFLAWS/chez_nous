@@ -217,3 +217,27 @@ Lorsqu'un utilisateur déclenche l'action "Quitter le foyer", l'application exé
 ## 🎨 5. Structure JSON `floor_plans.layout_data` (Single Source of Truth)
 
 Ce document JSON stocke l'intégralité du plan 2D et permet la projection instantanée en 2.5D/Isometric Canvas via Three.js ou Pixi.js.
+
+---
+
+## 🧩 6. Extensions au-delà de ce schéma (conservées côté implémentation)
+
+Ajoutées lors de la mise en place technique du schéma ci-dessus — présentes
+dans `backend/supabase/migrations/`, absentes des sections précédentes.
+Documentées ici plutôt que supprimées silencieusement ; à valider/rejeter
+explicitement plutôt qu'à laisser diverger sans trace.
+
+* **Table `occupants`** (humains ou animaux, distincts des comptes `users`) :
+  un occupant humain peut exister sans compte (`claimed_by_user_id NULL`),
+  puis être "réclamé" par un compte. Un animal ne peut jamais être réclamé.
+  Permet d'assigner une tâche à un animal, ou à un humain du foyer qui n'a
+  pas (encore) de compte.
+* **`tasks.assigned_to_occupant_id`** : en plus de `tasks.assigned_to`
+  (compte utilisateur), une tâche peut être assignée à un occupant non-
+  utilisateur (ex. "Nourrir le chat").
+* **`tasks.description`** et **`tasks.recurrence_days`** : texte libre et
+  récurrence en jours (tâches ménagères répétitives).
+* **`users`** : pas de colonne `password_hash` — Supabase Auth gère le mot
+  de passe dans `auth.users`, jamais dupliqué dans `public.users` (le
+  dupliquer serait un risque de sécurité sans bénéfice). `display_name` et
+  `avatar_url` conservés du schéma d'origine.

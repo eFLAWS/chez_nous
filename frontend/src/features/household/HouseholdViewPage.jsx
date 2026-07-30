@@ -1,65 +1,73 @@
-// src/features/household/HouseholdViewPage.jsx
-// Page /households/:householdId — lit l'id du foyer depuis l'URL
-// (useParams) plutôt que de le recevoir en prop depuis un parent qui
-// gérait tout en mémoire (voir la conversation, mise en place de React
-// Router). `ApartmentSpatialMvp.jsx` reste INCHANGÉ à l'intérieur pour
-// cette première passe — il gère encore lui-même, en interne, la
-// bascule affichage/édition (`mode`) ; lui donner sa PROPRE sous-route
-// dédiée (pour un vrai bouton retour qui sort de l'éditeur) reste pour
-// une prochaine étape, annoncée mais pas faite ici.
+// HouseholdViewPage.jsx
+// Route /households/:householdId — détail d'un foyer, version Supabase.
+// Remplace la variante précédente (ancien backend, jamais branchée dans
+// AppRouter.jsx) — même forme (useParams, rôle résolu par hook dédié),
+// mais rewiré sur household_members.role plutôt que occupants/api.js.
 //
-// RÔLE (nouveau, voir la conversation — étape 3, service/hook
-// d'authentification + onboarding selon les rôles) : `useHouseholdRole`
-// résout si le compte connecté est PROPRIETAIRE ou LOCATAIRE de CE
-// foyer précis, transmis à ApartmentSpatialMvp.jsx pour adapter
-// l'affichage (masquer "Modifier le plan" pour un LOCATAIRE). Le
-// BACKEND reste la vraie barrière de sécurité (voir isHouseholdOwner,
-// roomService.js) — ceci n'ajuste que l'affichage.
-import { useState, useEffect } from "react";
-import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { api } from "../../api";
-import { useAuth } from "../auth/AuthContext";
-import { useHouseholdRole } from "./useHouseholdRole";
-import ApartmentSpatialMvp from "./ApartmentSpatialMvp";
+// ⚠️ PÉRIMÈTRE DE CETTE VERSION : n'affiche PAS le plan 2D/2.5D.
+// ApartmentSpatialMvp reste branché sur l'ancien backend (IDs
+// incompatibles avec les UUID Supabase) — migration floor_plans =
+// étape suivante, volontairement hors périmètre ici.
+import { useParams, useNavigate } from 'react-router-dom';
+import { useHouseholdDetail } from './useHouseholdDetail';
+import './HouseholdViewPage.css';
 
 export default function HouseholdViewPage() {
   const { householdId } = useParams();
-  const { session } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
-  const { role, isOwner, loading: roleLoading } = useHouseholdRole(householdId);
+  const { household, role, isOwner, loading, error } = useHouseholdDetail(householdId);
 
-  const [housingName, setHousingName] = useState(null);
+  if (loading) {
+    return <p className="household-view-page__status">Chargement…</p>;
+  }
 
-  // Le nom du logement n'est connu que via la liste des foyers du
-  // compte — pas encore de route dédiée "un seul foyer par id" côté
-  // backend, donc on réutilise celle qui existe déjà (léger surcoût,
-  // acceptable pour l'instant).
-  useEffect(() => {
-    let cancelled = false;
-    api.listHouseholdsForUser(session.id).then((res) => {
-      if (cancelled || !res.success) return;
-      const match = res.data.find((h) => h.id === householdId);
-      if (match) setHousingName(match.name);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [session.id, householdId]);
+  if (error) {
+    return <p className="household-view-page__status household-view-page__status--error">{error}</p>;
+  }
 
-  if (roleLoading) {
-    return <p className="household-root__loading">Chargement...</p>;
+  if (!household) {
+    return null;
   }
 
   return (
-    <ApartmentSpatialMvp
-      key={householdId}
-      householdId={householdId}
-      housingName={housingName}
-      onBackToDashboard={() => navigate("/households")}
-      startInEditor={Boolean(location.state?.justCreated)}
-      role={role}
-      isOwner={isOwner}
-    />
+    <div className="household-view-page">
+      <header className="household-view-page__header">
+        <button
+          type="button"
+          onClick={() => navigate('/households')}
+          className="household-view-page__back"
+        >
+          ← Mes logements
+        </button>
+        {role && <span className="household-view-page__role-badge">{role}</span>}
+      </header>
+
+      <h1>{household.name}</h1>
+
+      <div className="household-view-page__invite">
+        <span>Code d'invitation</span>
+        <strong>{household.invite_code}</strong>
+      </div>
+
+      <section className="household-view-page__members">
+        <h2>Membres</h2>
+        <ul>
+          {household.members.map((member) => (
+            <li key={member.userId}>
+              <span>{member.displayName ?? member.email}</span>
+              <span className="household-view-page__member-role">{member.role}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section className="household-view-page__plan-placeholder">
+        <p>
+          {isOwner
+            ? 'Le plan 2D/2.5D arrivera ici une fois la migration terminée.'
+            : 'Le plan 2D/2.5D (lecture seule pour un locataire) arrivera ici une fois la migration terminée.'}
+        </p>
+      </section>
+    </div>
   );
 }

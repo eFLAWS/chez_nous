@@ -12,6 +12,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from './AuthContext';
+import './AuthPage.css';
 
 export default function SignupPage() {
   const { signUp } = useAuth();
