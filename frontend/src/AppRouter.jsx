@@ -6,13 +6,13 @@
 // Ordre des gardes : RequireAuth (session Supabase valide) →
 // RequireHousehold (au moins un foyer Supabase) → contenu.
 //
-// /households et /households/:householdId sont les VRAIES pages
-// Supabase (étapes 1 et 2 du plan de routing). Le fallback "/*" vers
-// HouseholdRoot reste en place pour l'instant — le retrait de
-// HouseholdRoot du flux principal est l'étape 4, une fois 1 et 2
-// vérifiées. Les deux coexistent : navigue manuellement vers
-// /households pour tester le nouveau système.
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+// ÉTAPE 4 (voir la conversation) : HouseholdRoot est retiré du flux
+// principal. Le catch-all "/*" redirige maintenant vers /households
+// (le vrai dashboard Supabase) au lieu de monter l'ancien système —
+// plus de double écran de connexion. HouseholdRoot.jsx reste dans le
+// dépôt (le plan 2D/2.5D, ApartmentSpatialMvp, en dépend encore tant
+// que floor_plans n'est pas migré), simplement plus routé depuis ici.
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './features/auth/AuthContext';
 import RequireAuth from './features/auth/RequireAuth';
 import LoginPage from './features/auth/LoginPage';
@@ -21,7 +21,6 @@ import RequireHousehold from './features/household/RequireHousehold';
 import CreateHouseholdPage from './features/household/CreateHouseholdPage';
 import HouseholdDashboardPage from './features/household/HouseholdDashboardPage';
 import HouseholdViewPage from './features/household/HouseholdViewPage';
-import HouseholdRoot from './features/household/HouseholdRoot';
 
 export default function AppRouter() {
   return (
@@ -58,16 +57,7 @@ export default function AppRouter() {
               </RequireAuth>
             }
           />
-          <Route
-            path="/*"
-            element={
-              <RequireAuth>
-                <RequireHousehold>
-                  <HouseholdRoot />
-                </RequireHousehold>
-              </RequireAuth>
-            }
-          />
+          <Route path="/*" element={<Navigate to="/households" replace />} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>
