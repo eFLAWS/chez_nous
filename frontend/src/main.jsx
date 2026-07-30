@@ -1,7 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import App from "./App";
-import HouseholdRoot from "./features/household/HouseholdRoot";
+import AppRouter from "./AppRouter";
 import "./assets/theme.css";
 import "./assets/ui-feedback.css";
 import "./assets/visual-hierarchy.css";
@@ -10,17 +9,17 @@ import "./assets/task-overview.css";
 import "./assets/room-3d.css";
 
 // -----------------------------------------------------------------------
-// MVP TEMPORAIRE : affiche HouseholdRoot (vrai login/inscription ->
-// Dashboard -> ApartmentSpatialMvp, tous les deux branchés sur le vrai
-// backend désormais). App.jsx (le vrai flux applicatif d'origine,
-// tâches/projets/etc.) n'est PAS touché — juste momentanément pas monté
-// depuis ce fichier.
+// AppRouter gère maintenant le point d'entrée : /login (Supabase Auth,
+// AuthProvider + LoginPage) puis, une fois connecté, HouseholdRoot
+// (inchangé) derrière RequireAuth. Voir AppRouter.jsx pour le détail
+// des routes, et sa note sur l'état transitoire (double écran de
+// connexion tant que HouseholdRoot garde son auth interne).
 //
-// Pour revenir à l'application réelle : remplacer <HouseholdRoot />
-// par <App /> ci-dessous, et retirer l'import devenu inutile.
+// Ancien montage direct de <HouseholdRoot /> retiré d'ici — l'historique
+// Git garde une trace de l'ancienne version si besoin d'y revenir.
 // -----------------------------------------------------------------------
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <HouseholdRoot />
+    <AppRouter />
   </React.StrictMode>
 );
