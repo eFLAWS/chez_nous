@@ -40,8 +40,11 @@
   gap: 0.3rem;
   border-radius: 999px;
   padding: 0.3rem 0.55rem;
+  font: inherit;
   font-size: 0.68rem;
   font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 
 .app-layout__badge--amber {
@@ -49,11 +52,19 @@
   background: rgba(245, 158, 11, 0.1);
   color: var(--color-amber);
 }
+.app-layout__badge--amber:hover {
+  background: rgba(245, 158, 11, 0.18);
+  border-color: rgba(245, 158, 11, 0.35);
+}
 
 .app-layout__badge--sky {
   border: 1px solid rgba(14, 165, 233, 0.2);
   background: rgba(14, 165, 233, 0.1);
   color: var(--color-sky);
+}
+.app-layout__badge--sky:hover {
+  background: rgba(14, 165, 233, 0.18);
+  border-color: rgba(14, 165, 233, 0.35);
 }
 
 .app-layout__content {
@@ -76,11 +87,12 @@
   flex-direction: column;
   align-items: center;
   gap: 0.15rem;
-  padding: 0.6rem 0.25rem;
+  padding: 0.6rem 0.1rem;
   text-decoration: none;
   color: var(--text-muted);
-  font-size: 0.62rem;
+  font-size: 0.56rem;
   font-weight: 700;
+  white-space: nowrap;
 }
 
 .app-layout__tab--active {

@@ -20,6 +20,20 @@
   margin: 0 0 0.15rem;
 }
 
+.household-home-page__clickable {
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.household-home-page__clickable:hover {
+  border-color: rgba(52, 211, 153, 0.35);
+}
+
+.household-home-page__clickable:focus-visible {
+  outline: 2px solid var(--color-emerald);
+  outline-offset: 2px;
+}
+
 /* --- Vue du foyer --------------------------------------------------- */
 
 .household-home-page__overview {

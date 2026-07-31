@@ -10,6 +10,15 @@
 // ci-dessous est un jeu de données STATIQUE reproduisant fidèlement le
 // prototype, à remplacer dès que ces services existent. Ne pas prendre
 // les valeurs (78%, "3 du jour", "5 articles"...) pour du réel.
+//
+// NAVIGATION DES CARTES (voir la conversation, capture annotée) :
+// "Vue du foyer" -> Plan, "Tâches ménagères" et "Tâches du jour" ->
+// Tâches, "Liste de courses" -> Dépenses. Chaque carte est rendue
+// cliquable/activable au clavier (role="button" + Entrée/Espace) sans
+// utiliser <Link> autour d'éléments interactifs (la checkbox des
+// tâches a besoin de rester cliquable indépendamment — stopPropagation
+// dessus pour ne pas déclencher la navigation en cochant une tâche).
+import { useNavigate, useParams } from 'react-router-dom';
 import { ChecklistIcon, CartIcon, PointerIcon } from '../../components/ui/Icons';
 import './HouseholdHomePage.css';
 
@@ -45,9 +54,33 @@ const MOCK_TASKS_TODAY = [
 ];
 
 export default function HouseholdHomePage() {
+  const navigate = useNavigate();
+  const { householdId } = useParams();
+
+  function goTo(tab) {
+    navigate(`/households/${householdId}/${tab}`);
+  }
+
+  // Rend un conteneur non-interactif (section/article) activable à la
+  // souris ET au clavier, sans imbriquer d'<a>/<Link> autour d'enfants
+  // interactifs (la checkbox des tâches, notamment).
+  function clickableProps(tab) {
+    return {
+      role: 'button',
+      tabIndex: 0,
+      onClick: () => goTo(tab),
+      onKeyDown: (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          goTo(tab);
+        }
+      },
+    };
+  }
+
   return (
     <div className="household-home-page">
-      <section className="household-home-page__overview">
+      <section className="household-home-page__overview household-home-page__clickable" {...clickableProps('spatial')}>
         <div className="household-home-page__overview-glow" aria-hidden="true" />
 
         <div className="household-home-page__overview-header">
@@ -94,7 +127,10 @@ export default function HouseholdHomePage() {
       </section>
 
       <section className="household-home-page__stats">
-        <article className="household-home-page__stat-card">
+        <article
+          className="household-home-page__stat-card household-home-page__clickable"
+          {...clickableProps('tasks')}
+        >
           <div className="household-home-page__stat-header">
             <span className="household-home-page__stat-icon household-home-page__stat-icon--emerald">
               <ChecklistIcon size={17} />
@@ -107,7 +143,10 @@ export default function HouseholdHomePage() {
           <p className="household-home-page__stat-subtitle">Prochaine : Vaisselle</p>
         </article>
 
-        <article className="household-home-page__stat-card">
+        <article
+          className="household-home-page__stat-card household-home-page__clickable"
+          {...clickableProps('expenses')}
+        >
           <div className="household-home-page__stat-header">
             <span className="household-home-page__stat-icon household-home-page__stat-icon--sky">
               <CartIcon size={17} />
@@ -121,7 +160,10 @@ export default function HouseholdHomePage() {
         </article>
       </section>
 
-      <section className="household-home-page__tasks">
+      <section
+        className="household-home-page__tasks household-home-page__clickable"
+        {...clickableProps('tasks')}
+      >
         <div className="household-home-page__tasks-header">
           <div>
             <p className="household-home-page__eyebrow">Aujourd'hui</p>
@@ -142,7 +184,12 @@ export default function HouseholdHomePage() {
                   : 'household-home-page__task'
               }
             >
-              <input type="checkbox" className="household-home-page__task-checkbox" aria-label={task.title} />
+              <input
+                type="checkbox"
+                className="household-home-page__task-checkbox"
+                aria-label={task.title}
+                onClick={(event) => event.stopPropagation()}
+              />
               <div className="household-home-page__task-body">
                 <div className="household-home-page__task-row">
                   <h3 className="household-home-page__task-title">{task.title}</h3>

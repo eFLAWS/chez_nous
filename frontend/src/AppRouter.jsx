@@ -8,15 +8,27 @@
 //
 // ÉTAPES 3-4 (voir la conversation, docs/user-flows/ROUTING_AND_USER_FLOWS.md
 // section 2) : /households/:householdId devient une route PARENT montant
-// <AppLayout/> (header + bottom nav 5 onglets), avec les 5 écrans du
-// foyer actif en routes enfants rendues dans son <Outlet/> :
+// <AppLayout/> (header + bottom nav — 6 onglets désormais, "Dépenses"
+// ajouté après coup, voir la conversation), avec les écrans du foyer
+// actif en routes enfants rendues dans son <Outlet/> :
 //   (index)  -> HouseholdHomePage    (Accueil)
 //   spatial  -> HouseholdSpatialPage
 //   tasks    -> HouseholdTasksPage
+//   expenses -> HouseholdExpensesPage (ajouté après coup — la spec
+//                                      d'origine logeait les dépenses
+//                                      dans "Vie du foyer", à répercuter
+//                                      dans le .md)
 //   calendar -> HouseholdCalendarPage
 //   life     -> HouseholdLifePage    (contenu ex-HouseholdViewPage.jsx —
 //                                     header propre retiré, AppLayout
 //                                     porte déjà le switcher de foyer)
+//   rewards  -> HouseholdRewardsPage (ajouté après coup, voir la
+//                                     conversation sur les boutons
+//                                     streak/score du header : atteinte
+//                                     via le badge gemme, PAS un onglet
+//                                     de la barre basse — cohérent avec
+//                                     le prototype où le score ouvre un
+//                                     écran séparé des 6 onglets)
 // HouseholdViewPage.jsx est retiré du routing : son contenu correspond
 // en fait à l'onglet "Vie du foyer" de la spec (membres, invite_code),
 // pas à l'Accueil (qui doit être un résumé — propreté, tâches du jour,
@@ -34,8 +46,10 @@ import AppLayout from './features/household/AppLayout';
 import HouseholdHomePage from './features/household/HouseholdHomePage';
 import HouseholdSpatialPage from './features/household/HouseholdSpatialPage';
 import HouseholdTasksPage from './features/household/HouseholdTasksPage';
+import HouseholdExpensesPage from './features/household/HouseholdExpensesPage';
 import HouseholdCalendarPage from './features/household/HouseholdCalendarPage';
 import HouseholdLifePage from './features/household/HouseholdLifePage';
+import HouseholdRewardsPage from './features/household/HouseholdRewardsPage';
 
 export default function AppRouter() {
   return (
@@ -75,8 +89,10 @@ export default function AppRouter() {
             <Route index element={<HouseholdHomePage />} />
             <Route path="spatial" element={<HouseholdSpatialPage />} />
             <Route path="tasks" element={<HouseholdTasksPage />} />
+            <Route path="expenses" element={<HouseholdExpensesPage />} />
             <Route path="calendar" element={<HouseholdCalendarPage />} />
             <Route path="life" element={<HouseholdLifePage />} />
+            <Route path="rewards" element={<HouseholdRewardsPage />} />
           </Route>
           <Route path="/*" element={<Navigate to="/households" replace />} />
         </Routes>

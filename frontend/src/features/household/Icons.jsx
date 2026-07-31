@@ -320,12 +320,3 @@ export function GridIcon({ size = 15, className }) {
     </svg>
   );
 }
-
-/* Croix de fermeture (modales). */
-export function XIcon({ size = 16, className }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" className={className} {...base}>
-      <path d="M5 5l14 14M19 5 5 19" />
-    </svg>
-  );
-}
