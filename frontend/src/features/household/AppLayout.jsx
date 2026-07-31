@@ -11,15 +11,16 @@
 // l'instant (streak_count/points_balance ne sont pas dans
 // docs/DATA_MODEL.md) — affichage statique en attendant qu'on valide
 // et ajoute ces colonnes. Ne pas prendre ces valeurs pour du réel.
-import { Outlet, NavLink, useParams, useNavigate } from 'react-router-dom';
+import { Outlet, NavLink, useParams } from 'react-router-dom';
 import { useHouseholds } from './useHouseholds';
+import HouseholdSwitcher from './HouseholdSwitcher';
+import UserMenu from './UserMenu';
 import {
   HouseIcon,
   FloorPlanIcon,
   ChecklistIcon,
   CalendarIcon,
   UsersIcon,
-  BellIcon,
   FlameIcon,
   GemIcon,
 } from '../../components/ui/Icons';
@@ -35,44 +36,27 @@ const TABS = [
 
 export default function AppLayout() {
   const { householdId } = useParams();
-  const navigate = useNavigate();
   const { households } = useHouseholds();
 
   const current = households.find((h) => h.id === householdId) ?? null;
 
-  function handleSwitch(event) {
-    const nextId = event.target.value;
-    if (nextId) navigate(`/households/${nextId}`);
-  }
-
   return (
     <div className="app-layout">
       <header className="app-layout__header">
-        <select
-          className="app-layout__switcher"
-          value={householdId ?? ''}
-          onChange={handleSwitch}
-          aria-label="Changer de foyer actif"
-        >
-          {households.map((h) => (
-            <option key={h.id} value={h.id}>
-              {h.name}
-            </option>
-          ))}
-        </select>
+        <HouseholdSwitcher current={current} households={households} />
 
-        <div className="app-layout__gamification" title="Pas encore branché en base — placeholder">
-          <span>
-            <FlameIcon size={15} /> 0
-          </span>
-          <span>
-            <GemIcon size={15} /> 0
-          </span>
+        <div className="app-layout__header-right">
+          <div className="app-layout__gamification" title="Pas encore branché en base — placeholder">
+            <span className="app-layout__badge app-layout__badge--amber">
+              <FlameIcon size={13} /> 0
+            </span>
+            <span className="app-layout__badge app-layout__badge--sky">
+              <GemIcon size={13} /> 0
+            </span>
+          </div>
+
+          <UserMenu />
         </div>
-
-        <button type="button" className="app-layout__bell" aria-label="Notifications">
-          <BellIcon size={18} />
-        </button>
       </header>
 
       <main className="app-layout__content">

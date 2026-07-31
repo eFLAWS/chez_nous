@@ -6,12 +6,22 @@
 // Ordre des gardes : RequireAuth (session Supabase valide) →
 // RequireHousehold (au moins un foyer Supabase) → contenu.
 //
-// ÉTAPE 4 (voir la conversation) : HouseholdRoot est retiré du flux
-// principal. Le catch-all "/*" redirige maintenant vers /households
-// (le vrai dashboard Supabase) au lieu de monter l'ancien système —
-// plus de double écran de connexion. HouseholdRoot.jsx reste dans le
-// dépôt (le plan 2D/2.5D, ApartmentSpatialMvp, en dépend encore tant
-// que floor_plans n'est pas migré), simplement plus routé depuis ici.
+// ÉTAPES 3-4 (voir la conversation, docs/user-flows/ROUTING_AND_USER_FLOWS.md
+// section 2) : /households/:householdId devient une route PARENT montant
+// <AppLayout/> (header + bottom nav 5 onglets), avec les 5 écrans du
+// foyer actif en routes enfants rendues dans son <Outlet/> :
+//   (index)  -> HouseholdHomePage    (Accueil)
+//   spatial  -> HouseholdSpatialPage
+//   tasks    -> HouseholdTasksPage
+//   calendar -> HouseholdCalendarPage
+//   life     -> HouseholdLifePage    (contenu ex-HouseholdViewPage.jsx —
+//                                     header propre retiré, AppLayout
+//                                     porte déjà le switcher de foyer)
+// HouseholdViewPage.jsx est retiré du routing : son contenu correspond
+// en fait à l'onglet "Vie du foyer" de la spec (membres, invite_code),
+// pas à l'Accueil (qui doit être un résumé — propreté, tâches du jour,
+// courses — pas encore implémenté), d'où le renommage en
+// HouseholdLifePage plutôt qu'une réutilisation telle quelle.
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './features/auth/AuthContext';
 import RequireAuth from './features/auth/RequireAuth';
@@ -20,7 +30,12 @@ import SignupPage from './features/auth/SignupPage';
 import RequireHousehold from './features/household/RequireHousehold';
 import CreateHouseholdPage from './features/household/CreateHouseholdPage';
 import HouseholdDashboardPage from './features/household/HouseholdDashboardPage';
-import HouseholdViewPage from './features/household/HouseholdViewPage';
+import AppLayout from './features/household/AppLayout';
+import HouseholdHomePage from './features/household/HouseholdHomePage';
+import HouseholdSpatialPage from './features/household/HouseholdSpatialPage';
+import HouseholdTasksPage from './features/household/HouseholdTasksPage';
+import HouseholdCalendarPage from './features/household/HouseholdCalendarPage';
+import HouseholdLifePage from './features/household/HouseholdLifePage';
 
 export default function AppRouter() {
   return (
@@ -52,11 +67,17 @@ export default function AppRouter() {
             element={
               <RequireAuth>
                 <RequireHousehold>
-                  <HouseholdViewPage />
+                  <AppLayout />
                 </RequireHousehold>
               </RequireAuth>
             }
-          />
+          >
+            <Route index element={<HouseholdHomePage />} />
+            <Route path="spatial" element={<HouseholdSpatialPage />} />
+            <Route path="tasks" element={<HouseholdTasksPage />} />
+            <Route path="calendar" element={<HouseholdCalendarPage />} />
+            <Route path="life" element={<HouseholdLifePage />} />
+          </Route>
           <Route path="/*" element={<Navigate to="/households" replace />} />
         </Routes>
       </AuthProvider>

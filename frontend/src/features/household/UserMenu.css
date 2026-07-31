@@ -1,0 +1,92 @@
+/* UserMenu.css — menu déroulant du profil, header AppLayout. Tokens
+   globaux de theme.css (cf. AppLayout.css) + un léger effet
+   glassmorphique (backdrop-filter) sur la coquille déroulante,
+   cohérent avec la direction visuelle du projet. */
+.user-menu {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.user-menu__trigger {
+  width: 2.1rem;
+  height: 2.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.user-menu__trigger[aria-expanded='true'] {
+  color: var(--color-emerald);
+  border-color: rgba(16, 185, 129, 0.4);
+}
+
+.user-menu__panel {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  min-width: 11rem;
+  background: var(--bg-card);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-color);
+  border-radius: 0.9rem;
+  padding: 0.4rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.user-menu__item {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  width: 100%;
+  background: none;
+  border: none;
+  border-radius: 0.6rem;
+  padding: 0.55rem 0.6rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  cursor: pointer;
+  text-align: left;
+}
+
+.user-menu__item:not(:disabled):hover {
+  background: var(--bg-input);
+}
+
+.user-menu__item--disabled {
+  color: var(--text-muted);
+  cursor: default;
+}
+
+.user-menu__item--danger {
+  color: #fca5a5;
+}
+
+.user-menu__badge {
+  margin-left: auto;
+  font-size: 0.55rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  background: rgba(148, 163, 184, 0.12);
+  border: 1px solid var(--border-color);
+  padding: 0.1rem 0.4rem;
+  border-radius: 999px;
+}
+
+.user-menu__divider {
+  height: 1px;
+  background: var(--border-color);
+  margin: 0.25rem 0.2rem;
+}

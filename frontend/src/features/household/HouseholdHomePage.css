@@ -1,0 +1,384 @@
+/* HouseholdHomePage.css — traduction du prototype ui_home_v0.5.1.html
+   (voir la conversation) en CSS classique. Tokens globaux de theme.css
+   pour les couleurs de base ; les teintes (fonds tintés, bordures
+   translucides) sont exprimées en rgba() directement ici, comme
+   partout ailleurs dans le projet (cf. HouseholdLifePage.css). Affiché
+   dans .app-layout__content, qui gère déjà le scroll et le fond sombre. */
+
+.household-home-page {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.household-home-page__eyebrow {
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: rgba(110, 231, 183, 0.8);
+  margin: 0 0 0.15rem;
+}
+
+/* --- Vue du foyer --------------------------------------------------- */
+
+.household-home-page__overview {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 1rem;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.72), rgba(15, 23, 42, 0.5));
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.household-home-page__overview-glow {
+  position: absolute;
+  right: -2rem;
+  bottom: -2rem;
+  width: 8rem;
+  height: 8rem;
+  border-radius: 999px;
+  background: rgba(16, 185, 129, 0.1);
+  filter: blur(48px);
+  pointer-events: none;
+}
+
+.household-home-page__overview-header {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.household-home-page__overview-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.household-home-page__rooms-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-shrink: 0;
+  border-radius: 999px;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  background: rgba(16, 185, 129, 0.1);
+  padding: 0.35rem 0.65rem;
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: var(--color-emerald);
+  white-space: nowrap;
+}
+
+.household-home-page__dot {
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 999px;
+  background: currentColor;
+}
+
+.household-home-page__overview-inner {
+  position: relative;
+  border-radius: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(15, 23, 42, 0.6);
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.household-home-page__room-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.household-home-page__room-chip {
+  border-radius: 999px;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.household-home-page__room-chip--clean {
+  background: rgba(52, 211, 153, 0.9);
+  color: #052e21;
+}
+
+.household-home-page__room-chip--pending {
+  background: rgba(252, 211, 77, 0.9);
+  color: #452c00;
+}
+
+.household-home-page__room-chip--todo {
+  background: rgba(251, 113, 133, 0.9);
+  color: #ffffff;
+}
+
+.household-home-page__hint {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.household-home-page__hint svg {
+  color: var(--color-emerald);
+  flex-shrink: 0;
+}
+
+.household-home-page__cleanliness {
+  border-radius: 1.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.05);
+  padding: 0.7rem;
+}
+
+.household-home-page__cleanliness-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #e2e8f0;
+  margin-bottom: 0.5rem;
+}
+
+.household-home-page__cleanliness-value {
+  border-radius: 999px;
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--color-emerald);
+  padding: 0.2rem 0.55rem;
+}
+
+.household-home-page__cleanliness-track {
+  height: 0.75rem;
+  border-radius: 999px;
+  background: rgba(2, 6, 23, 0.7);
+  padding: 2px;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+.household-home-page__cleanliness-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #6ee7b7, var(--color-emerald), var(--color-teal));
+  transition: width 0.4s ease;
+}
+
+/* --- Cartes stats (Tâches / Courses) -------------------------------- */
+
+.household-home-page__stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.household-home-page__stat-card {
+  border-radius: 1.35rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(15, 23, 42, 0.6);
+  padding: 0.85rem;
+}
+
+.household-home-page__stat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.household-home-page__stat-icon {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.household-home-page__stat-icon--emerald {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--color-emerald);
+}
+
+.household-home-page__stat-icon--sky {
+  background: rgba(14, 165, 233, 0.1);
+  color: var(--color-sky);
+}
+
+.household-home-page__stat-badge {
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.household-home-page__stat-badge--emerald {
+  color: var(--color-emerald);
+}
+
+.household-home-page__stat-badge--sky {
+  color: var(--color-sky);
+}
+
+.household-home-page__stat-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.household-home-page__stat-subtitle {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  margin: 0.2rem 0 0;
+}
+
+/* --- Tâches du jour -------------------------------------------------- */
+
+.household-home-page__tasks {
+  border-radius: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(15, 23, 42, 0.6);
+  padding: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.household-home-page__tasks-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.household-home-page__tasks-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.household-home-page__see-all {
+  flex-shrink: 0;
+  border-radius: 999px;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  background: rgba(16, 185, 129, 0.1);
+  padding: 0.35rem 0.65rem;
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: var(--color-emerald);
+  cursor: pointer;
+}
+
+.household-home-page__task-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.household-home-page__task {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  border-radius: 1.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.05);
+  padding: 0.7rem;
+}
+
+.household-home-page__task--overdue {
+  border-color: rgba(244, 63, 94, 0.2);
+  background: rgba(244, 63, 94, 0.1);
+}
+
+.household-home-page__task-checkbox {
+  margin-top: 0.2rem;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 0.3rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(2, 6, 23, 0.7);
+  accent-color: var(--color-emerald);
+  flex-shrink: 0;
+}
+
+.household-home-page__task-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.household-home-page__task-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.household-home-page__task-title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.household-home-page__task-badge {
+  flex-shrink: 0;
+  border-radius: 999px;
+  padding: 0.15rem 0.5rem;
+  font-size: 0.6rem;
+  font-weight: 700;
+}
+
+.household-home-page__task-badge--amber {
+  background: rgba(251, 191, 36, 0.15);
+  color: #fcd34d;
+}
+
+.household-home-page__task-badge--rose {
+  background: rgba(251, 113, 133, 0.2);
+  color: #fecdd3;
+}
+
+.household-home-page__task-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.5rem;
+}
+
+.household-home-page__task-tag {
+  border-radius: 999px;
+  padding: 0.12rem 0.5rem;
+  font-size: 0.6rem;
+  font-weight: 700;
+}
+
+.household-home-page__task-tag--violet {
+  background: rgba(139, 92, 246, 0.15);
+  color: #c4b5fd;
+}
+
+.household-home-page__task-tag--sky {
+  background: rgba(14, 165, 233, 0.15);
+  color: #7dd3fc;
+}
+
+.household-home-page__task-tag--emerald {
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--color-emerald);
+}
+
+.household-home-page__task-tag--slate {
+  background: rgba(100, 116, 139, 0.2);
+  color: #e2e8f0;
+}

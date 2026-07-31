@@ -1,10 +1,20 @@
 // HouseholdDashboardPage.jsx
 // Route /households — liste les foyers Supabase du compte connecté.
 // Remplace HousingDashboard.jsx (ancien backend) pour le nouveau
-// système. Clic sur un foyer -> /households/:id. "+ Créer" -> /onboarding
-// (pas de garde RequireHousehold dessus, donc accessible même en ayant
-// déjà un foyer — utile pour un compte multi-foyers).
-import { Link } from 'react-router-dom';
+// système.
+//
+// Un seul foyer -> redirection directe vers /households/:id (Accueil),
+// voir docs/user-flows/ROUTING_AND_USER_FLOWS.md section 3
+// (HouseholdGuard, cas N=1) : c'est ce qui fait qu'une connexion
+// atterrit bien sur l'Accueil du foyer plutôt que sur cette liste
+// quand il n'y a rien à choisir. Plusieurs foyers -> liste affichée
+// normalement, clic -> /households/:id.
+//
+// ⚠️ Cas N>1 (choisir le DERNIER foyer actif consulté plutôt que la
+// liste, per spec) pas encore implémenté ici — nécessite de décider où
+// persister "dernier foyer actif" (localStorage ? colonne dédiée ?).
+// Affiche la liste pour l'instant, à traiter séparément.
+import { Navigate, Link } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { useHouseholds } from './useHouseholds';
 import './HouseholdDashboardPage.css';
@@ -12,6 +22,10 @@ import './HouseholdDashboardPage.css';
 export default function HouseholdDashboardPage() {
   const { user, signOut } = useAuth();
   const { households, loading, error } = useHouseholds();
+
+  if (!loading && !error && households.length === 1) {
+    return <Navigate to={`/households/${households[0].id}`} replace />;
+  }
 
   return (
     <div className="household-dashboard-page">

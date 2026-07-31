@@ -1,0 +1,22 @@
+/* TabPlaceholder.css — utilise les tokens globaux de theme.css, comme
+   AppLayout.css. Destiné à s'afficher dans .app-layout__content, qui
+   gère déjà le scroll et le fond : ce composant ne pose donc ni
+   min-height ni background pleine page. */
+.tab-placeholder {
+  padding: 2rem 1.2rem;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.tab-placeholder__title {
+  font-size: 1.1rem;
+  font-weight: 900;
+  color: var(--text-primary);
+  margin: 0 0 0.6rem;
+}
+
+.tab-placeholder__text {
+  font-size: 0.85rem;
+  line-height: 1.5;
+  margin: 0;
+}

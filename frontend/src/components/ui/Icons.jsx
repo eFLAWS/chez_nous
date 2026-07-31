@@ -254,3 +254,36 @@ export function GemIcon({ size = 16, className }) {
     </svg>
   );
 }
+
+/* Engrenage (item "Réglages" du menu profil, header AppLayout). */
+export function SettingsIcon({ size = 18, className }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" className={className} {...base}>
+      <circle cx="12" cy="12" r="3" />
+      <path d="M12 3.5v2M12 18.5v2M20.5 12h-2M5.5 12h-2M17.7 6.3l-1.4 1.4M7.7 16.3l-1.4 1.4M17.7 17.7l-1.4-1.4M7.7 7.7 6.3 6.3" />
+    </svg>
+  );
+}
+
+/* Panier (carte "Liste de courses", Accueil). */
+export function CartIcon({ size = 18, className }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" className={className} {...base}>
+      <path d="M3.5 4.5h2l1.4 10.4a1.8 1.8 0 0 0 1.8 1.6h8a1.8 1.8 0 0 0 1.8-1.5l1.2-6.5H6.6" />
+      <circle cx="9.5" cy="19.5" r="1.2" />
+      <circle cx="16.5" cy="19.5" r="1.2" />
+    </svg>
+  );
+}
+
+/* Main qui pointe (indice "Toucher une pièce pour interagir", Accueil). */
+export function PointerIcon({ size = 14, className }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" className={className} {...base}>
+      <path d="M9 12.5V5a1.5 1.5 0 0 1 3 0v6" />
+      <path d="M12 10.5V4a1.5 1.5 0 0 1 3 0v7.5" />
+      <path d="M15 10.8V6.3a1.5 1.5 0 0 1 3 0v8.2" />
+      <path d="M18 12v-1a1.5 1.5 0 0 1 3 0v5.5c0 3-2.2 5-5.5 5-2.3 0-3.6-.6-4.8-2L7 15.6c-.6-.8-.5-1.7.3-2.2.8-.5 1.7-.3 2.3.4l1.4 1.7" />
+    </svg>
+  );
+}

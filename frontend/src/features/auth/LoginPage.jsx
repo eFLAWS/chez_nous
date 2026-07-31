@@ -1,26 +1,23 @@
 // LoginPage.jsx
 // Page /login : formulaire de connexion Supabase Auth. Après succès,
-// redirige vers la page que RequireAuth avait interceptée (location.state.from),
-// ou vers "/" si l'utilisateur est arrivé directement sur /login.
-//
-// Volontairement limité à la connexion pour cette étape — le flow
-// d'inscription (Créer un foyer / Rejoindre un foyer) est une étape
-// séparée de la feuille de route (point 4).
+// redirige toujours vers "/households" — PAS vers location.state.from
+// (la page que RequireAuth avait interceptée avant une déconnexion) :
+// voir la conversation, une reconnexion doit ramener sur l'accueil,
+// pas rouvrir le dernier onglet consulté. HouseholdDashboardPage
+// prend ensuite le relais (redirection directe vers l'unique foyer
+// s'il n'y en a qu'un).
 import { useState } from 'react';
-import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import './AuthPage.css';
 
 export default function LoginPage() {
   const { signIn } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
-
-  const from = location.state?.from?.pathname || '/';
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -36,7 +33,7 @@ export default function LoginPage() {
       return;
     }
 
-    navigate(from, { replace: true });
+    navigate('/households', { replace: true });
   }
 
   return (

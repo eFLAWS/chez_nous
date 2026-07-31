@@ -42,56 +42,86 @@
       <div class="absolute bottom-0 right-0 w-64 h-64 bg-lime-400/15 rounded-full blur-[90px]"></div>
     </div>
 
+    <!-- HEADER -->
     <header class="relative z-20 px-4 pt-4 pb-3 border-b border-white/10 shrink-0">
       <div class="flex items-center justify-between gap-3">
         <div class="flex items-center gap-3">
-          <button class="w-10 h-10 rounded-2xl glass border border-white/10 flex items-center justify-center text-emerald-300 shadow-lg shadow-emerald-500/10">
-            <i class="fa-solid fa-house-chimney"></i>
+          
+          <!-- ICONE DU FOYER (Personnalisable avec import d'image) -->
+          <button title="Changer la photo / icône du foyer" class="relative w-10 h-10 rounded-2xl glass border border-white/10 flex items-center justify-center text-emerald-300 shadow-lg shadow-emerald-500/10 overflow-hidden group hover:border-emerald-400/50 transition">
+            <!-- Si une image existe : <img src="/path/to/icon.jpg" alt="Foyer" class="w-full h-full object-cover" /> -->
+            <i class="fa-solid fa-house-chimney text-emerald-300 group-hover:scale-110 transition-transform"></i>
+            <span class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center text-[10px] text-white font-medium transition">
+              <i class="fa-solid fa-camera"></i>
+            </span>
           </button>
-          <div>
+
+          <!-- SELECTEUR DE FOYER + OPTION GERER MES LOGEMENTS -->
+          <div class="relative group">
             <p class="text-[10px] uppercase tracking-[0.22em] text-slate-400">Foyer actif</p>
-            <div class="flex items-center gap-1.5 text-sm font-semibold text-white">
+            <button class="flex items-center gap-1.5 text-sm font-semibold text-white hover:text-emerald-300 transition">
               <span>Super Coloc</span>
               <i class="fa-solid fa-chevron-down text-[10px] text-slate-400"></i>
+            </button>
+
+            <!-- Dropdown sélection & gestion du logement -->
+            <div class="pointer-events-none absolute left-0 top-full mt-2 w-52 rounded-2xl border border-white/10 bg-slate-950/95 backdrop-blur-xl shadow-2xl z-30 opacity-0 invisible group-hover:opacity-100 group-hover:visible group-focus-within:opacity-100 group-focus-within:visible transition duration-150 p-1.5 space-y-1">
+              <p class="px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">Mes foyers</p>
+              <a href="#" class="flex items-center justify-between px-3 py-2 text-xs rounded-xl bg-emerald-500/15 text-emerald-300 font-medium">
+                <span>Super Coloc</span>
+                <i class="fa-solid fa-check text-[10px]"></i>
+              </a>
+              <a href="#" class="flex items-center justify-between px-3 py-2 text-xs rounded-xl text-slate-300 hover:bg-slate-900 font-medium">
+                <span>Maison de Campagne</span>
+              </a>
+              <hr class="border-white/10 my-1">
+              <a href="#logements" class="flex items-center gap-2 px-3 py-2 text-xs rounded-xl text-emerald-400 hover:bg-emerald-500/10 font-semibold transition">
+                <i class="fa-solid fa-sliders text-xs"></i>
+                <span>Gérer mes logements</span>
+              </a>
             </div>
           </div>
+
         </div>
 
-        <!-- Icone de streak où l'utilisateur a effectué des tâches ménagères-->
+        <!-- STREAK, GEMMES & PROFIL -->
         <div class="flex items-center gap-2">
           <div class="rounded-2xl border border-amber-500/20 bg-amber-500/10 px-2.5 py-1.5 flex items-center gap-1.5 text-[11px] font-semibold text-amber-300">
             <i class="fa-solid fa-fire"></i>
             <span>5</span>
           </div>
-          <!-- Icone de points de récompense pour avoir accompli des tâches -->
           <div class="rounded-2xl border border-sky-500/20 bg-sky-500/10 px-2.5 py-1.5 flex items-center gap-1.5 text-[11px] font-semibold text-sky-300">
             <i class="fa-solid fa-gem"></i>
             <span>320</span>
           </div>
-          <!-- Icone de profil et réglages-->
           <div class="relative group">
             <button class="relative w-10 h-10 rounded-2xl glass border border-white/10 flex items-center justify-center text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-400">
               <i class="fa-regular fa-user"></i>
             </button>
-            <div class="pointer-events-none absolute right-0 top-full mt-2 w-44 rounded-3xl border border-white/10 bg-slate-950/95 backdrop-blur-xl shadow-2xl shadow-black/40 opacity-0 invisible transition duration-150 group-hover:opacity-100 group-hover:visible group-focus-within:opacity-100 group-focus-within:visible">
-              <a href="#" class="block px-4 py-3 text-sm text-slate-100 hover:bg-slate-900">Réglages</a>
-              <a href="#" class="block px-4 py-3 text-sm text-slate-100 hover:bg-slate-900">Profil</a>
+            <div class="pointer-events-none absolute right-0 top-full mt-2 w-44 rounded-3xl border border-white/10 bg-slate-950/95 backdrop-blur-xl shadow-2xl opacity-0 invisible transition duration-150 group-hover:opacity-100 group-hover:visible group-focus-within:opacity-100 group-focus-within:visible">
+              <a href="#reglages" class="block px-4 py-3 text-sm text-slate-100 hover:bg-slate-900">Réglages</a>
+              <a href="#profil" class="block px-4 py-3 text-sm text-slate-100 hover:bg-slate-900">Profil</a>
               <hr class="border-slate-800/70">
-              <a href="#" class="block px-4 py-3 text-sm text-rose-300 hover:bg-slate-900">Se déconnecter</a>
+              <a href="#logout" class="block px-4 py-3 text-sm text-rose-300 hover:bg-slate-900">Se déconnecter</a>
             </div>
           </div>
         </div>
       </div>
     </header>
 
-    <!-- Vue sommaire du layout du foyer avec en rouge les salles ayant le plus de tâches et en vert les salles bien entretenues -->
+    <!-- CONTENU PRINCIPAL SCROLLABLE -->
     <main class="relative z-10 flex-1 overflow-y-auto no-scrollbar px-4 py-4 space-y-4">
-      <section class="relative overflow-hidden rounded-[28px] border border-white/10 p-4 glass card-glow">
+      
+      <!-- CARTE "VUE DU FOYER" -> MÈNE SUR LA PAGE "PLAN" -->
+      <section onclick="window.location.hash='plan'" class="relative overflow-hidden rounded-[28px] border border-white/10 p-4 glass card-glow cursor-pointer hover:border-emerald-400/40 hover:scale-[1.01] transition duration-200">
         <div class="absolute -right-8 -bottom-8 w-32 h-32 rounded-full bg-emerald-500/10 blur-3xl"></div>
         <div class="flex items-start justify-between mb-3">
           <div>
             <p class="text-[10px] uppercase tracking-[0.24em] text-emerald-300/80">Vue du foyer</p>
-            <h2 class="text-base font-semibold text-white">Super Coloc</h2>
+            <h2 class="text-base font-semibold text-white flex items-center gap-1.5">
+              Pièces du logement
+              <i class="fa-solid fa-chevron-right text-xs text-slate-400"></i>
+            </h2>
           </div>
           <div class="rounded-2xl border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1.5 text-[10px] font-semibold text-emerald-300">
             <i class="fa-solid fa-circle"></i> 3 pièces actives
@@ -107,10 +137,9 @@
 
           <p class="text-[11px] text-slate-300 flex items-center gap-2">
             <i class="fa-solid fa-hand-pointer text-emerald-300"></i>
-            Toucher une pièce pour interagir
+            Toucher la carte pour voir le plan détaillé
           </p>
 
-          <!-- Barre de progression de la propreté globale va du rouge au vert avec un gradient -->
           <div class="rounded-[20px] border border-white/10 bg-white/5 p-3">
             <div class="flex items-center justify-between mb-2">
               <p class="text-[11px] font-semibold text-slate-200">Propreté globale</p>
@@ -120,51 +149,59 @@
               <div class="h-full rounded-full bg-gradient-to-r from-emerald-300 via-emerald-400 to-teal-300" style="width:78%"></div>
             </div>
           </div>
-
         </div>
       </section>
 
+      <!-- RACCOURCIS : TÂCHES & DÉPENSES -->
       <section class="grid grid-cols-2 gap-3">
-        <article class="rounded-[22px] border border-white/10 bg-slate-900/60 p-3.5">
+        
+        <!-- RACCOURCI TÂCHES -> MÈNE VERS LA PAGE TÂCHES -->
+        <article onclick="window.location.hash='taches'" class="rounded-[22px] border border-white/10 bg-slate-900/60 p-3.5 cursor-pointer hover:border-emerald-400/40 hover:scale-[1.02] transition duration-200">
           <div class="flex items-center justify-between mb-3">
             <div class="w-9 h-9 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-300">
               <i class="fa-solid fa-list-check"></i>
             </div>
             <span class="text-[11px] font-semibold text-emerald-300">3 du jour</span>
           </div>
-          <p class="text-sm font-semibold text-white">Tâches ménagères</p>
+          <p class="text-sm font-semibold text-white flex items-center justify-between">
+            Tâches ménagères
+            <i class="fa-solid fa-chevron-right text-[10px] text-slate-500"></i>
+          </p>
           <p class="text-[11px] text-slate-400 mt-1">Prochaine : Vaisselle</p>
         </article>
 
-        <article class="rounded-[22px] border border-white/10 bg-slate-900/60 p-3.5">
+        <!-- RACCOURCI DÉPENSES & COURSES -> MÈNE VERS LA PAGE DÉPENSES -->
+        <article onclick="window.location.hash='depenses'" class="rounded-[22px] border border-white/10 bg-slate-900/60 p-3.5 cursor-pointer hover:border-sky-400/40 hover:scale-[1.02] transition duration-200">
           <div class="flex items-center justify-between mb-3">
             <div class="w-9 h-9 rounded-2xl bg-sky-500/10 flex items-center justify-center text-sky-300">
               <i class="fa-solid fa-cart-shopping"></i>
             </div>
             <span class="text-[11px] font-semibold text-sky-300">5 articles</span>
           </div>
-          <p class="text-sm font-semibold text-white">Liste de courses</p>
+          <p class="text-sm font-semibold text-white flex items-center justify-between">
+            Liste de courses
+            <i class="fa-solid fa-chevron-right text-[10px] text-slate-500"></i>
+          </p>
           <p class="text-[11px] text-slate-400 mt-1">Dernier ajout : Lait</p>
         </article>
       </section>
 
-      <!-- Tâches du jour trié par ordre de priorité et si elles sont directement attribuées à l'utilisateur -->
+      <!-- SECTION TÂCHES DU JOUR -> MÈNE VERS LA PAGE TÂCHES -->
       <section class="rounded-[24px] border border-white/10 bg-slate-900/60 p-3.5 space-y-3">
         <div class="flex items-center justify-between">
           <div>
             <p class="text-[10px] uppercase tracking-[0.24em] text-slate-400">Aujourd’hui</p>
             <h2 class="text-sm font-semibold text-white">Tâches du jour</h2>
           </div>
-          <button class="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-[10px] font-semibold text-emerald-300">
+          <button onclick="window.location.hash='taches'" class="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-[10px] font-semibold text-emerald-300 hover:bg-emerald-500/20 transition">
             Voir tout (2)
           </button>
         </div>
 
-        <!-- Tâche du jour avec deadline -->
         <div class="space-y-2.5">
           <article class="rounded-[20px] border border-white/10 bg-white/5 p-3">
             <div class="flex items-start gap-2.5">
-              <input type="checkbox" class="mt-1 h-4 w-4 rounded border-white/10 bg-slate-950/70 accent-emerald-400" />
+              <input type="checkbox" class="mt-1 h-4 w-4 rounded border-white/10 bg-slate-950/70 accent-emerald-400 cursor-pointer" />
               <div class="flex-1">
                 <div class="flex items-center justify-between gap-2">
                   <h3 class="text-sm font-semibold text-white">Nettoyer la table du salon</h3>
@@ -178,10 +215,9 @@
             </div>
           </article>
           
-          <!-- Tâche en retard donc colorée en rouge -->
           <article class="rounded-[20px] border border-rose-400/20 bg-rose-500/10 p-3">
             <div class="flex items-start gap-2.5">
-              <input type="checkbox" class="mt-1 h-4 w-4 rounded border-white/10 bg-slate-950/70 accent-emerald-400" />
+              <input type="checkbox" class="mt-1 h-4 w-4 rounded border-white/10 bg-slate-950/70 accent-emerald-400 cursor-pointer" />
               <div class="flex-1">
                 <div class="flex items-center justify-between gap-2">
                   <h3 class="text-sm font-semibold text-white">Vider le lave-vaisselle</h3>
@@ -199,36 +235,42 @@
       
     </main>
 
-    <!-- Footer fixe pour naviguer entre les pages-->
+    <!-- FOOTER FIXE AVEC NOUVEL ONGLET DÉPENSES -->
     <footer class="relative z-20 border-t border-white/10 bg-slate-950/80 px-2 py-2 shrink-0">
-      <nav class="rounded-[24px] border border-white/10 bg-slate-900/80 p-1.5 flex justify-between items-center gap-1">
-        <!-- Page d'Accueil, arrivée par défaut, on y retrouve les informations principales et les notifications -->
-        <a href="#" class="flex-1 flex flex-col items-center justify-center gap-1 py-2 rounded-2xl bg-emerald-500/15 text-emerald-300">
-          <i class="fa-solid fa-house"></i>
-          <span class="text-[9px] font-semibold">Accueil</span>
+      <nav class="rounded-[24px] border border-white/10 bg-slate-900/80 p-1.5 flex justify-between items-center gap-1 overflow-x-auto no-scrollbar">
+        <!-- 1. Accueil (Vue active) -->
+        <a href="#accueil" class="flex-1 flex flex-col items-center justify-center gap-1 py-1.5 px-1 rounded-2xl bg-emerald-500/15 text-emerald-300 min-w-[50px]">
+          <i class="fa-solid fa-house text-xs"></i>
+          <span class="text-[8px] sm:text-[9px] font-semibold">Accueil</span>
         </a>
-        <!-- Page de visionnage et édition du plan du foyer -->
-        <a href="#" class="flex-1 flex flex-col items-center justify-center gap-1 py-2 rounded-2xl text-slate-400">
-          <i class="fa-solid fa-cubes"></i>
-          <span class="text-[9px] font-semibold">Plan</span>
+        <!-- 2. Plan (Foyer) -->
+        <a href="#plan" class="flex-1 flex flex-col items-center justify-center gap-1 py-1.5 px-1 rounded-2xl text-slate-400 hover:text-white transition min-w-[50px]">
+          <i class="fa-solid fa-cubes text-xs"></i>
+          <span class="text-[8px] sm:text-[9px] font-semibold">Plan</span>
         </a>
-        <!-- Page de gestion des tâches et visionnage de l'historique des taches faites-->
-        <a href="#" class="flex-1 flex flex-col items-center justify-center gap-1 py-2 rounded-2xl text-slate-400">
-          <i class="fa-solid fa-check-double"></i>
-          <span class="text-[9px] font-semibold">Tâches</span>
+        <!-- 3. Tâches -->
+        <a href="#taches" class="flex-1 flex flex-col items-center justify-center gap-1 py-1.5 px-1 rounded-2xl text-slate-400 hover:text-white transition min-w-[50px]">
+          <i class="fa-solid fa-check-double text-xs"></i>
+          <span class="text-[8px] sm:text-[9px] font-semibold">Tâches</span>
         </a>
-        <!-- Page de gestion du calendrier -->
-        <a href="#" class="flex-1 flex flex-col items-center justify-center gap-1 py-2 rounded-2xl text-slate-400">
-          <i class="fa-solid fa-calendar-days"></i>
-          <span class="text-[9px] font-semibold">Calendrier</span>
+        <!-- 4. DÉPENSES (NOUVEAU) -->
+        <a href="#depenses" class="flex-1 flex flex-col items-center justify-center gap-1 py-1.5 px-1 rounded-2xl text-slate-400 hover:text-white transition min-w-[50px]">
+          <i class="fa-solid fa-wallet text-xs"></i>
+          <span class="text-[8px] sm:text-[9px] font-semibold">Dépenses</span>
         </a>
-        <!-- Page de gestion de la vie du foyer, des membres et des animaux de compagnie -->
-        <a href="#" class="flex-1 flex flex-col items-center justify-center gap-1 py-2 rounded-2xl text-slate-400">
-          <i class="fa-solid fa-users"></i>
-          <span class="text-[9px] font-semibold">Vie du foyer</span>
+        <!-- 5. Calendrier -->
+        <a href="#calendrier" class="flex-1 flex flex-col items-center justify-center gap-1 py-1.5 px-1 rounded-2xl text-slate-400 hover:text-white transition min-w-[50px]">
+          <i class="fa-solid fa-calendar-days text-xs"></i>
+          <span class="text-[8px] sm:text-[9px] font-semibold">Calendrier</span>
+        </a>
+        <!-- 6. Vie du foyer -->
+        <a href="#viedufoyer" class="flex-1 flex flex-col items-center justify-center gap-1 py-1.5 px-1 rounded-2xl text-slate-400 hover:text-white transition min-w-[50px]">
+          <i class="fa-solid fa-users text-xs"></i>
+          <span class="text-[8px] sm:text-[9px] font-semibold">Vie du foyer</span>
         </a>
       </nav>
     </footer>
+
   </div>
 </body>
 </html>
