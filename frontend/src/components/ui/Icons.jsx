@@ -172,3 +172,85 @@ export function ScanIcon({ size = 20, className }) {
     </svg>
   );
 }
+
+/* --- Ajoutés pour AppLayout (BottomNav + header) — voir la conversation
+   ROUTING_AND_USER_FLOWS. Même style traits fins que le reste du fichier :
+   les émoji du brouillon initial (🧩📋📅👥🔔🔥💎) ne peuvent pas être
+   teintés avec les couleurs du thème, remplacés ici en SVG comme pour
+   tout le reste de l'app. */
+
+/* Onglet "Plan" — rectangle divisé en pièces, évoque un plan 2D. */
+export function FloorPlanIcon({ size = 22, className }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" className={className} {...base}>
+      <rect x="3.5" y="3.5" width="17" height="17" rx="1.5" />
+      <path d="M12 3.5v8M3.5 13.5H12M12 8h8.5" />
+    </svg>
+  );
+}
+
+/* Onglet "Tâches" — trois lignes cochées, façon liste de corvées. */
+export function ChecklistIcon({ size = 22, className }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" className={className} {...base}>
+      <path d="M4.5 6.5 6 8l2.5-2.5" />
+      <path d="M11 6.5h8.5" />
+      <path d="M4.5 12.5 6 14l2.5-2.5" />
+      <path d="M11 12.5h8.5" />
+      <path d="M4.5 18.5 6 20l2.5-2.5" />
+      <path d="M11 18.5h8.5" />
+    </svg>
+  );
+}
+
+/* Onglet "Calendrier" — grille + anneaux de reliure. */
+export function CalendarIcon({ size = 22, className }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" className={className} {...base}>
+      <rect x="3.5" y="5" width="17" height="15.5" rx="2" />
+      <path d="M3.5 9.5h17M8 3v4M16 3v4" />
+    </svg>
+  );
+}
+
+/* Onglet "Vie du foyer" — groupe de deux occupants, distinct de UserIcon
+   (un seul occupant) déjà défini plus haut dans ce fichier. */
+export function UsersIcon({ size = 22, className }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" className={className} {...base}>
+      <circle cx="9" cy="8" r="3" />
+      <path d="M3.5 20c0-3 2.5-5.2 5.5-5.2s5.5 2.2 5.5 5.2" />
+      <circle cx="17.5" cy="9" r="2.3" />
+      <path d="M15.5 14.3c2.6.3 4.5 2.3 4.5 4.9" />
+    </svg>
+  );
+}
+
+/* Cloche de notifications (header AppLayout). */
+export function BellIcon({ size = 18, className }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" className={className} {...base}>
+      <path d="M6 10.5a6 6 0 0 1 12 0c0 4 1.2 5.5 1.8 6.3H4.2C4.8 16 6 14.5 6 10.5Z" />
+      <path d="M10 19.5a2.2 2.2 0 0 0 4 0" />
+    </svg>
+  );
+}
+
+/* Flamme (streak de gamification, header AppLayout). */
+export function FlameIcon({ size = 16, className }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" className={className} {...base}>
+      <path d="M12 3c1 2.5-1 3.8-1 6 0 1.4 1 2.3 2 2.3 1.3 0 1.8-1.1 1.8-1.1 1.4 1.4 2.2 3.2 2.2 5A5 5 0 0 1 7 15.2C7 10 12 8 12 3Z" />
+    </svg>
+  );
+}
+
+/* Gemme (points de gamification, header AppLayout). */
+export function GemIcon({ size = 16, className }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" className={className} {...base}>
+      <path d="M6 4h12l3 5-9 11L3 9Z" />
+      <path d="M3 9h18M9 4l-1 5 4 11 4-11-1-5" />
+    </svg>
+  );
+}
