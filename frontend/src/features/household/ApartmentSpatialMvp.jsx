@@ -38,7 +38,7 @@ import { useState, useMemo, useEffect } from "react";
 import { MOCK_USER } from "./mockData";
 import { generateFloorTiles, extractRoomRectsFromTiles } from "../layout-editor/utils/layoutGeneration";
 import { downloadLayoutAsJson, readLayoutFile } from "../layout-editor/utils/layoutStorage";
-import { fetchHouseholdLayout, saveFloorLayout, resetHouseholdLayout } from "./utils/householdLayoutApi";
+import { fetchHouseholdLayout, saveFloorLayout, resetHouseholdLayout } from "./floorPlanService";
 import FloorView2D from "./FloorView2D";
 import Plan2DView from "./Plan2DView";
 import LayoutEditor from "../layout-editor/components/LayoutEditor";

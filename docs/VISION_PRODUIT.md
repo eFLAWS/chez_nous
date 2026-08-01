@@ -1,6 +1,6 @@
 # 🎯 Chez Nous (Homee) — Vision Produit
 
-> **Document de référence vivant, distinct de `CHEZ_NOUS_SUIVI_PROJET.md`.** Celui-ci répond à "qu'est-ce que l'app doit faire et pour qui" (le **quoi**) ; l'autre répond à "où en est le code" (le **où**). Se met à jour à chaque évolution de vision — pas à chaque session de code.
+> **Document de référence vivant, distinct de `PROJET.md`.** Celui-ci répond à "qu'est-ce que l'app doit faire et pour qui" (le **quoi**) ; l'autre répond à "où en est le code" (le **où**). Se met à jour à chaque évolution de vision — pas à chaque session de code.
 >
 > **Dernière mise à jour :** 31 juillet 2026
 
@@ -31,7 +31,7 @@ Une application de **gestion de foyer centralisée** qui organise tâches ménag
 - Un foyer doit avoir **au moins un PROPRIETAIRE**.
 - **Créer un foyer** = dessiner son plan 2D (outil maison, ou scan d'un dessin). La personne qui crée devient automatiquement PROPRIETAIRE.
 - Le PROPRIETAIRE peut **transférer l'ownership** à tout moment.
-- Un PROPRIETAIRE qui part **doit transférer avant de partir** s'il reste d'autres occupants ; s'il est seul, le foyer est **supprimé** (cascade plan/tâches/dépenses). *(Déjà spécifié et implémenté côté ancien backend — cf. `CHEZ_NOUS_SUIVI_PROJET.md` §3.1 ; à reporter sur Supabase.)*
+- Un PROPRIETAIRE qui part **doit transférer avant de partir** s'il reste d'autres occupants ; s'il est seul, le foyer est **supprimé** (cascade plan/tâches/dépenses). *(Déjà spécifié et implémenté côté ancien backend — cf. `PROJET.md` §3.1 ; à reporter sur Supabase.)*
 - **LOCATAIRE** : accès complet tâches/dépenses/courses/agenda, lecture seule sur le plan.
 - **Invité** *(nouveau concept, voir §7)* : présence à durée limitée, droits restreints, visibilité cloisonnée.
 

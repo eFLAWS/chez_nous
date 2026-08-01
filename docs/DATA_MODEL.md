@@ -24,7 +24,6 @@ erDiagram
     USERS {
         uuid id PK
         string email UK
-        string password_hash
         string display_name
         string avatar_url
         timestamp created_at
@@ -87,10 +86,11 @@ Stocke les comptes utilisateurs de la plateforme.
 | :--- | :--- | :--- | :--- |
 | `id` | `UUID` | `PRIMARY KEY`, Default `gen_random_uuid()` | Identifiant unique de l'utilisateur. |
 | `email` | `VARCHAR(255)` | `UNIQUE`, `NOT NULL` | Adresse email de connexion. |
-| `password_hash` | `VARCHAR(255)` | `NOT NULL` | Hash du mot de passe (ex: bcrypt / Argon2). |
 | `display_name` | `VARCHAR(100)` | `NOT NULL` | Nom d'affichage (ex: "Alex", "Admin"). |
 | `avatar_url` | `TEXT` | `NULLABLE` | Lien vers l'image de profil. |
 | `created_at` | `TIMESTAMPTZ` | `NOT NULL`, Default `NOW()` | Date d'inscription. |
+
+> **Pas de colonne `password_hash` ici** *(corrigé — incohérence trouvée avec §6, qui l'affirmait déjà)* : Supabase Auth gère l'authentification dans `auth.users`, jamais dupliquée dans `public.users`.
 
 ---
 
