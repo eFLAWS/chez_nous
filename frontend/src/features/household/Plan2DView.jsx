@@ -16,7 +16,7 @@
 // jamais coupée.
 //
 // Clic sur une pièce : optionnel (`onSelectRoom`), pour sauter directement
-// dans la Vue 2.5D centrée sur cette pièce si le parent le souhaite.
+// dans la Vue 3D centrée sur cette pièce si le parent le souhaite.
 //
 // Lit exactement les mêmes `tiles`/`rooms` que FloorView2D — les deux
 // vues restent en accord sur le même layout, juste rendu différemment.
@@ -42,7 +42,7 @@ export default function Plan2DView({ floor, tiles, rooms, onSelectRoom }) {
 
   return (
     <div className="plan2d-view">
-      <p className="plan2d-hint">{floor.name} — vue d'ensemble (touchez une pièce pour vous y rendre en 2.5D)</p>
+      <p className="plan2d-hint">{floor.name} — vue d'ensemble (touchez une pièce pour vous y rendre en 3D)</p>
 
       <div className="plan2d-scroll">
         <div

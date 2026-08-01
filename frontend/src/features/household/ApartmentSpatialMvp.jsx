@@ -3,7 +3,7 @@
 //   - "onboarding" : aucun étage/pièce -> écran d'accueil
 //   - "editing"    : Mode Édition (LayoutEditor) -> CRÉE/MODIFIE le plan
 //   - "app"        : le logement sélectionné, commutateur "Plan 2D" /
-//                    "Vue 2.5D" — deux façons de LIRE le même plan déjà
+//                    "Vue 3D" — deux façons de LIRE le même plan déjà
 //                    construit, jamais de le modifier (ça, c'est le rôle
 //                    exclusif du mode "editing").
 //
@@ -118,18 +118,18 @@ export default function ApartmentSpatialMvp({
     setInitialRoomId(null); // repart sur la position par défaut du nouvel étage
   };
 
-  // Bascule vers "Vue 2.5D" — recentre sur la première pièce valide de
+  // Bascule vers "Vue 3D" — recentre sur la première pièce valide de
   // l'étage à chaque fois.
   const handleShowFloorView = () => {
     setInitialRoomId(roomsOnSelectedFloor[0]?.id ?? null);
-    setViewMode("2.5d");
+    setViewMode("3d");
   };
 
   // Clic sur une pièce depuis Plan2DView (lecture seule) : bascule vers
-  // la Vue 2.5D, centrée sur CETTE pièce précisément.
+  // la Vue 3D, centrée sur CETTE pièce précisément.
   const handleSelectRoomFromPlan = (roomId) => {
     setInitialRoomId(roomId);
-    setViewMode("2.5d");
+    setViewMode("3d");
   };
 
   /* ------------------------------ Mode Édition ------------------------------ */
@@ -173,8 +173,8 @@ export default function ApartmentSpatialMvp({
     setDoorsWithIds((prev) => ({ ...prev, [floorId]: result.doors }));
     setSelectedFloorId(floorId);
     setMode("app");
-    setViewMode("2.5d");
-    // Bascule vers la Vue 2.5D après enregistrement, comme demandé
+    setViewMode("3d");
+    // Bascule vers la Vue 3D après enregistrement, comme demandé
     // explicitement — l'avatar apparaît immédiatement dans le plan qui
     // vient d'être enregistré.
     setInitialRoomId(null); // utilise floor.avatarStart, qu'on vient de recevoir
@@ -363,11 +363,11 @@ export default function ApartmentSpatialMvp({
         <button
           type="button"
           role="tab"
-          aria-selected={viewMode === "2.5d"}
-          className={viewMode === "2.5d" ? "spatial-mvp__tab spatial-mvp__tab--active" : "spatial-mvp__tab"}
+          aria-selected={viewMode === "3d"}
+          className={viewMode === "3d" ? "spatial-mvp__tab spatial-mvp__tab--active" : "spatial-mvp__tab"}
           onClick={handleShowFloorView}
         >
-          🏠 Vue 2.5D
+          🏠 Vue 3D
         </button>
       </div>
 

@@ -8,13 +8,13 @@
 └── households/:householdId          [AuthGuard + HouseholdMemberGuard] Foyer Actif
     │                                └─ Enveloppé par AppLayout (Header + Bottom Nav)
     ├── (index)                      -> Dashboard d'accueil (Résumé propreté, tâches du jour, courses)[cite: 3, 4]
-    ├── spatial                      -> Vue interactive du plan 2D/2.5D (Lecture / Interaction pièces)[cite: 3, 4]
+    ├── spatial                      -> Vue interactive du plan 2D/3D (Lecture / Interaction pièces)[cite: 3, 4]
     ├── tasks                        -> Gestionnaire de corvées & assignations (par pièce/occupant)[cite: 2, 3, 4]
     ├── calendar                     -> Planning du foyer & événements partagés
     ├── life                         -> Vie du foyer (Membres, occupants, invite_code, dépenses)[cite: 2, 3, 4]
     │
     └── editor                       [Plein écran - OwnerGuard]
-                                     -> Éditeur de plan 2D/2.5D (Réservé au rôle PROPRIETAIRE)
+                                     -> Éditeur de plan 2D/3D (Réservé au rôle PROPRIETAIRE)
 🔄 3. Moteur de Redirection Automatique (Guards)À l'ouverture de l'application, les middlewares de route évaluent la session dans l'ordre suivant :Plaintext[Utilisateur tente d'accéder à une route]
                     │
    1. AuthGuard : Session Supabase valide ?

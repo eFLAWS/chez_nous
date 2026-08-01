@@ -4,7 +4,7 @@
 // AppRouter.jsx) — même forme (useParams, rôle résolu par hook dédié),
 // mais rewiré sur household_members.role plutôt que occupants/api.js.
 //
-// ⚠️ PÉRIMÈTRE DE CETTE VERSION : n'affiche PAS le plan 2D/2.5D.
+// ⚠️ PÉRIMÈTRE DE CETTE VERSION : n'affiche PAS le plan 2D/3D.
 // ApartmentSpatialMvp reste branché sur l'ancien backend (IDs
 // incompatibles avec les UUID Supabase) — migration floor_plans =
 // étape suivante, volontairement hors périmètre ici.
@@ -64,8 +64,8 @@ export default function HouseholdViewPage() {
       <section className="household-view-page__plan-placeholder">
         <p>
           {isOwner
-            ? 'Le plan 2D/2.5D arrivera ici une fois la migration terminée.'
-            : 'Le plan 2D/2.5D (lecture seule pour un locataire) arrivera ici une fois la migration terminée.'}
+            ? 'Le plan 2D/3D arrivera ici une fois la migration terminée.'
+            : 'Le plan 2D/3D (lecture seule pour un locataire) arrivera ici une fois la migration terminée.'}
         </p>
       </section>
     </div>

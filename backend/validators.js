@@ -330,7 +330,7 @@ function validateFloor(input, { existingHouseholdIds } = {}) {
   }
 
   // Champs ajoutés pour correspondre au modèle du frontend (Plan 2D /
-  // Vue 2.5D — voir la conversation) : tous optionnels à la création
+  // Vue 3D — voir la conversation) : tous optionnels à la création
   // (un étage peut exister sans qu'aucune pièce n'y ait encore été
   // tracée, donc sans dimensions de grille connues), mais valides s'ils
   // sont fournis.

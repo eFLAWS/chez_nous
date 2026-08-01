@@ -48,7 +48,7 @@ erDiagram
     FLOOR_PLANS {
         uuid id PK
         uuid household_id FK, UK
-        jsonb layout_data "Modèle 2D/2.5D (Single Source of Truth)"
+        jsonb layout_data "Modèle 2D/3D (Single Source of Truth)"
         integer version
         timestamp updated_at
     }
@@ -123,7 +123,7 @@ Gère le rattachement N-N entre les utilisateurs et les foyers, ainsi que les ni
 ---
 
 ### 📐 Table `floor_plans`
-Stocke la donnée spatiale du logement pour le moteur 2D/2.5D.
+Stocke la donnée spatiale du logement pour le moteur 2D/3D.
 
 | Colonne | Type | Contraintes | Description |
 | :--- | :--- | :--- | :--- |
@@ -172,7 +172,7 @@ Toutes les requêtes en base de données sont soumises à la vérification de l'
 
 | Action / Ressource | `PROPRIETAIRE` | `LOCATAIRE` |
 | :--- | :---: | :---: |
-| **Consulter le plan 2D / 2.5D** | ✅ | ✅ |
+| **Consulter le plan 2D / 3D** | ✅ | ✅ |
 | **Modifier le plan (Murs, pièces, meubles)** | ✅ | ❌ *(Lecture seule)* |
 | **Créer / Cocher des Tâches** | ✅ | ✅ |
 | **Ajouter / Consulter des Dépenses** | ✅ | ✅ |
@@ -204,7 +204,7 @@ Lorsqu'un utilisateur déclenche l'action "Quitter le foyer", l'application exé
                           ▼                          ▼
                [Suppression définitive]   [Bloqué : Pop-up Obligatoire]
                - Foyer                    "Veuillez choisir le nouveau
-               - Plan 2D/2.5D             Propriétaire parmi les Locataires"
+               - Plan 2D/3D             Propriétaire parmi les Locataires"
                - Tâches & Dépenses                   │
                                                      ▼
                                           [Sélection du successeur]
@@ -216,7 +216,7 @@ Lorsqu'un utilisateur déclenche l'action "Quitter le foyer", l'application exé
 
 ## 🎨 5. Structure JSON `floor_plans.layout_data` (Single Source of Truth)
 
-Ce document JSON stocke l'intégralité du plan 2D et permet la projection instantanée en 2.5D/Isometric Canvas via Three.js ou Pixi.js.
+Ce document JSON stocke l'intégralité du plan 2D et permet la projection instantanée en 3D/Isometric Canvas via Three.js ou Pixi.js.
 
 ---
 

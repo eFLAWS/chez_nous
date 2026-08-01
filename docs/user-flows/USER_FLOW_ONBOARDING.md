@@ -85,7 +85,7 @@ Présente un accordéon à 3 options principales + 1 option secondaire d'abandon
 4. **Option D — Continuer sans foyer :** Action secondaire pour passer la configuration $\rightarrow$ Accès immédiat à l'application en état restreint.
 
 ### Step 3 : Tableau de bord (`/home`)
-* **Si `households.length > 0` :** Charge le plan 2.5D, les tâches et membres du foyer actif. Si l'utilisateur est `LOCATAIRE`, les outils d'édition du plan sont masqués/désactivés.
+* **Si `households.length > 0` :** Charge le plan 3D, les tâches et membres du foyer actif. Si l'utilisateur est `LOCATAIRE`, les outils d'édition du plan sont masqués/désactivés.
 * **Si `households.length == 0` :** Affiche la vue "Foyer vide" avec incitation à créer ou rejoindre un logement.
 
 ---
@@ -94,7 +94,7 @@ Présente un accordéon à 3 options principales + 1 option secondaire d'abandon
 
 | Cas limite | Risque | Résolution UX / Technique |
 | :--- | :--- | :--- |
-| **Le Propriétaire veut quitter le foyer ($N > 1$)** | Le foyer se retrouve sans gestionnaire du plan 2D/2.5D. | Action bloquée. Une modale impose le transfert du rôle `PROPRIETAIRE` à l'un des `LOCATAIRES` avant de valider le départ. |
+| **Le Propriétaire veut quitter le foyer ($N > 1$)** | Le foyer se retrouve sans gestionnaire du plan 2D/3D. | Action bloquée. Une modale impose le transfert du rôle `PROPRIETAIRE` à l'un des `LOCATAIRES` avant de valider le départ. |
 | **Le Propriétaire quitte le foyer ($N = 1$)** | Foyer orphelin sans aucun occupant ($N=0$). | Suppression définitive et automatique du `Household`, de son `FloorPlan`, des `Tasks` et `Expenses` en BDD. |
 | **Code d'invitation erroné** | Blocage utilisateur. | Message d'erreur explicite ("Code introuvable ou expiré") avec possibilité de réessayer sans recharger la page. |
 | **Changement de Foyer Actif** | Incohérence des données affichées à l'écran. | Utilisation d'un `HouseholdContext` global côté Frontend. Tout changement recharge l'état complet lié au nouvel `household_id`. |

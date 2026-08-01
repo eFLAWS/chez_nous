@@ -2,7 +2,7 @@
 
 ## Vision
 
-SaaS de gestion de foyer centralisée, organisée autour du **plan 2D/2.5D réel du logement** — pas une liste de tâches déconnectée du contexte spatial. Cibles : colocations, familles, couples, et potentiellement location courte durée (encore exploratoire, voir `docs/VISION_PRODUIT.md` §7). Détail complet et questions ouvertes : `docs/VISION_PRODUIT.md`.
+SaaS de gestion de foyer centralisée, organisée autour du **plan 2D/3D réel du logement** — pas une liste de tâches déconnectée du contexte spatial. Cibles : colocations, familles, couples, et potentiellement location courte durée (encore exploratoire, voir `docs/VISION_PRODUIT.md` §7). Détail complet et questions ouvertes : `docs/VISION_PRODUIT.md`.
 
 ## Valeurs UX non négociables
 
@@ -13,7 +13,7 @@ SaaS de gestion de foyer centralisée, organisée autour du **plan 2D/2.5D réel
 
 ## Architecture actuelle
 
-- **Déjà sur Supabase ET testé en conditions réelles** : auth (session réelle), foyers/membres/rôles (créer, lister, détail, `invite_code`), plan 2D/2.5D (table `floor_plans`, blob JSONB `layout_data`, verrou optimiste sur `version`).
+- **Déjà sur Supabase ET testé en conditions réelles** : auth (session réelle), foyers/membres/rôles (créer, lister, détail, `invite_code`), plan 2D/3D (table `floor_plans`, blob JSONB `layout_data`, verrou optimiste sur `version`).
 - **Coquille applicative construite** : `AppLayout.jsx` — header avec switcher de foyer + menu profil, 6 onglets (Accueil, Plan, Tâches, Dépenses, Calendrier, Vie du foyer).
 - **Placeholders sans aucune couche de données** : Tâches, Dépenses, Calendrier — ni ancien backend ni Supabase derrière pour l'instant.
 - **Ancien backend Node.js** : dormant, plus aucune route active ne l'appelle. Gardé comme référence pour la migration du reste (tâches/dépenses), à supprimer une fois celle-ci terminée.
@@ -27,7 +27,7 @@ SaaS de gestion de foyer centralisée, organisée autour du **plan 2D/2.5D réel
 
 ## Décisions techniques clés
 
-- **Plan 2D/2.5D** : un seul blob JSONB par foyer (`floor_plans.layout_data`), pas de tables séparées par entité — source unique de vérité, écriture atomique, verrou optimiste via la colonne `version`.
+- **Plan 2D/3D** : un seul blob JSONB par foyer (`floor_plans.layout_data`), pas de tables séparées par entité — source unique de vérité, écriture atomique, verrou optimiste via la colonne `version`.
 - **Collision spatiale** : bloquer plutôt que pousser les éléments dans l'éditeur.
 - **`ApartmentSpatialMvp.jsx`** gère lui-même la bascule vue/édition via son propre bouton "Modifier le plan" (masqué pour LOCATAIRE) — pas besoin d'une route `/editor` séparée pour que ça fonctionne.
 

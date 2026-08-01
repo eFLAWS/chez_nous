@@ -1,6 +1,6 @@
 // HouseholdSpatialPage.jsx
 // Route /households/:householdId/spatial — vue interactive du plan
-// 2D/2.5D. Monte ApartmentSpatialMvp (construit et testé de longue
+// 2D/3D. Monte ApartmentSpatialMvp (construit et testé de longue
 // date, mais jusqu'ici jamais routé — voir la conversation) maintenant
 // que floorPlanService.js le branche sur Supabase (floor_plans, blob
 // JSONB) plutôt que sur l'ancien backend.

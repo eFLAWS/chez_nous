@@ -12,13 +12,13 @@
 **Chez Nous** (nom commercial : **Homee**) est une application SaaS de gestion de foyer, pensée pour être un produit commercialisable — pas un prototype jetable. Elle cible les **colocations**, **familles** et **couples** qui partagent un même logement.
 
 ### Objectif produit
-Donner à un foyer un espace commun numérique organisé **autour de l'espace physique réel du logement** : au lieu d'une simple liste de tâches ou d'un tableur de dépenses déconnecté du contexte, chaque tâche, chaque note, chaque objet est rattaché à une pièce précise d'un plan 2D/2.5D interactif du logement.
+Donner à un foyer un espace commun numérique organisé **autour de l'espace physique réel du logement** : au lieu d'une simple liste de tâches ou d'un tableur de dépenses déconnecté du contexte, chaque tâche, chaque note, chaque objet est rattaché à une pièce précise d'un plan 2D/3D interactif du logement.
 
 ### Modules fonctionnels visés
 
 | Module | Description | Statut |
 | :--- | :--- | :---: |
-| **Plan interactif 2D/2.5D** | Éditeur de plan (murs, pièces, portes, mobilier), navigable en vue du dessus (2D) ou isométrique (2.5D) | 🟢 Construit, connecté à Supabase et testé en conditions réelles (§3.9, §5) |
+| **Plan interactif 2D/3D** | Éditeur de plan (murs, pièces, portes, mobilier), navigable en vue du dessus (2D) ou isométrique (3D) | 🟢 Construit, connecté à Supabase et testé en conditions réelles (§3.9, §5) |
 | **Rôles & permissions** | PROPRIETAIRE (édition du plan, gestion des membres) / LOCATAIRE (lecture seule sur le plan, accès complet au reste) | 🟢 Fondations backend + affichage frontend faits |
 | **Gestionnaire de tâches** | Tâches ménagères liées à une pièce et/ou un occupant (humain ou animal), récurrence | 🟡 Construit puis retiré temporairement du flux actif (voir §3.4) |
 | **Dépenses partagées** | Suivi des dépenses du foyer, réparties entre occupants | 🔴 Spécifié (schéma + RLS), aucun code |
@@ -55,7 +55,7 @@ Légende : 🟢 Fonctionnel · 🟡 Partiel / en pause · 🔴 Non commencé ou 
 │  CONSTRUIT, TESTÉ, MAIS ENCORE SUR L'ANCIEN BACKEND —          │
 │  ET SURTOUT : PAS MONTÉ DANS LE ROUTING ACTUEL                 │
 │                                                                 │
-│  Plan 2D/2.5D (ApartmentSpatialMvp, LayoutEditor, FloorView2D) │
+│  Plan 2D/3D (ApartmentSpatialMvp, LayoutEditor, FloorView2D) │
 │  → householdLayoutApi.js → api.js → ancien backend Node.js     │
 │  → CRUD par entité (une pièce à la fois), IDs incompatibles    │
 │    avec les UUID Supabase                                       │
@@ -71,7 +71,7 @@ Légende : 🟢 Fonctionnel · 🟡 Partiel / en pause · 🔴 Non commencé ou 
 └───────────────────────────────────────────────────────────────┘
 ```
 
-Autrement dit : ce n'est pas "l'auth est migrée, le reste est sur l'ancien backend" comme affirmé précédemment — les foyers/rôles sont déjà pleinement sur Supabase. Le vrai goulot d'étranglement est le **plan 2D/2.5D**, qui existe et fonctionne mais reste connecté à l'ancien backend et n'est même pas accessible depuis l'app aujourd'hui (`api.js` n'est plus importé que par `householdLayoutApi.js` — plus aucun autre fichier du frontend n'y touche).
+Autrement dit : ce n'est pas "l'auth est migrée, le reste est sur l'ancien backend" comme affirmé précédemment — les foyers/rôles sont déjà pleinement sur Supabase. Le vrai goulot d'étranglement est le **plan 2D/3D**, qui existe et fonctionne mais reste connecté à l'ancien backend et n'est même pas accessible depuis l'app aujourd'hui (`api.js` n'est plus importé que par `householdLayoutApi.js` — plus aucun autre fichier du frontend n'y touche).
 
 ---
 
@@ -103,9 +103,9 @@ Le cœur spatial de l'application.
 - **Modèle de données** : les pièces (`rooms`, simples rectangles `{id, x, y, width, height}`) sont la source de vérité éditable ; les dalles de sol/mur/porte sont **dérivées automatiquement** (`generateFloorTiles`), jamais dessinées à la main. Opération inverse (`extractRoomRectsFromTiles`) pour recharger un plan existant dans l'éditeur.
 - **Limite assumée** : uniquement des pièces rectangulaires (pas de formes en L). Le mobilier existant est réappliqué à la sauvegarde seulement s'il retombe sur la même pièce qu'avant, sinon silencieusement abandonné.
 
-### 3.3 — Vue spatiale 2D/2.5D (navigation, hors édition)
+### 3.3 — Vue spatiale 2D/3D (navigation, hors édition)
 
-- Commutateur à 2 positions dans l'en-tête : **"✏️ Plan 2D"** (éditeur) / **"🏠 Vue 2.5D"** (`FloorView2D`, vue de déplacement/navigation).
+- Commutateur à 2 positions dans l'en-tête : **"✏️ Plan 2D"** (éditeur) / **"🏠 Vue 3D"** (`FloorView2D`, vue de déplacement/navigation).
 - Les deux vues lisent le **même layout sauvegardé**, chacune le rendant différemment — pas de duplication d'état ni de double logique de sauvegarde.
 - L'ancienne "Vue Ensemble" en cartes (`ApartmentOverview2D.jsx`) a été supprimée : redondante avec le Plan 2D qui montre déjà toutes les pièces vues du dessus.
 
@@ -185,7 +185,7 @@ L'ordre de phase est une proposition de priorité, pas une obligation. Beaucoup 
 #### 🅰️ Branchement Supabase des données métier — *le socle*
 Tant que ce chantier n'avance pas, tout le reste tourne sur deux systèmes en parallèle (§2).
 - ~~Câbler les services foyers/occupants/rôles sur Supabase~~ → **déjà fait** (`householdService.js`, vérifié en lisant le code — §2 corrigé en conséquence).
-- ~~Reconnecter le plan 2D/2.5D~~ → **fait et validé par un test réel** (Paul a créé un plan, sauvegardé, rechargé — fonctionne). `floorPlanService.js` lit/écrit le blob `floor_plans.layout_data` en un seul appel avec verrou optimiste sur `version` (colonne déjà en base, jusque-là inutilisée) — remplace `householdLayoutApi.js` (ancien backend, CRUD par entité). Mêmes signatures de fonctions exactement : `ApartmentSpatialMvp.jsx` n'a changé qu'une ligne (son import). Monté sur `/spatial` via `HouseholdSpatialPage.jsx` — le composant gère lui-même la bascule vers son mode édition via son propre bouton "Modifier le plan" (masqué pour LOCATAIRE), donc pas besoin d'une route `/editor` séparée pour que ça fonctionne ; une sous-route dédiée reste une amélioration mobile possible plus tard (chantier 🅲), pas un bloquant. `api.js`/`householdLayoutApi.js` n'ont plus aucun importeur actif, confirmé.
+- ~~Reconnecter le plan 2D/3D~~ → **fait et validé par un test réel** (Paul a créé un plan, sauvegardé, rechargé — fonctionne). `floorPlanService.js` lit/écrit le blob `floor_plans.layout_data` en un seul appel avec verrou optimiste sur `version` (colonne déjà en base, jusque-là inutilisée) — remplace `householdLayoutApi.js` (ancien backend, CRUD par entité). Mêmes signatures de fonctions exactement : `ApartmentSpatialMvp.jsx` n'a changé qu'une ligne (son import). Monté sur `/spatial` via `HouseholdSpatialPage.jsx` — le composant gère lui-même la bascule vers son mode édition via son propre bouton "Modifier le plan" (masqué pour LOCATAIRE), donc pas besoin d'une route `/editor` séparée pour que ça fonctionne ; une sous-route dédiée reste une amélioration mobile possible plus tard (chantier 🅲), pas un bloquant. `api.js`/`householdLayoutApi.js` n'ont plus aucun importeur actif, confirmé.
 - Câbler tâches/dépenses/calendrier sur Supabase — aucune couche de données n'existe pour l'instant (ni ancien backend, ni Supabase : placeholders statiques uniquement, §2).
 - **Suppression cascade / transfert de propriété obligatoire avant départ** (§3.1 — déjà implémenté côté ancien backend Node.js via `isHouseholdOwner()`) : à reporter côté Postgres sous forme de **triggers**, pas seulement de logique applicative React/service — sinon la règle n'est plus garantie une fois qu'on cesse de passer par l'ancien backend.
 - Confirmer que `02_reconcile_with_data_model.sql` et `03_fix_households_select_bootstrap.sql` (§4) ont bien été *exécutées* sur le projet Supabase réel, pas seulement écrites dans le dépôt.
@@ -282,6 +282,6 @@ Pas que du code — des décisions produit/business à anticiper, même si elles
 | 31/07/2026 | Complété §3.9 avec deux étapes manquantes de ce fil (restructuration initiale du routing en routes imbriquées, correctif de redirection post-connexion vers l'Accueil). Transformé §5 d'une liste plate en feuille de route par chantiers priorisés avec dépendances explicites (🅰️ à 🅵). |
 | 31/07/2026 | Création de `docs/VISION_PRODUIT.md` (document compagnon, fige les objectifs/fonctionnalités de l'app suite à une session de clarification produit avec Paul) et restructuration complète de §5 en 4 phases (Fondations → Boucle produit fonctionnelle → Différenciation/robustesse → Commercialisation), avec renvois vers les questions ouvertes de la Vision produit qui doivent être tranchées avant certains chantiers. |
 | 31/07/2026 | Ajout de deux idées reprises d'une réponse de Gemini au même brief (triggers Postgres pour la cascade/transfert de propriété dans 🅰️, brouillon de pricing Gratuit/Premium en Phase 4) — les autres apports de Gemini (équilibrage des dépenses, proposition Invités) ajoutés côté `VISION_PRODUIT.md`. |
-| 31/07/2026 | **Correction d'architecture importante** (§2, 🅰️) : en lisant `householdService.js` plutôt qu'en supposant, foyers/membres/rôles sont **déjà** sur Supabase — l'affirmation inverse d'une version antérieure de ce document était fausse. Le vrai goulot d'étranglement identifié : le plan 2D/2.5D est construit et testé mais parle encore à l'ancien backend et n'est même pas monté dans le routing actuel (`/spatial` = placeholder, pas de route `/editor`). Consigne ajoutée en mémoire : mettre à jour ce document et `README.md` proactivement à chaque avancée, sans attendre la demande. |
-| 31/07/2026 | Reconnexion du plan 2D/2.5D à Supabase (chantier 🅰️) : `floorPlanService.js` créé (blob JSONB + verrou optimiste sur `version`), `ApartmentSpatialMvp.jsx` reconnecté (un seul import changé), monté sur `/spatial` via `HouseholdSpatialPage.jsx`. Pas encore testé en conditions réelles (prochaine étape). |
+| 31/07/2026 | **Correction d'architecture importante** (§2, 🅰️) : en lisant `householdService.js` plutôt qu'en supposant, foyers/membres/rôles sont **déjà** sur Supabase — l'affirmation inverse d'une version antérieure de ce document était fausse. Le vrai goulot d'étranglement identifié : le plan 2D/3D est construit et testé mais parle encore à l'ancien backend et n'est même pas monté dans le routing actuel (`/spatial` = placeholder, pas de route `/editor`). Consigne ajoutée en mémoire : mettre à jour ce document et `README.md` proactivement à chaque avancée, sans attendre la demande. |
+| 31/07/2026 | Reconnexion du plan 2D/3D à Supabase (chantier 🅰️) : `floorPlanService.js` créé (blob JSONB + verrou optimiste sur `version`), `ApartmentSpatialMvp.jsx` reconnecté (un seul import changé), monté sur `/spatial` via `HouseholdSpatialPage.jsx`. Pas encore testé en conditions réelles (prochaine étape). |
 | 01/08/2026 | **Test réel confirmé par Paul** : créer un plan, sauvegarder, recharger — fonctionne. Chantier 🅰️ mis à jour en conséquence. Correction d'une incohérence interne à `docs/DATA_MODEL.md` (repérée en revérifiant les 4 documents avant une nouvelle conversation) : `password_hash` apparaissait dans l'ERD et le dictionnaire de la table `users` alors que la section 6 du même document affirmait déjà son absence (Supabase Auth gère l'auth dans `auth.users`) — retiré des deux premiers endroits. |

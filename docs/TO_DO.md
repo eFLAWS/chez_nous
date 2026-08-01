@@ -12,7 +12,7 @@
 | :-: | :--- | :--- | :---: | :--- |
 | 1 | Le champ `name` (compte) reste un seul champ concaténé alors que les formulaires saisissent prénom/nom séparément — à séparer proprement dans le modèle si on veut les ré-exploiter distinctement ailleurs | `userService.js`, formulaires signup | 🟡 Moyenne | 31/07/2026 |
 | 2 | `useHouseholds()` est appelé indépendamment à 3 endroits (`RequireHousehold`, `HouseholdDashboardPage`, `AppLayout`) — 3 fetches Supabase séparés au lieu d'un cache/contexte partagé. Pas de bug visible pour l'instant, mais à surveiller si des flashs de chargement apparaissent | `useHouseholds.js` et ses 3 appelants | 🟢 Basse | 31/07/2026 |
-| 3 | Reconnexion du plan 2D/2.5D à Supabase (`floorPlanService.js`) : seul le cas nominal a été testé en réel (créer/sauvegarder/recharger). **Pas encore vérifié explicitement** : (a) qu'un LOCATAIRE est bien bloqué en écriture par la RLS s'il tente de sauvegarder, (b) que le message de conflit de version s'affiche bien en cas d'édition concurrente (deux onglets sur le même foyer) | `floorPlanService.js` | 🟡 Moyenne | 01/08/2026 |
+| 3 | Reconnexion du plan 2D/3D à Supabase (`floorPlanService.js`) : seul le cas nominal a été testé en réel (créer/sauvegarder/recharger). **Pas encore vérifié explicitement** : (a) qu'un LOCATAIRE est bien bloqué en écriture par la RLS s'il tente de sauvegarder, (b) que le message de conflit de version s'affiche bien en cas d'édition concurrente (deux onglets sur le même foyer) | `floorPlanService.js` | 🟡 Moyenne | 01/08/2026 |
 
 ## 🎨 UI/UX — petites améliorations
 

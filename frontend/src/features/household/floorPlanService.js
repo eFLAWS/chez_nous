@@ -1,5 +1,5 @@
 // floorPlanService.js
-// Service Supabase pour le plan 2D/2.5D (table floor_plans, un seul
+// Service Supabase pour le plan 2D/3D (table floor_plans, un seul
 // blob JSONB layout_data par foyer — household_id est UNIQUE). Remplace
 // householdLayoutApi.js (ancien backend, CRUD par entité, "supprimer
 // puis recréer" par étage à coups d'appels séquentiels) — voir la

@@ -8,7 +8,7 @@
 
 ## 1. Pitch
 
-Une application de **gestion de foyer centralisée** qui organise tâches ménagères, dépenses, courses et agenda **autour de l'espace physique réel du logement** (plan 2D/2.5D interactif), pour des colocations, familles et couples.
+Une application de **gestion de foyer centralisée** qui organise tâches ménagères, dépenses, courses et agenda **autour de l'espace physique réel du logement** (plan 2D/3D interactif), pour des colocations, familles et couples.
 
 ```
                     ┌───────────────────────────────┐
