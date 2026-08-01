@@ -15,15 +15,17 @@ Le projet reste **en transition** entre deux architectures, mais la bascule a ne
 | **Backend** | Node.js natif + fichier JSON (`backend/`) | Supabase (Postgres + Auth + RLS) |
 | **Auth** | Formulaires maison + session `localStorage` | Supabase Auth (`AuthContext`, `LoginPage`, `SignupPage`) |
 | **Foyers (liste + détail + rôles)** | `HouseholdRoot.jsx` → `HousingDashboard.jsx` | `HouseholdDashboardPage.jsx` (`/households`) → `AppLayout.jsx` (`/households/:id/*`, 6 onglets) |
-| **Plan 2D/3D** | `ApartmentSpatialMvp.jsx` — plus aucun importeur actif (`api.js`/`householdLayoutApi.js` orphelins, confirmé) | `floorPlanService.js` (blob JSONB `floor_plans.layout_data`, verrou optimiste). Monté sur `/spatial`. **Testé en conditions réelles par Paul — fonctionne** |
+| **Plan 2D/3D** | `HouseholdSpatialView.jsx` — plus aucun importeur actif (`api.js`/`householdLayoutApi.js` orphelins, confirmé) | `floorPlanService.js` (blob JSONB `floor_plans.layout_data`, verrou optimiste). Monté sur `/spatial`. **Testé en conditions réelles par Paul — fonctionne** |
 | **Tâches / Dépenses / Calendrier / Vie du foyer** | N'existaient pas | Placeholders statiques (`HouseholdTasksPage.jsx`, `HouseholdExpensesPage.jsx`, `HouseholdCalendarPage.jsx`, `HouseholdLifePage.jsx`) — aucune couche de données encore, ni ancien ni nouveau système |
 | **Monté par `AppRouter.jsx`** | ❌ Non — `HouseholdRoot` retiré du flux | ✅ Oui, c'est le flux principal |
 
 **Le flux réel aujourd'hui :** inscription/connexion (Supabase Auth) → si aucun foyer, `/onboarding` (création réelle sur Supabase) → si un seul foyer, redirection directe vers `/households/:id` (Accueil) ; sinon `/households` (liste, ou `?manage=1` pour la gérer explicitement) → `AppLayout` (header avec switcher de foyer + menu profil, 6 onglets : Accueil, Plan, Tâches, Dépenses, Calendrier, Vie du foyer). **Le plan 2D/3D est monté sur `/spatial`, connecté à Supabase, et testé en conditions réelles — fonctionne** (créer un plan, sauvegarder, recharger).
 
-⚠️ **Correction (voir `docs/PROJET.md` §2, journal) :** une version antérieure de ce README laissait entendre que rien côté données métier n'était sur Supabase — c'est faux pour les foyers, vérifié en lisant `householdService.js`. Le vrai goulot d'étranglement est le plan 2D/3D : entièrement fonctionnel mais toujours branché sur l'ancien backend (`api.js`, CRUD par entité, IDs incompatibles UUID) et **pas monté dans le routing actuel**.
+⚠️ **Note historique (voir `docs/PROJET.md` §2, journal) :** une version antérieure de ce README laissait entendre que rien côté données métier n'était sur Supabase — c'est faux pour les foyers, vérifié en lisant `householdService.js`. Le goulot d'étranglement identifié à l'époque (le plan 2D/3D, alors branché sur l'ancien backend et pas monté dans le routing) est **résolu depuis** : reconnecté à Supabase et testé en conditions réelles (voir plus haut).
 
-`HouseholdRoot.jsx`, `ApartmentSpatialMvp.jsx`, `layout-editor/`, les anciens formulaires d'auth, `App.jsx` et `api.js` restent dans le dépôt **volontairement**, dormants — c'est la référence qui sera portée vers Supabase lors du prochain chantier (voir "Fichiers dormants" plus bas).
+⚠️ **Correction (cette révision, 01/08/2026) :** `layout-editor/` (`LayoutEditor.jsx` et toute sa chaîne d'utilitaires) **n'est pas dormant** — c'est le Mode Édition réellement monté par `HouseholdSpatialView.jsx` (actif, routé sur `/spatial`), au même titre que `FloorView3D.jsx`, `Plan2DView.jsx`, `OnboardingScreen.jsx` et `features/household/utils/pathfinding.js`, tous importés par lui et donc actifs eux aussi. Seuls restent réellement dormants (aucun importeur actif depuis `AppRouter.jsx`) : `HouseholdRoot.jsx`, `HousingDashboard.jsx`, `CreateHousingScreen.jsx`, `JoinHousingModal.jsx`, `ScanPlanModal.jsx`, les anciens formulaires d'auth, `App.jsx`, `api.js` et `householdLayoutApi.js`. Détail corrigé dans l'arborescence ci-dessous.
+
+📝 **Renommage (01/08/2026, demande explicite de Paul)** : `ApartmentSpatialMvp.jsx`/`.css` → **`HouseholdSpatialView.jsx`/`.css`** (n'était plus un prototype "MVP" depuis longtemps ; "Apartment" retiré, l'app cible des logements en général) et `FloorView2D.jsx`/`.css` → **`FloorView3D.jsx`/`.css`** (le vocabulaire "vue 2.5D" devient "vue 3D" partout — plus clair pour les utilisateurs). Changement de nom et de vocabulaire uniquement : le rendu de `FloorView3D` reste une grille CSS vue de dessus avec avatar, pas un moteur isométrique/WebGL. Appliqué rétroactivement partout, y compris dans les entrées déjà datées du journal de `docs/PROJET.md` — même logique que le renommage antérieur de `CHEZ_NOUS_SUIVI_PROJET.md` : le nom courant partout plutôt qu'un mélange ancien/nouveau selon la date.
 
 ---
 
@@ -93,7 +95,7 @@ frontend/
         HouseholdSwitcher.jsx/.css        # NOUVEAU — switcher de foyer + "Gérer mes logements" (header)
         UserMenu.jsx/.css                 # NOUVEAU — menu profil (Réglages/Profil "Bientôt", Déconnexion)
         HouseholdHomePage.jsx/.css        # NOUVEAU — onglet Accueil (données statiques pour l'instant)
-        HouseholdSpatialPage.jsx          # NOUVEAU — onglet Plan, monte ApartmentSpatialMvp (Supabase)
+        HouseholdSpatialPage.jsx          # NOUVEAU — onglet Plan, monte HouseholdSpatialView (Supabase)
         floorPlanService.js               # NOUVEAU — Supabase (blob JSONB floor_plans.layout_data)
         HouseholdTasksPage.jsx            # NOUVEAU — onglet Tâches (placeholder)
         HouseholdExpensesPage.jsx         # NOUVEAU — onglet Dépenses (placeholder, table déjà en base)
@@ -103,11 +105,13 @@ frontend/
         StreakModal.jsx                   # NOUVEAU — modale détail streak (badge flamme, header)
         TabPlaceholder.jsx/.css           # NOUVEAU — habillage partagé des onglets pas encore implémentés
         CreateHouseholdPage.jsx/.css      # NOUVEAU — route /onboarding
-        HouseholdRoot.jsx/.css            # ANCIEN, dormant — plus routé
-        HousingDashboard.jsx/.css / ApartmentSpatialMvp.jsx/.css / FloorView2D.jsx/.css / Plan2DView.jsx/.css / OnboardingScreen.jsx/.css / CreateHousingScreen.jsx/.css / JoinHousingModal.jsx/.css / ScanPlanModal.jsx / PlaceholderModal.jsx/.css / mockData.js   # ApartmentSpatialMvp RECONNECTÉ (floorPlanService.js) et monté sur /spatial — le reste encore dormant
-        utils/pathfinding.js / householdLayoutApi.js   # ANCIEN, dormant — householdLayoutApi.js confirmé sans plus aucun importeur actif
+        HouseholdSpatialView.jsx/.css / FloorView3D.jsx/.css / Plan2DView.jsx/.css / OnboardingScreen.jsx/.css / mockData.js   # ACTIF — monté sur /spatial, plan reconnecté à Supabase et testé en conditions réelles
+        PlaceholderModal.jsx/.css         # PARTAGÉ — utilisé par StreakModal.jsx (actif) ET par ScanPlanModal.jsx/JoinHousingModal.jsx (dormants, ligne suivante)
+        HouseholdRoot.jsx/.css / HousingDashboard.jsx/.css / CreateHousingScreen.jsx/.css / JoinHousingModal.jsx/.css / ScanPlanModal.jsx   # ANCIEN, dormant — plus aucun importeur actif depuis AppRouter.jsx (HouseholdRoot.jsx, leur seul point d'entrée, n'est plus routé)
+        utils/pathfinding.js              # ACTIF — recherche de chemin de l'avatar, utilisé par FloorView3D.jsx
+        utils/householdLayoutApi.js       # ANCIEN, dormant — confirmé sans plus aucun importeur actif
 
-      layout-editor/    # ANCIEN, dormant en entier (LayoutEditor.jsx, RoomInspector.jsx, RoomNameModal.jsx, layoutGeneration.js, roomCollision.js, layoutStorage.js, validateLayout.js, roomTypes.js)
+      layout-editor/    # ⚠️ ACTIF, PAS dormant (corrigé cette révision) — LayoutEditor.jsx est le Mode Édition réellement monté par HouseholdSpatialView.jsx (tracé/déplacement/portes/aimantage, voir PROJET.md §3.2). RoomInspector.jsx, RoomNameModal.jsx, layoutGeneration.js, roomCollision.js, layoutStorage.js, validateLayout.js, roomTypes.js : tous dans sa chaîne d'import, donc actifs aussi.
 
     components/
       ui/ (Toast, Spinner, Skeleton, StatusBadge, ProgressBar, ItemCard, ItemForm, ItemGrid, Icons)   # génériques, toujours utilisés
@@ -125,7 +129,7 @@ frontend/
 - `features/household/HouseholdViewPage.jsx` + `.css` — remplacé par `AppLayout.jsx` (coquille) + `HouseholdLifePage.jsx` (contenu : le nom/code d'invitation/membres correspondait en fait à l'onglet "Vie du foyer", pas à l'Accueil)
 - `features/household/Icons.jsx` — copie orpheline de `components/ui/Icons.jsx`, jamais importée
 
-**Fichiers "ANCIEN, dormant" ci-dessus** : gardés intentionnellement, pas d'importeur actif depuis `AppRouter.jsx`, mais nécessaires comme référence pour porter le plan 2D/3D vers Supabase (prochain chantier). À supprimer une fois cette migration terminée.
+**Fichiers "ANCIEN, dormant" ci-dessus** (`HouseholdRoot.jsx`, `HousingDashboard.jsx`, `CreateHousingScreen.jsx`, `JoinHousingModal.jsx`, `ScanPlanModal.jsx`, les anciens formulaires d'auth, `App.jsx`, `api.js`, `householdLayoutApi.js`) : sans importeur actif depuis `AppRouter.jsx` — c'est l'ancien point d'entrée (écran de connexion + tableau de bord des logements), remplacé par `AuthContext`/`LoginPage` et `AppLayout`/`HouseholdDashboardPage`. **Contrairement à une affirmation précédente de ce document, ils ne servent plus de référence pour une migration du plan 2D/3D — celle-ci est terminée** (`layout-editor/` est actif, voir ci-dessus). À supprimer après confirmation explicite de Paul, pas en automatique.
 
 ---
 

@@ -1,5 +1,5 @@
-// src/features/household/ApartmentSpatialMvp.jsx
-// Orchestrateur du MVP spatial. Trois modes :
+// src/features/household/HouseholdSpatialView.jsx
+// Orchestrateur spatial d'UN foyer. Trois modes :
 //   - "onboarding" : aucun étage/pièce -> écran d'accueil
 //   - "editing"    : Mode Édition (LayoutEditor) -> CRÉE/MODIFIE le plan
 //   - "app"        : le logement sélectionné, commutateur "Plan 2D" /
@@ -7,15 +7,14 @@
 //                    construit, jamais de le modifier (ça, c'est le rôle
 //                    exclusif du mode "editing").
 //
-// ÉTAPE 4/4, DERNIÈRE (voir la conversation) : le PLAN (étages/pièces/
-// portes) est maintenant chargé/enregistré via le vrai backend
-// (features/household/utils/householdLayoutApi.js), plus localStorage.
-// `layoutStorage.js` (localStorage) reste utilisé UNIQUEMENT par
-// l'export/import de fichier JSON (validation locale du fichier), pas
-// pour la persistance elle-même. `householdId` (nouveau, remplace
-// `storageKey`) est le VRAI id du foyer, venu de HouseholdRoot.jsx —
-// plus besoin de clé synthétique maintenant que la liste des logements
-// ET leur plan sont tous les deux réels.
+// RENOMMAGE (01/08/2026, voir la conversation) : "ApartmentSpatialMvp"
+// devient "HouseholdSpatialView" — ce composant n'est plus un prototype
+// ("MVP"), c'est l'orchestrateur spatial réel, actif, monté sur /spatial
+// (voir HouseholdSpatialPage.jsx). "Apartment" retiré aussi : l'app cible
+// des logements en général (foyer, appartement, maison...), pas
+// spécifiquement des appartements. Seuls le nom du fichier/de la fonction
+// et le préfixe CSS (`spatial-mvp__` -> `spatial-view__`) ont changé,
+// aucune logique.
 //
 // PERSISTANCE, changement de modèle important : plus de sauvegarde
 // automatique à chaque frappe (impossible de toute façon — chaque
@@ -24,28 +23,33 @@
 // ("Enregistrer le plan" dans LayoutEditor), comme demandé
 // explicitement dans une conversation précédente sur ce sujet.
 //
-// RÉCONCILIATION "supprimer puis recréer" (voir householdLayoutApi.js
-// pour le détail et les limites assumées) — vérifiée avec de vraies
-// requêtes HTTP avant d'être branchée ici.
+// RÉCONCILIATION "supprimer puis recréer" (voir householdLayoutApi.js,
+// dormant depuis la migration Supabase — floorPlanService.js l'a
+// remplacé, voir §3.7/🅰️ de docs/PROJET.md) pour le détail historique et
+// les limites assumées de l'ancienne approche.
 //
-// RÔLE (nouveau, voir la conversation) : `isOwner`/`role` viennent de
-// HouseholdViewPage.jsx (useHouseholdRole) — un LOCATAIRE ne voit
-// jamais le bouton "Modifier le plan", et si le plan est encore vide,
-// voit un message d'attente plutôt que l'écran de création (qui
-// échouerait de toute façon côté backend). Le backend reste la vraie
-// barrière de sécurité — ceci n'ajuste que l'affichage.
+// RÔLE — **correction (01/08/2026)** : `householdId`/`isOwner`/`role`
+// viennent de `HouseholdSpatialPage.jsx` (useParams + useOutletContext,
+// voir ce fichier), pas de `HouseholdRoot.jsx`/`HouseholdViewPage.jsx`
+// comme l'affirmait une version précédente de ce commentaire — ces deux
+// fichiers sont dormants depuis la bascule vers `AppLayout`/Supabase
+// (voir README.md). Un LOCATAIRE ne voit jamais le bouton "Modifier le
+// plan", et si le plan est encore vide, voit un message d'attente plutôt
+// que l'écran de création (qui échouerait de toute façon côté backend/
+// RLS). Le backend reste la vraie barrière de sécurité — ceci n'ajuste
+// que l'affichage.
 import { useState, useMemo, useEffect } from "react";
 import { MOCK_USER } from "./mockData";
 import { generateFloorTiles, extractRoomRectsFromTiles } from "../layout-editor/utils/layoutGeneration";
 import { downloadLayoutAsJson, readLayoutFile } from "../layout-editor/utils/layoutStorage";
 import { fetchHouseholdLayout, saveFloorLayout, resetHouseholdLayout } from "./floorPlanService";
-import FloorView2D from "./FloorView2D";
+import FloorView3D from "./FloorView3D";
 import Plan2DView from "./Plan2DView";
 import LayoutEditor from "../layout-editor/components/LayoutEditor";
 import OnboardingScreen from "./OnboardingScreen";
-import "./ApartmentSpatialMvp.css";
+import "./HouseholdSpatialView.css";
 
-export default function ApartmentSpatialMvp({
+export default function HouseholdSpatialView({
   householdId,
   user = MOCK_USER,
   housingName,
@@ -94,17 +98,30 @@ export default function ApartmentSpatialMvp({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [householdId]);
 
-  // floorTiles dérivé, jamais stocké — la SEULE source que lisent à la
-  // fois LayoutEditor (via extractRoomRectsFromTiles) et FloorView2D/
-  // Plan2DView (directement). `doorsWithIds` réduit à {x,y} ici : ces
-  // deux fonctions n'ont jamais besoin de connaître l'id backend d'une
-  // porte, seulement sa position.
+  // floorTiles/floorEdges dérivés, jamais stockés — la SEULE source que
+  // lisent LayoutEditor (via extractRoomRectsFromTiles, tiles
+  // uniquement) et Plan2DView (tiles + edges). REFONTE MUR-ARÊTE (voir
+  // la conversation) : `tiles` ne contient plus que des dalles de sol,
+  // les murs/portes sont maintenant dans `edges` (calculés séparément
+  // par floor). `doorsWithIds` garde `orientation` en plus de `{x,y}` —
+  // ces fonctions n'ont toujours pas besoin de l'id backend d'une porte,
+  // juste de savoir sur quelle arête précise elle se trouve.
   const floorTiles = useMemo(() => {
     const result = {};
     for (const floor of floors) {
       const floorRooms = rooms.filter((r) => r.floorId === floor.id);
-      const floorDoors = (doorsWithIds[floor.id] || []).map((d) => ({ x: d.x, y: d.y }));
-      result[floor.id] = generateFloorTiles(floorRooms, { explicitDoors: floorDoors }).tiles;
+      const floorDoors = (doorsWithIds[floor.id] || []).map((d) => ({ orientation: d.orientation, x: d.x, y: d.y }));
+      result[floor.id] = generateFloorTiles(floorRooms, { doorEdges: floorDoors }).tiles;
+    }
+    return result;
+  }, [floors, rooms, doorsWithIds]);
+
+  const floorEdges = useMemo(() => {
+    const result = {};
+    for (const floor of floors) {
+      const floorRooms = rooms.filter((r) => r.floorId === floor.id);
+      const floorDoors = (doorsWithIds[floor.id] || []).map((d) => ({ orientation: d.orientation, x: d.x, y: d.y }));
+      result[floor.id] = generateFloorTiles(floorRooms, { doorEdges: floorDoors }).edges;
     }
     return result;
   }, [floors, rooms, doorsWithIds]);
@@ -112,6 +129,7 @@ export default function ApartmentSpatialMvp({
   const roomsOnSelectedFloor = rooms.filter((r) => r.floorId === selectedFloorId);
   const selectedFloor = floors.find((f) => f.id === selectedFloorId) || floors[0];
   const selectedFloorTiles = floorTiles[selectedFloorId] || [];
+  const selectedFloorEdges = floorEdges[selectedFloorId] || [];
 
   const handleSelectFloor = (floorId) => {
     setSelectedFloorId(floorId);
@@ -143,7 +161,10 @@ export default function ApartmentSpatialMvp({
   };
 
   const editorInitialRooms = mode === "editing" && selectedFloorId ? extractRoomRectsFromTiles(selectedFloorTiles, roomsOnSelectedFloor) : [];
-  const editorInitialDoors = mode === "editing" && selectedFloorId ? (doorsWithIds[selectedFloorId] || []).map((d) => ({ x: d.x, y: d.y })) : [];
+  const editorInitialDoors =
+    mode === "editing" && selectedFloorId
+      ? (doorsWithIds[selectedFloorId] || []).map((d) => ({ orientation: d.orientation, x: d.x, y: d.y }))
+      : [];
 
   const handleSaveLayout = async (editedRoomRects, editedDoors) => {
     setSaving(true);
@@ -212,11 +233,13 @@ export default function ApartmentSpatialMvp({
 
   const handleExportLayout = () => {
     downloadLayoutAsJson({
-      version: 1,
+      version: 2, // v2 : doors porte désormais `orientation` (modèle mur-arête, voir la conversation)
       exportedAt: new Date().toISOString(),
       floors,
       rooms,
-      doors: Object.fromEntries(Object.entries(doorsWithIds).map(([floorId, list]) => [floorId, list.map((d) => ({ x: d.x, y: d.y }))])),
+      doors: Object.fromEntries(
+        Object.entries(doorsWithIds).map(([floorId, list]) => [floorId, list.map((d) => ({ orientation: d.orientation, x: d.x, y: d.y }))])
+      ),
     });
   };
 
@@ -247,7 +270,7 @@ export default function ApartmentSpatialMvp({
 
     for (const floor of imported.floors) {
       const roomsForFloor = imported.rooms.filter((r) => r.floorId === floor.id);
-      const doorsForFloor = (imported.doors[floor.id] || []).map((d) => ({ x: d.x, y: d.y }));
+      const doorsForFloor = (imported.doors[floor.id] || []).map((d) => ({ orientation: d.orientation, x: d.x, y: d.y }));
       const saveRes = await saveFloorLayout({
         householdId,
         floorId: null, // toujours recréé, jamais reconcilié avec un id importé
@@ -276,7 +299,7 @@ export default function ApartmentSpatialMvp({
   };
 
   if (dataLoading) {
-    return <p className="spatial-mvp__loading">Chargement du plan...</p>;
+    return <p className="spatial-view__loading">Chargement du plan...</p>;
   }
 
   // LOCATAIRE : le plan est en lecture seule (voir la conversation —
@@ -286,7 +309,7 @@ export default function ApartmentSpatialMvp({
   // montrer un écran de création/édition qui échouerait de toute façon.
   if (!isOwner && (mode === "onboarding" || mode === "editing")) {
     return (
-      <p className="spatial-mvp__loading">
+      <p className="spatial-view__loading">
         {role === "LOCATAIRE"
           ? "En attente du propriétaire — il n'a pas encore dessiné le plan de ce logement."
           : "Chargement..."}
@@ -320,42 +343,42 @@ export default function ApartmentSpatialMvp({
   }
 
   return (
-    <div className="spatial-mvp">
+    <div className="spatial-view">
       {onBackToDashboard && (
-        <div className="spatial-mvp__housing-bar">
-          <button type="button" className="spatial-mvp__back-btn" onClick={onBackToDashboard}>
+        <div className="spatial-view__housing-bar">
+          <button type="button" className="spatial-view__back-btn" onClick={onBackToDashboard}>
             ← Mes logements
           </button>
-          {housingName && <span className="spatial-mvp__housing-name">{housingName}</span>}
+          {housingName && <span className="spatial-view__housing-name">{housingName}</span>}
         </div>
       )}
 
-      <div className="spatial-mvp__floor-selector" role="tablist" aria-label="Choix de l'étage">
+      <div className="spatial-view__floor-selector" role="tablist" aria-label="Choix de l'étage">
         {floors.map((floor) => (
           <button
             key={floor.id}
             type="button"
             role="tab"
             aria-selected={floor.id === selectedFloorId}
-            className={floor.id === selectedFloorId ? "spatial-mvp__floor-btn spatial-mvp__floor-btn--active" : "spatial-mvp__floor-btn"}
+            className={floor.id === selectedFloorId ? "spatial-view__floor-btn spatial-view__floor-btn--active" : "spatial-view__floor-btn"}
             onClick={() => handleSelectFloor(floor.id)}
           >
             {floor.shortLabel}
           </button>
         ))}
         {isOwner && (
-          <button type="button" className="spatial-mvp__edit-btn" onClick={handleStartEditLayout}>
+          <button type="button" className="spatial-view__edit-btn" onClick={handleStartEditLayout}>
             ✏️ Modifier le plan
           </button>
         )}
       </div>
 
-      <div className="spatial-mvp__switcher" role="tablist" aria-label="Choix de la vue">
+      <div className="spatial-view__switcher" role="tablist" aria-label="Choix de la vue">
         <button
           type="button"
           role="tab"
           aria-selected={viewMode === "2d"}
-          className={viewMode === "2d" ? "spatial-mvp__tab spatial-mvp__tab--active" : "spatial-mvp__tab"}
+          className={viewMode === "2d" ? "spatial-view__tab spatial-view__tab--active" : "spatial-view__tab"}
           onClick={() => setViewMode("2d")}
         >
           🗺️ Plan 2D
@@ -364,7 +387,7 @@ export default function ApartmentSpatialMvp({
           type="button"
           role="tab"
           aria-selected={viewMode === "3d"}
-          className={viewMode === "3d" ? "spatial-mvp__tab spatial-mvp__tab--active" : "spatial-mvp__tab"}
+          className={viewMode === "3d" ? "spatial-view__tab spatial-view__tab--active" : "spatial-view__tab"}
           onClick={handleShowFloorView}
         >
           🏠 Vue 3D
@@ -372,11 +395,11 @@ export default function ApartmentSpatialMvp({
       </div>
 
       {roomsOnSelectedFloor.length === 0 ? (
-        <p className="spatial-mvp__empty-floor">Aucune pièce sur cet étage — ouvre "Modifier le plan" pour en tracer.</p>
+        <p className="spatial-view__empty-floor">Aucune pièce sur cet étage — ouvre "Modifier le plan" pour en tracer.</p>
       ) : viewMode === "2d" ? (
-        <Plan2DView key={selectedFloorId} floor={selectedFloor} tiles={selectedFloorTiles} rooms={roomsOnSelectedFloor} onSelectRoom={handleSelectRoomFromPlan} />
+        <Plan2DView key={selectedFloorId} floor={selectedFloor} tiles={selectedFloorTiles} edges={selectedFloorEdges} rooms={roomsOnSelectedFloor} onSelectRoom={handleSelectRoomFromPlan} />
       ) : (
-        <FloorView2D
+        <FloorView3D
           key={selectedFloorId}
           floor={selectedFloor}
           tiles={selectedFloorTiles}

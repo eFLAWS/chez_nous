@@ -74,7 +74,7 @@ export const MOCK_FLOOR_TILES = {
 
 /* --------------------------------- Pièces ----------------------------------- */
 // Ne portent plus de géométrie (voir MOCK_FLOOR_TILES) — juste l'identité
-// de chaque pièce. `color` teinte ses dalles au sol dans FloorView2D,
+// de chaque pièce. `color` teinte ses dalles au sol dans FloorView3D,
 // pour distinguer visuellement une pièce de sa voisine.
 
 export const MOCK_ROOMS = [

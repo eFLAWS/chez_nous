@@ -1,9 +1,19 @@
 // src/features/household/Plan2DView.jsx
 // Vue "Plan 2D" : aperçu global, EN LECTURE SEULE, du plan déjà construit
-// — pas d'avatar, pas de déplacement, juste les dalles (sol/murs/portes)
-// vues du dessus. Distincte de LayoutEditor.jsx (qui sert à CRÉER/
-// MODIFIER le plan, pas à le consulter) et de FloorView2D.jsx (qui est
-// la vue immersive AVEC avatar).
+// — pas d'avatar, pas de déplacement, juste les dalles de SOL vues du
+// dessus + les murs/portes en surimpression. Distincte de
+// LayoutEditor.jsx (qui sert à CRÉER/MODIFIER le plan, pas à le
+// consulter) et de FloorView3D.jsx (qui est la vue immersive AVEC
+// avatar — pas encore adaptée au modèle mur-arête, voir la conversation).
+//
+// REFONTE MUR-ARÊTE (voir la conversation, layoutGeneration.js pour le
+// détail de l'algorithme) : `tiles` ne contient plus QUE des dalles de
+// sol (`type: "floor"` ou `"furniture"`) — les murs et portes ne sont
+// plus des dalles mais des ARÊTES (`edges`, calculées séparément),
+// rendues en surimpression par `WallEdges` (SVG absolument positionné
+// par-dessus la grille de sol). Corrige le bug où deux pièces collées
+// perdaient leur cloison : chaque frontière entre pièces différentes
+// est maintenant TOUJOURS une arête, qu'elles se touchent ou non.
 //
 // DÉFILEMENT NATIF, PAS react-zoom-pan-pinch (voir la conversation) :
 // la bibliothèque de zoom/pincement a causé un vrai bug visuel signalé
@@ -18,11 +28,13 @@
 // Clic sur une pièce : optionnel (`onSelectRoom`), pour sauter directement
 // dans la Vue 3D centrée sur cette pièce si le parent le souhaite.
 //
-// Lit exactement les mêmes `tiles`/`rooms` que FloorView2D — les deux
+// Lit exactement les mêmes `tiles`/`rooms` que FloorView3D — les deux
 // vues restent en accord sur le même layout, juste rendu différemment.
+import WallEdges from "../layout-editor/components/WallEdges";
 import "./Plan2DView.css";
 
 const CELL_PX = 40;
+const WALL_THICKNESS_PX = 4;
 
 function shade(hex, amount) {
   const n = parseInt(hex.replace("#", ""), 16);
@@ -35,7 +47,7 @@ function shade(hex, amount) {
   return `rgb(${r}, ${g}, ${b})`;
 }
 
-export default function Plan2DView({ floor, tiles, rooms, onSelectRoom }) {
+export default function Plan2DView({ floor, tiles, edges = [], rooms, onSelectRoom }) {
   const roomById = new Map(rooms.map((r) => [r.id, r]));
   const gridWidthPx = (floor.gridWidth || 10) * CELL_PX;
   const gridHeightPx = (floor.gridHeight || 10) * CELL_PX;
@@ -55,11 +67,13 @@ export default function Plan2DView({ floor, tiles, rooms, onSelectRoom }) {
           }}
         >
           {tiles.map((tile) => {
+            // Uniquement des dalles de sol désormais ("floor" ou
+            // "furniture") — plus de "wall"/"door" ici, voir l'en-tête.
             const room = roomById.get(tile.roomId);
             const isDark = (tile.x + tile.y) % 2 === 0;
-            const baseColor = room ? room.color : tile.type === "door" ? "#f3c98a" : "#b9b6ab";
+            const baseColor = room ? room.color : "#b9b6ab"; // filet de sécurité si roomId inconnu
             const background = tile.type === "floor" ? (isDark ? shade(baseColor, -10) : baseColor) : baseColor;
-            const clickable = tile.type === "floor" && room && Boolean(onSelectRoom);
+            const clickable = room && Boolean(onSelectRoom);
             return (
               <div
                 key={`${tile.x}-${tile.y}`}
@@ -71,8 +85,11 @@ export default function Plan2DView({ floor, tiles, rooms, onSelectRoom }) {
               />
             );
           })}
+
+          <WallEdges edges={edges} cellPx={CELL_PX} width={gridWidthPx} height={gridHeightPx} wallThickness={WALL_THICKNESS_PX} />
         </div>
       </div>
     </div>
   );
 }
+

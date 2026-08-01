@@ -172,7 +172,7 @@
 }
 
 /* Grille neutre 1m x 1m, bien visible, fond clair/gris neutre — pas de
-   damier coloré par pièce comme dans FloorView2D, volontairement épuré
+   damier coloré par pièce comme dans FloorView3D, volontairement épuré
    pendant l'édition. */
 .layout-editor__grid {
   position: relative;
@@ -303,11 +303,8 @@
   position: absolute;
   box-sizing: border-box;
   border: 1.5px dashed #d97a1c;
+  border-radius: 3px;
   background: rgba(217, 122, 28, 0.15);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
   padding: 0;
   cursor: pointer;
   z-index: 30;

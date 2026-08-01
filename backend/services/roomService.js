@@ -7,7 +7,7 @@
 // coordonnées).
 //
 // SCHÉMA ÉTENDU (voir la conversation) pour correspondre à ce que le
-// frontend (LayoutEditor.jsx/FloorView2D.jsx) attend déjà :
+// frontend (LayoutEditor.jsx/FloorView3D.jsx) attend déjà :
 //   - Étages : + shortLabel, avatarStart {x,y}, gridWidth, gridHeight.
 //   - Pièces : `length` renommé `height` (cases de grille = mètres, 1:1
 //     par convention — voir layoutGeneration.js côté frontend), + type,
@@ -79,7 +79,7 @@ async function createFloor(input) {
  * Met à jour les champs propres au plan spatial d'un étage (shortLabel,
  * avatarStart, gridWidth, gridHeight) — nouveau, nécessaire parce que ces
  * valeurs se recalculent à CHAQUE enregistrement du plan côté frontend
- * (jamais figées, voir ApartmentSpatialMvp.jsx), pas seulement à la
+ * (jamais figées, voir HouseholdSpatialView.jsx), pas seulement à la
  * création de l'étage.
  */
 async function updateFloorLayout(id, patch = {}, userId) {

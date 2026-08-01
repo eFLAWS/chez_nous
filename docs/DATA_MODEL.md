@@ -4,7 +4,7 @@
 > **Fichier :** `docs/DATA_MODEL.md`  
 > **Type :** Spécification Base de Données Relational, RLS & Schémas JSON  
 > **Portée :** Utilisateurs, Foyers, Rôles (Propriétaire/Locataire), Tâches, Dépenses et Éditeur Spatial  
-> **Dernière mise à jour :** Juillet 2026  
+> **Dernière mise à jour :** 1er août 2026  
 
 ---
 
@@ -216,7 +216,46 @@ Lorsqu'un utilisateur déclenche l'action "Quitter le foyer", l'application exé
 
 ## 🎨 5. Structure JSON `floor_plans.layout_data` (Single Source of Truth)
 
-Ce document JSON stocke l'intégralité du plan 2D et permet la projection instantanée en 3D/Isometric Canvas via Three.js ou Pixi.js.
+Ce document JSON stocke l'intégralité du plan 2D/3D d'un foyer — un seul blob par foyer (`floor_plans.household_id` est `UNIQUE`), lu/écrit par `floorPlanService.js` avec verrou optimiste sur `version` (voir §2 du dictionnaire des tables). Une colonne `jsonb` ne contraint rien côté Postgres : cette structure est une **convention applicative**, validée côté frontend (`layout-editor/utils/validateLayout.js`, Zod) uniquement au moment d'un import de fichier.
+
+```json
+{
+  "floors": [
+    { "id": "uuid", "name": "Rez-de-chaussée", "shortLabel": "RDC", "level": 0,
+      "avatarStart": { "x": 1, "y": 1 }, "gridWidth": 10, "gridHeight": 8 }
+  ],
+  "rooms": [
+    { "id": "uuid", "floorId": "uuid", "name": "Salon", "type": "salon",
+      "icon": "🛋️", "color": "#f3e6d0", "x": 0, "y": 0, "width": 3, "height": 3 }
+  ],
+  "doors": [
+    { "id": "uuid", "floorId": "uuid", "orientation": "v", "x": 3, "y": 1 }
+  ],
+  "furniture": [],
+  "spatialNotes": []
+}
+```
+
+- **`floors`** : un enregistrement par étage. `avatarStart`/`gridWidth`/`gridHeight` sont **recalculés à chaque sauvegarde** à partir des pièces tracées (`saveFloorLayout`), jamais figés indépendamment.
+- **`rooms`** : rectangles pleins `{x, y, width, height}` — **source de vérité éditable**. Toutes les cases d'une pièce sont du sol ; il n'existe pas de forme non rectangulaire (limite assumée, voir §3.2 de `PROJET.md`).
+- **`doors`** — ⚠️ **modèle mur-arête (introduit 01/08/2026, remplace le modèle précédent)** : une porte identifie une **arête** (bordure entre deux cases), pas une case de grille. `orientation` (`'h'` = bordure horizontale, `'v'` = bordure verticale) + `{x, y}` forment une clé canonique unique (`orientation:x,y`) désignant toujours le même segment physique, qu'on le découvre depuis l'une ou l'autre pièce adjacente. Une porte ne peut exister que sur la frontière entre deux pièces **qui se touchent réellement** (aucun écart) — voir ci-dessous. `furniture`/`spatialNotes` : présents dès la conception, vides pour l'instant, aucun code ne les lit/écrit encore.
+
+### Modèle mur-arête (calcul des murs, pas de stockage direct)
+
+Les murs eux-mêmes **ne sont jamais stockés** — ni dans ce blob, ni ailleurs. Ils sont dérivés à la volée depuis `rooms` + `doors` par `computeRoomEdges()` (`layout-editor/utils/layoutGeneration.js`), à chaque rendu :
+
+| Bordure entre... | Résultat |
+| :--- | :--- |
+| une pièce et le vide | `wall-ext` (mur extérieur) |
+| deux pièces **différentes** qui se touchent | `wall-int` (cloison) |
+| deux pièces différentes qui se touchent, **et** l'arête figure dans `doors` | `door` |
+| deux cases de la **même** pièce | rien (invisible, intérieur de la pièce) |
+
+Remplace l'ancien modèle où les murs étaient des **dalles pleines** générées autour de l'empreinte des pièces (1 case de grille par mur) : ce modèle avait deux défauts structurels — un mur consommait un mètre entier de grille, et deux pièces tracées directement collées (sans espace) n'avaient ni mur ni porte entre elles (case indisponible pour ça), donc fusionnaient visuellement. Le modèle mur-arête élimine les deux : le mur est un simple trait sur la bordure (aucune case consommée), et il existe **automatiquement** dès que deux pièces se touchent, sans cas particulier.
+
+**Conséquence sur le placement des portes (inverse de l'ancien modèle)** : une porte ne peut être percée qu'entre deux pièces **parfaitement adjacentes** (gap = 0) — avant, il fallait au contraire un écart d'exactement 1 case pour l'auto-détection. Deux pièces avec un espace vide entre elles affichent chacune leur propre mur extérieur indépendant face à ce vide, sans erreur ni fusion.
+
+⚠️ **Compatibilité** : un plan enregistré avant ce changement a des portes au format `{id, floorId, x, y}` (sans `orientation`) — non reconnues comme portes valides par le nouveau code (silencieusement ignorées, pas de crash). Un plan de test existant doit être réinitialisé (bouton "🗑️ Réinitialiser le plan") avant de revalider ce chantier.
 
 ---
 

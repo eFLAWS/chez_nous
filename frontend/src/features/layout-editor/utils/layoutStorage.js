@@ -14,7 +14,7 @@
 // Validation : `validateLayout` (Zod, validateLayout.js) — un fichier
 // importé doit toujours être validé avant d'être utilisé pour
 // reconstruire le plan côté backend (voir handleImportLayout,
-// ApartmentSpatialMvp.jsx).
+// HouseholdSpatialView.jsx).
 import { validateLayout } from "./validateLayout";
 
 /**

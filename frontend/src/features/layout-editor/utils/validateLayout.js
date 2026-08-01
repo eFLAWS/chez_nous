@@ -26,6 +26,16 @@
 // result.error.issues) est stable et documentée depuis longtemps — je
 // suis raisonnablement confiant, mais l'exécution réelle chez toi reste
 // la première vraie preuve pour CE fichier précisément.
+//
+// MISE À JOUR — REFONTE MUR-ARÊTE (voir la conversation) : `doorSchema`
+// exige maintenant `orientation` ('h'|'v') en plus de `x`/`y` — une
+// porte identifie une ARÊTE précise (bordure entre deux pièces), plus
+// une case de grille comme avant (voir layoutGeneration.js). Un fichier
+// exporté AVANT ce changement (`version: 1`, portes sans orientation)
+// sera désormais rejeté par l'import avec un message clair plutôt que
+// silencieusement mal interprété — comportement voulu, pas un oubli :
+// aucune conversion automatique v1->v2 écrite, le volume de données
+// concerné (plans de test) ne le justifie pas pour l'instant.
 import { z } from 'zod';
 
 const pointSchema = z.object({
@@ -34,6 +44,7 @@ const pointSchema = z.object({
 });
 
 const doorSchema = z.object({
+  orientation: z.enum(['h', 'v'], { errorMap: () => ({ message: "orientation doit être 'h' ou 'v'" }) }),
   x: z.number(),
   y: z.number(),
 });

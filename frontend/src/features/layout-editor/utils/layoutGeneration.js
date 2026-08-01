@@ -2,41 +2,49 @@
 // Utilitaire de génération de plan, séparé du composant d'édition pour
 // ne pas l'alourdir — pur JS, testable indépendamment.
 //
-// Modèle : une pièce est un simple RECTANGLE {id, name, color, x, y,
-// width, height}. generateFloorTiles() dérive automatiquement la grille
-// complète de dalles (sol + murs + portes) à partir de ces rectangles —
-// les murs et les portes ne sont JAMAIS dessinés à la main, ils émergent
-// du calcul :
-//   - une case dans le rectangle d'une pièce -> "floor"
-//   - une case hors de toute pièce mais adjacente à une case "floor"
-//     -> "wall", SAUF...
-//   - ...si elle se trouve exactement entre deux pièces DIFFÉRENTES
-//     séparées par 1 case d'écart (avec au moins 2 cases de
-//     chevauchement sur l'axe perpendiculaire) -> "door", au milieu du
-//     chevauchement
-//   - une case ni dans une pièce ni adjacente à une case "floor" -> pas
-//     générée du tout (case absente du tableau, pas de type "void" —
-//     un tableau clairsemé suffit, FloorView2D n'affiche que ce qui existe)
+// REFONTE MUR-ARÊTE (voir la conversation) : remplace l'ancien modèle où
+// les murs étaient des DALLES entières (1 case pleine) générées autour
+// de l'empreinte des pièces. Deux problèmes que ça posait : (a) chaque
+// mur consommait 1 case entière de grille, (b) deux pièces tracées
+// directement collées (gap=0) n'avaient NI mur NI porte entre elles —
+// aucune case n'était disponible pour ça, donc elles fusionnaient
+// visuellement dans FloorView3D/Plan2DView.
 //
-// Choix confirmé explicitement avant l'écriture de cet algorithme : deux
-// pièces tracées directement collées (aucune case d'écart) restent deux
-// pièces DISTINCTES mais sans mur ni porte entre elles — aucune case
-// n'est disponible pour en placer un.
+// Nouveau modèle : une pièce est un simple RECTANGLE {id, x, y, width,
+// height} — TOUTES ses cases sont du sol, sans exception. Les murs ne
+// sont plus des cases mais des ARÊTES (segments sur la bordure des
+// cases), calculées par `computeRoomEdges()` :
+//   - bordure entre une pièce et le vide -> "wall-ext"
+//   - bordure entre deux pièces DIFFÉRENTES qui se touchent (gap=0)
+//     -> "wall-int" (cloison), sauf si cette arête précise est marquée
+//     comme porte -> "door"
+//   - bordure entre deux cases de la MÊME pièce -> aucune arête (invisible)
 //
-// Vérifié par simulation AVANT d'être écrit ici, avec notre géométrie
-// réelle comme cas de test : appliqué à l'ancien plan RDC dessiné à la
-// main (Salon-Couloir-Cuisine), l'algorithme retrouve EXACTEMENT les
-// mêmes positions de porte que l'original — (5,3) et (8,3) — sans
-// qu'elles aient été codées en dur quelque part.
+// CONSÉQUENCE SUR LE WORKFLOW (inverse de l'ancien modèle) : une porte
+// ne peut exister qu'entre deux pièces qui se touchent RÉELLEMENT
+// (gap=0) — avant, il fallait au contraire un écart d'exactement 1
+// case. Deux pièces avec un espace vide entre elles (gap>=1) affichent
+// désormais chacune leur propre mur extérieur face à ce vide, sans
+// fusion ni erreur, juste deux murs indépendants (plus de cas spécial).
+//
+// AUTO-DÉTECTION DE PORTE RETIRÉE (`findAutoDoors`, ancien) : avec des
+// cloisons pleine longueur plutôt qu'une case unique dans un écart de 1,
+// une porte "au milieu" n'a plus de sens par défaut — toutes les
+// frontières entre pièces sont des murs pleins tant que l'utilisateur
+// n'en perce pas une explicitement via l'outil de porte
+// (`findDoorCandidates`, qui énumère maintenant tous les segments d'arête
+// "wall-int" disponibles, pas juste un point par paire de pièces).
+//
+// VÉRIFIÉ (voir la conversation) : `computeRoomEdges` testé isolément
+// (Node, hors du projet) sur 4 cas — deux pièces collées, deux pièces
+// espacées d'1 case, une pièce isolée (comptage du périmètre), et la
+// géométrie Salon/Couloir/Cuisine en L (pas de duplication d'arête,
+// clé canonique cohérente des deux côtés). Les 11 assertions passent.
+// Test des composants React (LayoutEditor/Plan2DView) PAS fait ici (pas
+// d'accès réseau pour npm/Vite dans cet environnement) — à vérifier
+// réellement chez toi avant de considérer ce chantier terminé.
 
 import { DEFAULT_ROOM_TYPE, findRoomType } from "../roomTypes.js";
-
-const DIRECTIONS = [
-  { dx: 0, dy: -1 },
-  { dx: 0, dy: 1 },
-  { dx: -1, dy: 0 },
-  { dx: 1, dy: 0 },
-];
 
 // Échelle de la grille : longueur d'un côté de dalle, en mètres. Modifier
 // CETTE seule constante pour ajuster l'échelle partout (la surface d'une
@@ -61,112 +69,107 @@ function key(x, y) {
   return `${x},${y}`;
 }
 
-// Cherche, pour chaque paire de pièces différentes, un écart d'exactement
-// 1 case le long d'un axe avec un chevauchement suffisant sur l'autre axe
-// — retourne une Map "x,y" -> true pour chaque position de porte trouvée.
-function findAutoDoors(rooms) {
-  const doors = new Map();
-
-  const tryPair = (a, b, axis) => {
-    if (axis === "x") {
-      const gap = b.x - (a.x + a.width);
-      if (gap !== 1) return;
-      const start = Math.max(a.y, b.y);
-      const end = Math.min(a.y + a.height, b.y + b.height) - 1;
-      if (end - start + 1 >= 2) {
-        const midY = Math.floor((start + end) / 2);
-        doors.set(key(a.x + a.width, midY), true);
-      }
-    } else {
-      const gap = b.y - (a.y + a.height);
-      if (gap !== 1) return;
-      const start = Math.max(a.x, b.x);
-      const end = Math.min(a.x + a.width, b.x + b.width) - 1;
-      if (end - start + 1 >= 2) {
-        const midX = Math.floor((start + end) / 2);
-        doors.set(key(midX, a.y + a.height), true);
-      }
-    }
-  };
-
-  for (let i = 0; i < rooms.length; i++) {
-    for (let j = i + 1; j < rooms.length; j++) {
-      const a = rooms[i];
-      const b = rooms[j];
-      tryPair(a, b, "x");
-      tryPair(b, a, "x");
-      tryPair(a, b, "y");
-      tryPair(b, a, "y");
-    }
-  }
-  return doors;
+/** Clé canonique d'une arête — voir l'en-tête du fichier pour la convention. */
+export function edgeKey(orientation, x, y) {
+  return `${orientation}:${x},${y}`;
 }
 
 /**
- * Énumère TOUTES les positions de porte possibles (pas juste celle du
- * milieu choisie par l'auto-détection) le long de chaque frontière
- * partagée par deux pièces différentes séparées par 1 case d'écart —
- * pour l'outil de placement manuel de porte (LayoutEditor.jsx). Retourne
- * `[{x, y, roomIdA, roomIdB}, ...]`.
+ * Calcule TOUTES les arêtes (murs + portes) d'un ensemble de pièces.
+ * Pour chaque case occupée par une pièce, on regarde ses 4 voisins :
+ *   - voisin absent (vide) -> arête "wall-ext"
+ *   - voisin = pièce DIFFÉRENTE -> arête "wall-int", sauf si sa clé
+ *     canonique figure dans `doorEdges` -> "door"
+ *   - voisin = MÊME pièce -> aucune arête (intérieur, invisible)
+ *
+ * Clé canonique garantissant qu'une frontière physique n'est calculée
+ * qu'UNE SEULE FOIS, qu'on la découvre depuis la pièce A ou la pièce B
+ * (`edges.has(k)` court-circuite le second passage) — vérifié par test
+ * (voir en-tête du fichier) sur une géométrie en L à 3 pièces.
+ *
+ * `doorEdges` : `[{orientation: 'h'|'v', x, y}, ...]` — les arêtes à
+ * traiter comme portes plutôt que murs pleins.
+ *
+ * Retourne `[{key, orientation, x, y, kind, roomIdA, roomIdB}, ...]`.
+ * `roomIdB` est `null` pour un mur extérieur. `roomIdA`/`roomIdB` ne
+ * sont PAS ordonnés de façon significative (juste "les deux pièces
+ * adjacentes à cette arête, ou null côté vide") — ne pas s'appuyer sur
+ * lequel est A vs B.
+ */
+export function computeRoomEdges(rooms, doorEdges = []) {
+  const floorCellMap = new Map();
+  for (const r of rooms) {
+    for (let dx = 0; dx < r.width; dx++) {
+      for (let dy = 0; dy < r.height; dy++) {
+        floorCellMap.set(key(r.x + dx, r.y + dy), r.id);
+      }
+    }
+  }
+
+  const doorKeySet = new Set(doorEdges.map((d) => edgeKey(d.orientation, d.x, d.y)));
+  const edges = new Map();
+
+  const addEdge = (orientation, ex, ey, roomIdSelf, roomIdNeighbor) => {
+    const k = edgeKey(orientation, ex, ey);
+    if (edges.has(k)) return; // déjà calculée depuis l'autre côté (clé canonique)
+    const isDoor = doorKeySet.has(k);
+    const kind = isDoor ? "door" : roomIdNeighbor ? "wall-int" : "wall-ext";
+    edges.set(k, { key: k, orientation, x: ex, y: ey, kind, roomIdA: roomIdSelf, roomIdB: roomIdNeighbor ?? null });
+  };
+
+  for (const [cellKey, roomId] of floorCellMap) {
+    const [cx, cy] = cellKey.split(",").map(Number);
+    const north = floorCellMap.get(key(cx, cy - 1));
+    if (north !== roomId) addEdge("h", cx, cy, roomId, north);
+    const south = floorCellMap.get(key(cx, cy + 1));
+    if (south !== roomId) addEdge("h", cx, cy + 1, roomId, south);
+    const west = floorCellMap.get(key(cx - 1, cy));
+    if (west !== roomId) addEdge("v", cx, cy, roomId, west);
+    const east = floorCellMap.get(key(cx + 1, cy));
+    if (east !== roomId) addEdge("v", cx + 1, cy, roomId, east);
+  }
+
+  return Array.from(edges.values());
+}
+
+/**
+ * Énumère les arêtes "wall-int" (cloisons entre deux pièces qui se
+ * touchent) — ce sont les seuls emplacements où une porte peut être
+ * placée. Utilisé par l'outil de placement manuel (LayoutEditor.jsx)
+ * pour afficher tous les segments disponibles le long d'une cloison,
+ * pas juste un point central comme l'ancienne auto-détection.
+ *
+ * Contrairement à l'ancien modèle (écart de 1 case requis), une pièce
+ * qui n'est PAS directement adjacente à une autre (gap >= 1) n'offre
+ * aucun candidat — il n'existe alors aucune cloison entre elles, donc
+ * rien où percer une porte.
  */
 export function findDoorCandidates(rooms) {
-  const candidates = [];
-
-  const tryPair = (a, b, axis) => {
-    if (axis === "x") {
-      const gap = b.x - (a.x + a.width);
-      if (gap !== 1) return;
-      const start = Math.max(a.y, b.y);
-      const end = Math.min(a.y + a.height, b.y + b.height) - 1;
-      for (let y = start; y <= end; y++) {
-        candidates.push({ x: a.x + a.width, y, roomIdA: a.id, roomIdB: b.id });
-      }
-    } else {
-      const gap = b.y - (a.y + a.height);
-      if (gap !== 1) return;
-      const start = Math.max(a.x, b.x);
-      const end = Math.min(a.x + a.width, b.x + b.width) - 1;
-      for (let x = start; x <= end; x++) {
-        candidates.push({ x, y: a.y + a.height, roomIdA: a.id, roomIdB: b.id });
-      }
-    }
-  };
-
-  for (let i = 0; i < rooms.length; i++) {
-    for (let j = i + 1; j < rooms.length; j++) {
-      tryPair(rooms[i], rooms[j], "x");
-      tryPair(rooms[j], rooms[i], "x");
-      tryPair(rooms[i], rooms[j], "y");
-      tryPair(rooms[j], rooms[i], "y");
-    }
-  }
-  return candidates;
+  return computeRoomEdges(rooms).filter((e) => e.kind === "wall-int");
 }
 
 /**
- * Construit la grille complète de dalles (murs + portes) à partir d'une
- * liste de rectangles de pièces `{id, x, y, width, height}`.
+ * Construit la grille de dalles de SOL (uniquement — plus de dalles de
+ * mur/porte, voir en-tête du fichier) à partir d'une liste de
+ * rectangles de pièces `{id, x, y, width, height}`, plus la liste des
+ * arêtes (murs/portes) calculée séparément par `computeRoomEdges`.
  *
- * `explicitDoors` (optionnel, `[{x, y}, ...]`) : si fourni, remplace
- * ENTIÈREMENT l'auto-détection — seules ces positions deviennent des
- * portes (permet à l'outil de placement manuel de LayoutEditor.jsx de
- * garder le contrôle total, y compris pour retirer une porte
- * auto-détectée). Si omis (undefined), retombe sur l'auto-détection par
- * écart de 1 case — comportement inchangé pour du code qui n'a pas
- * encore connaissance des portes explicites.
+ * `doorEdges` (optionnel, `[{orientation, x, y}, ...]`) : arêtes à
+ * traiter comme portes. Omis ou vide = toutes les frontières entre
+ * pièces sont des murs pleins (plus d'auto-détection, voir en-tête).
  *
  * `furnitureList` (optionnel) est réappliqué APRÈS génération, uniquement
  * pour les cases qui tombent sur une case "floor" de la BONNE pièce
  * (`expectedRoomId`) — sinon abandonné plutôt que de corrompre le
  * tableau (ex. si une pièce a rétréci et qu'un meuble se retrouve hors
- * de ses murs).
+ * de ses murs). Comportement inchangé par rapport à l'ancien modèle.
  *
- * Retourne `{ tiles, gridWidth, gridHeight }` ; grille vide si `rooms`
- * est vide (aucun logement — voir l'écran d'accueil).
+ * Retourne `{ tiles, edges, gridWidth, gridHeight }` ; grille vide si
+ * `rooms` est vide (aucun logement — voir l'écran d'accueil).
  */
-export function generateFloorTiles(rooms, { furnitureList = [], explicitDoors } = {}) {
+export function generateFloorTiles(rooms, { furnitureList = [], doorEdges = [] } = {}) {
   if (!rooms || rooms.length === 0) {
-    return { tiles: [], gridWidth: 0, gridHeight: 0 };
+    return { tiles: [], edges: [], gridWidth: 0, gridHeight: 0 };
   }
 
   const floorCells = new Map();
@@ -180,31 +183,9 @@ export function generateFloorTiles(rooms, { furnitureList = [], explicitDoors } 
     }
   }
 
-  const wallCells = new Map();
-  for (const cell of floorCells.values()) {
-    for (const { dx, dy } of DIRECTIONS) {
-      const nx = cell.x + dx;
-      const ny = cell.y + dy;
-      const nKey = key(nx, ny);
-      if (!floorCells.has(nKey) && !wallCells.has(nKey)) {
-        wallCells.set(nKey, { x: nx, y: ny });
-      }
-    }
-  }
-
-  const doorKeys = explicitDoors !== undefined ? new Map(explicitDoors.map((d) => [key(d.x, d.y), true])) : findAutoDoors(rooms);
-
   const tiles = [];
   for (const cell of floorCells.values()) {
     tiles.push({ x: cell.x, y: cell.y, type: "floor", roomId: cell.roomId });
-  }
-  for (const cell of wallCells.values()) {
-    const cellKey = key(cell.x, cell.y);
-    if (doorKeys.has(cellKey)) {
-      tiles.push({ x: cell.x, y: cell.y, type: "door", roomId: null, label: "Porte" });
-    } else {
-      tiles.push({ x: cell.x, y: cell.y, type: "wall", roomId: null });
-    }
   }
 
   for (const f of furnitureList) {
@@ -222,10 +203,12 @@ export function generateFloorTiles(rooms, { furnitureList = [], explicitDoors } 
     }
   }
 
+  const edges = computeRoomEdges(rooms, doorEdges);
+
   const gridWidth = Math.max(...tiles.map((t) => t.x)) + 1;
   const gridHeight = Math.max(...tiles.map((t) => t.y)) + 1;
 
-  return { tiles, gridWidth, gridHeight };
+  return { tiles, edges, gridWidth, gridHeight };
 }
 
 /**

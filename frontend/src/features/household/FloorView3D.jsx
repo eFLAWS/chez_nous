@@ -1,7 +1,15 @@
-// src/features/household/FloorView2D.jsx
+// src/features/household/FloorView3D.jsx
 // Affiche le plan RÉEL et unifié de l'étage (une seule grille de dalles
 // avec roomId par dalle — voir mockData.js), avec déplacement pas à pas
 // (recherche de chemin) et zoom/pan/pincement via react-zoom-pan-pinch.
+//
+// RENOMMAGE TERMINOLOGIQUE (01/08/2026, voir la conversation) : "FloorView2D"
+// devient "FloorView3D" et "Vue 2.5D" devient "Vue 3D" partout (plus
+// compréhensible pour les utilisateurs, demande explicite de Paul).
+// Changement de VOCABULAIRE UNIQUEMENT — le rendu reste une grille CSS
+// vue de dessus avec un avatar qui s'y déplace, pas un moteur isométrique
+// ou WebGL. Si un vrai rendu 3D/isométrique est souhaité un jour, ce sera
+// un chantier technique distinct, pas ce renommage.
 //
 // SIMPLIFIÉ (voir la conversation) : mobilier et tâches retirés pour
 // l'instant — le foyer se concentre sur l'éditeur de plan avant de
@@ -10,16 +18,21 @@
 // dessus, et zoomer/naviguer. Plus de tiroir de tâches, plus de bouton
 // "+ Créer une tâche", plus de rendu de meuble.
 //
-// Toujours 100% mock, pas d'appel API ici.
+// Les valeurs par défaut des props (MOCK_FLOORS, MOCK_FLOOR_TILES,
+// MOCK_ROOMS, MOCK_USER) ne servent qu'en dernier recours si le parent
+// n'a rien transmis — en usage réel (monté par HouseholdSpatialView.jsx),
+// ce composant reçoit toujours des données réelles issues de Supabase,
+// contrairement à ce qu'affirmait une version précédente de ce
+// commentaire ("100% mock, pas d'appel API ici").
 import { useState, useRef, useMemo, useEffect } from "react";
 import { TransformWrapper, TransformComponent, useControls } from "react-zoom-pan-pinch";
 import { MOCK_FLOORS, MOCK_FLOOR_TILES, MOCK_ROOMS, MOCK_USER } from "./mockData";
 import { findPath } from "./utils/pathfinding";
-import "./FloorView2D.css";
+import "./FloorView3D.css";
 
 const CELL_PX = 50;
 // Doit rester synchronisé avec la durée de transition de .floor-avatar
-// dans FloorView2D.css — le glissé visuel entre deux cases doit durer
+// dans FloorView3D.css — le glissé visuel entre deux cases doit durer
 // exactement le temps qui s'écoule entre deux étapes de la marche.
 const STEP_DURATION_MS = 250;
 
@@ -58,7 +71,7 @@ function ZoomControls({ avatarRef }) {
   );
 }
 
-export default function FloorView2D({
+export default function FloorView3D({
   floor = MOCK_FLOORS[0],
   tiles = MOCK_FLOOR_TILES[MOCK_FLOORS[0].id],
   rooms = MOCK_ROOMS,

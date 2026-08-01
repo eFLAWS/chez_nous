@@ -1,4 +1,4 @@
-/* FloorView2D.css
+/* FloorView3D.css
    Toujours aucune transformation 3D (pas de rotateX/rotateZ/preserve-3d/
    perspective). Le zoom/pan/pincement est maintenant géré par
    react-zoom-pan-pinch (TransformWrapper/TransformComponent dans le
@@ -122,7 +122,7 @@
   justify-content: center;
   font-size: 26px;
   /* Doit rester à 0.25s — synchronisé avec STEP_DURATION_MS dans
-     FloorView2D.jsx. Si l'un change, changer l'autre aussi : le glissé
+     FloorView3D.jsx. Si l'un change, changer l'autre aussi : le glissé
      visuel entre deux cases doit durer exactement le temps qui s'écoule
      entre deux étapes de la marche pas à pas. */
   transition: left 0.25s linear, top 0.25s linear;

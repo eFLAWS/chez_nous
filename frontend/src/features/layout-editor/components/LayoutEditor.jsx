@@ -45,17 +45,24 @@
 import { useState, useRef } from "react";
 import RoomNameModal from "./RoomNameModal";
 import RoomInspector from "./RoomInspector";
-import { findDoorCandidates } from "../utils/layoutGeneration";
+import { findDoorCandidates, edgeKey } from "../utils/layoutGeneration";
 import { rectsOverlap, resolveOverlap } from "../utils/roomCollision";
 import { findRoomType, DEFAULT_ROOM_TYPE } from "../roomTypes";
 import { computeRoomSurface } from "../utils/layoutGeneration";
 import "./LayoutEditor.css";
 
-const CELL_PX = 28; // plus petit que dans FloorView2D : besoin de voir toute la grille de tracé à l'écran
+const CELL_PX = 28; // plus petit que dans FloorView3D : besoin de voir toute la grille de tracé à l'écran
 const MIN_ROOM_SIZE = 1; // au moins 1x1 dalle, comme demandé
 const DEFAULT_GRID_WIDTH = 20;
 const DEFAULT_GRID_HEIGHT = 16;
 const LONG_PRESS_MS = 500;
+// Épaisseur du segment cliquable affiché sur une cloison pour une porte
+// (candidat ou déjà placée) — voir le rendu en bas du fichier. Volontai-
+// rement plus large que le simple trait mural (WallEdges.jsx, vue
+// lecture seule) pour rester praticable au doigt malgré la finesse
+// intrinsèque d'une arête (voir TO_DO.md : cible tactile encore petite,
+// amélioration possible plus tard).
+const DOOR_HIT_THICKNESS_PX = 16;
 
 function normalizeRect(a, b) {
   const x = Math.min(a.x, b.x);
@@ -97,10 +104,6 @@ function computeResizedRect(original, handle, pointerCell) {
   return { ...original, x, y, width, height };
 }
 
-function doorKey(x, y) {
-  return `${x},${y}`;
-}
-
 export default function LayoutEditor({
   existingRooms = [],
   existingDoors = [],
@@ -115,7 +118,7 @@ export default function LayoutEditor({
   onDismissImportError,
 }) {
   const [rooms, setRooms] = useState(existingRooms);
-  const [doors, setDoors] = useState(existingDoors); // [{x, y}, ...]
+  const [doors, setDoors] = useState(existingDoors); // [{orientation: 'h'|'v', x, y}, ...] — voir layoutGeneration.js
   const [dragStart, setDragStart] = useState(null);
   const [dragCurrent, setDragCurrent] = useState(null);
   const [pendingRect, setPendingRect] = useState(null);
@@ -251,19 +254,25 @@ export default function LayoutEditor({
 
   /* --------------------------------- Outil de porte ------------------------------------ */
 
+  // Candidats = arêtes "wall-int" (cloisons entre deux pièces qui se
+  // touchent réellement, gap=0) — voir layoutGeneration.js. Contrairement
+  // à l'ancien modèle, deux pièces espacées n'offrent plus aucun candidat.
   const doorCandidates = doorToolActive ? findDoorCandidates(rooms) : [];
 
   const toggleDoor = (candidate) => {
     setDoors((prev) => {
-      const key = doorKey(candidate.x, candidate.y);
-      const exists = prev.some((d) => doorKey(d.x, d.y) === key);
-      return exists ? prev.filter((d) => doorKey(d.x, d.y) !== key) : [...prev, { x: candidate.x, y: candidate.y }];
+      const key = edgeKey(candidate.orientation, candidate.x, candidate.y);
+      const exists = prev.some((d) => edgeKey(d.orientation, d.x, d.y) === key);
+      return exists
+        ? prev.filter((d) => edgeKey(d.orientation, d.x, d.y) !== key)
+        : [...prev, { orientation: candidate.orientation, x: candidate.x, y: candidate.y }];
     });
   };
 
   /* -------------------------------- Inspecteur de pièce --------------------------------- */
 
   const inspectedRoom = rooms.find((r) => r.id === inspectedRoomId) || null;
+
 
   const handleUpdateRoomName = (name) => {
     setRooms((prev) => prev.map((r) => (r.id === inspectedRoomId ? { ...r, name } : r)));
@@ -366,7 +375,7 @@ export default function LayoutEditor({
   };
 
   const previewRect = dragStart && dragCurrent ? normalizeRect(dragStart, dragCurrent) : null;
-  const activeDoorKeys = new Set(doors.map((d) => doorKey(d.x, d.y)));
+  const activeDoorKeys = new Set(doors.map((d) => edgeKey(d.orientation, d.x, d.y)));
 
   return (
     <div className="layout-editor">
@@ -516,18 +525,34 @@ export default function LayoutEditor({
 
           {doorToolActive &&
             doorCandidates.map((c) => {
-              const isActive = activeDoorKeys.has(doorKey(c.x, c.y));
+              const isActive = activeDoorKeys.has(c.key);
+              const isHorizontal = c.orientation === "h";
+              const style = isHorizontal
+                ? {
+                    left: c.x * CELL_PX,
+                    top: c.y * CELL_PX - DOOR_HIT_THICKNESS_PX / 2,
+                    width: CELL_PX,
+                    height: DOOR_HIT_THICKNESS_PX,
+                  }
+                : {
+                    left: c.x * CELL_PX - DOOR_HIT_THICKNESS_PX / 2,
+                    top: c.y * CELL_PX,
+                    width: DOOR_HIT_THICKNESS_PX,
+                    height: CELL_PX,
+                  };
               return (
                 <button
                   type="button"
-                  key={`door-${c.x}-${c.y}`}
-                  className={isActive ? "layout-editor__door-candidate layout-editor__door-candidate--active" : "layout-editor__door-candidate"}
-                  style={{ left: c.x * CELL_PX, top: c.y * CELL_PX, width: CELL_PX, height: CELL_PX }}
+                  key={c.key}
+                  className={
+                    isActive
+                      ? "layout-editor__door-candidate layout-editor__door-candidate--active"
+                      : "layout-editor__door-candidate"
+                  }
+                  style={style}
                   onClick={() => toggleDoor(c)}
                   aria-label={isActive ? "Retirer cette porte" : "Ajouter une porte ici"}
-                >
-                  🚪
-                </button>
+                />
               );
             })}
         </div>

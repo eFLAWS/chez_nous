@@ -9,7 +9,7 @@
 //
 // CONTRAT PRÉSERVÉ À L'IDENTIQUE (voir la conversation) : mêmes noms de
 // fonctions, mêmes paramètres, même forme de retour que l'ancien
-// householdLayoutApi.js — pour qu'ApartmentSpatialMvp.jsx (déjà
+// householdLayoutApi.js — pour que HouseholdSpatialView.jsx (déjà
 // construit et testé) n'ait qu'à changer son import, rien d'autre.
 // Toute la logique d'adaptation (rooms/doors plats <-> structure du
 // blob) vit ici, pas dans le composant.
@@ -19,13 +19,28 @@
 //   { floors: [...], rooms: [...], doors: [...], furniture: [], spatialNotes: [] }
 // - floors : {id, name, shortLabel, level, avatarStart, gridWidth, gridHeight}
 // - rooms  : plat, chaque pièce porte son floorId (comme dans l'état
-//   local de ApartmentSpatialMvp.jsx — pas besoin de les regrouper ici).
-// - doors  : plats aussi dans le blob (avec floorId) ; reconvertis en
-//   dict {[floorId]: [...]} uniquement en sortie de fetchHouseholdLayout,
-//   pour correspondre exactement à ce qu'attendait l'ancienne API.
+//   local de HouseholdSpatialView.jsx — pas besoin de les regrouper ici).
+// - doors  : plats aussi dans le blob (avec floorId) ; REFONTE MUR-ARÊTE
+//   (voir la conversation, docs/DATA_MODEL.md §5) : chaque porte porte
+//   maintenant `orientation` ('h'|'v') en plus de `{x, y}` — elle
+//   identifie une ARÊTE précise (bordure entre deux pièces), plus une
+//   case de grille comme avant. Reconvertis en dict {[floorId]: [...]}
+//   uniquement en sortie de fetchHouseholdLayout, pour correspondre
+//   exactement à ce qu'attendait l'ancienne API.
 // - furniture/spatialNotes : présents dès maintenant dans le blob (voir
 //   docs/DATA_MODEL.md — encapsulés dès la conception), vides pour
 //   l'instant, aucun code ne les lit/écrit encore.
+//
+// ⚠️ COMPATIBILITÉ : un plan enregistré AVANT cette refonte a des portes
+// au format `{id, floorId, x, y}` (sans `orientation`). Elles ne seront
+// plus interprétées comme des portes valides une fois ce changement en
+// place (edgeKey produira une clé `undefined:x,y`, jamais présente dans
+// les arêtes calculées — la porte est silencieusement ignorée, pas de
+// crash, mais elle "disparaît"). Si le foyer de test a déjà un plan
+// enregistré avec des portes, réinitialise-le (`resetHouseholdLayout`,
+// déjà exposé par le bouton "🗑️ Réinitialiser le plan") avant de valider
+// ce chantier — pas de migration automatique écrite pour une seule
+// donnée de test.
 //
 // VERROU OPTIMISTE (floor_plans.version, colonne déjà en base mais
 // jamais utilisée jusqu'ici) : chaque écriture ne réussit que si la
@@ -75,7 +90,7 @@ export async function fetchHouseholdLayout(householdId) {
   const doorsByFloor = {};
   for (const door of layout.doors) {
     if (!doorsByFloor[door.floorId]) doorsByFloor[door.floorId] = [];
-    doorsByFloor[door.floorId].push({ id: door.id, x: door.x, y: door.y });
+    doorsByFloor[door.floorId].push({ id: door.id, orientation: door.orientation, x: door.x, y: door.y });
   }
 
   return { floors: layout.floors, rooms: layout.rooms, doors: doorsByFloor };
@@ -114,7 +129,7 @@ export async function saveFloorLayout({
   }
 
   const rooms = [...layout.rooms.filter((r) => r.floorId !== floorId), ...editedRoomRects.map((rect) => ({ ...rect, floorId }))];
-  const newDoors = editedDoors.map((d) => ({ id: crypto.randomUUID(), floorId, x: d.x, y: d.y }));
+  const newDoors = editedDoors.map((d) => ({ id: crypto.randomUUID(), floorId, orientation: d.orientation, x: d.x, y: d.y }));
   const doors = [...layout.doors.filter((d) => d.floorId !== floorId), ...newDoors];
 
   const editedRooms = rooms.filter((r) => r.floorId === floorId);
@@ -150,7 +165,7 @@ export async function saveFloorLayout({
     success: true,
     floor,
     rooms: editedRooms,
-    doors: newDoors.map((d) => ({ id: d.id, x: d.x, y: d.y })),
+    doors: newDoors.map((d) => ({ id: d.id, orientation: d.orientation, x: d.x, y: d.y })),
   };
 }
 

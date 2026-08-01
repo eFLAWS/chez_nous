@@ -1,5 +1,5 @@
 // src/features/household/utils/householdLayoutApi.js
-// Pont entre l'état en mémoire de ApartmentSpatialMvp.jsx
+// Pont entre l'état en mémoire de HouseholdSpatialView.jsx
 // (floors/rooms/doors) et le vrai backend, qui attend des opérations
 // CRUD PAR ENTITÉ (une pièce à la fois), pas un simple blob à
 // sauvegarder comme le faisait layoutStorage.js (localStorage). Isolé
@@ -57,7 +57,7 @@ export async function fetchHouseholdLayout(householdId) {
  * encore (premier logement), supprime les pièces/portes existantes de
  * CET étage précis, recrée celles éditées, puis met à jour les champs de
  * layout de l'étage (avatarStart/gridWidth/gridHeight — toujours
- * recalculés, jamais figés, voir ApartmentSpatialMvp.jsx).
+ * recalculés, jamais figés, voir HouseholdSpatialView.jsx).
  *
  * Retourne `{ success: true, floor, rooms, doors }` (doors au format
  * `[{id, x, y}]`, avec les NOUVEAUX ids assignés par le backend) ou

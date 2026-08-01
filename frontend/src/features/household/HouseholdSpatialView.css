@@ -1,6 +1,6 @@
-/* ApartmentSpatialMvp.css */
+/* HouseholdSpatialView.css */
 
-.spatial-mvp {
+.spatial-view {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -10,7 +10,7 @@
   position: relative;
 }
 
-.spatial-mvp__housing-bar {
+.spatial-view__housing-bar {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -18,7 +18,7 @@
   padding-top: 8px;
 }
 
-.spatial-mvp__back-btn {
+.spatial-view__back-btn {
   border: none;
   background: none;
   font-size: 14px;
@@ -29,13 +29,13 @@
   min-height: 44px;
 }
 
-.spatial-mvp__housing-name {
+.spatial-view__housing-name {
   font-size: 14px;
   font-weight: 700;
   color: rgba(0, 0, 0, 0.7);
 }
 
-.spatial-mvp__floor-selector {
+.spatial-view__floor-selector {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
@@ -43,7 +43,7 @@
   width: 100%;
 }
 
-.spatial-mvp__edit-btn {
+.spatial-view__edit-btn {
   margin-left: auto;
   border: 1px solid rgba(0, 0, 0, 0.15);
   background: #fff;
@@ -56,7 +56,7 @@
   min-height: 44px;
 }
 
-.spatial-mvp__floor-btn {
+.spatial-view__floor-btn {
   border: 1px solid rgba(0, 0, 0, 0.15);
   background: #fff;
   padding: 8px 16px;
@@ -68,20 +68,20 @@
   min-height: 44px;
 }
 
-.spatial-mvp__floor-btn--active {
+.spatial-view__floor-btn--active {
   background: #1c1c1c;
   color: #fff;
   border-color: #1c1c1c;
 }
 
-.spatial-mvp__empty-floor {
+.spatial-view__empty-floor {
   font-size: 14px;
   color: rgba(0, 0, 0, 0.6);
   text-align: center;
   padding: 40px 20px;
 }
 
-.spatial-mvp__loading {
+.spatial-view__loading {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -90,7 +90,7 @@
   color: rgba(0, 0, 0, 0.6);
 }
 
-.spatial-mvp__switcher {
+.spatial-view__switcher {
   display: flex;
   gap: 4px;
   background: #f1efe8;
@@ -99,7 +99,7 @@
   margin: 4px 0 4px;
 }
 
-.spatial-mvp__tab {
+.spatial-view__tab {
   border: none;
   background: none;
   padding: 8px 16px;
@@ -111,7 +111,7 @@
   min-height: 44px;
 }
 
-.spatial-mvp__tab--active {
+.spatial-view__tab--active {
   background: #1c1c1c;
   color: #fff;
 }

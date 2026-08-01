@@ -1,7 +1,7 @@
 // src/features/household/HouseholdRoot.jsx
 // Orchestrateur de plus haut niveau : Authentification (réelle) ->
 // Dashboard (sélection/création de logement, VRAIS foyers) ->
-// ApartmentSpatialMvp, borné à UN logement à la fois. C'est CE composant
+// HouseholdSpatialView, borné à UN logement à la fois. C'est CE composant
 // que main.jsx monte à la place d'App.jsx pour le MVP.
 //
 // ÉTAPES 3 ET 4/4, TERMINÉES (voir la conversation) : la LISTE des
@@ -9,7 +9,7 @@
 // tous les deux branchés sur le vrai backend — plus de mock localStorage
 // nulle part dans ce flux. `selectedHousingId` EST directement le vrai
 // id du foyer côté backend (plus de clé synthétique nécessaire) —
-// transmis tel quel à ApartmentSpatialMvp.jsx comme `householdId`.
+// transmis tel quel à HouseholdSpatialView.jsx comme `householdId`.
 //
 // "occupantsCount" par logement : le backend ne renvoie pas ce compte
 // directement dans listHouseholdsForUser — recalculé ici avec un appel
@@ -25,7 +25,7 @@ import SignupForm from "../auth/SignupForm";
 import { HouseIcon } from "../../components/ui/Icons";
 import LoginForm from "../auth/LoginForm";
 import HousingDashboard from "./HousingDashboard";
-import ApartmentSpatialMvp from "./ApartmentSpatialMvp";
+import HouseholdSpatialView from "./HouseholdSpatialView";
 import "./HouseholdRoot.css";
 
 const SESSION_KEY = "chez-nous-session"; // même clé que App.jsx, volontairement
@@ -252,7 +252,7 @@ export default function HouseholdRoot() {
   const selectedHousing = housings.find((h) => h.id === selectedHousingId);
 
   return (
-    <ApartmentSpatialMvp
+    <HouseholdSpatialView
       key={selectedHousingId}
       householdId={selectedHousingId}
       housingName={selectedHousing?.name}

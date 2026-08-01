@@ -5,7 +5,7 @@
 // mais rewiré sur household_members.role plutôt que occupants/api.js.
 //
 // ⚠️ PÉRIMÈTRE DE CETTE VERSION : n'affiche PAS le plan 2D/3D.
-// ApartmentSpatialMvp reste branché sur l'ancien backend (IDs
+// HouseholdSpatialView reste branché sur l'ancien backend (IDs
 // incompatibles avec les UUID Supabase) — migration floor_plans =
 // étape suivante, volontairement hors périmètre ici.
 import { useParams, useNavigate } from 'react-router-dom';

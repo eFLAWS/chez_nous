@@ -1,6 +1,6 @@
 // src/features/household/utils/pathfinding.js
 // Utilitaire de recherche de chemin, séparé du composant de vue pour ne
-// pas l'alourdir (voir FloorView2D.jsx pour l'intégration). Aucune
+// pas l'alourdir (voir FloorView3D.jsx pour l'intégration). Aucune
 // dépendance sur React ici — pur JS, testable indépendamment.
 //
 // BFS (parcours en largeur), pas A* : tous les déplacements ont le même
