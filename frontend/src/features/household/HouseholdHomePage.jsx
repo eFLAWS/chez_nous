@@ -80,7 +80,7 @@ export default function HouseholdHomePage() {
 
   return (
     <div className="household-home-page">
-      <section className="household-home-page__overview household-home-page__clickable" {...clickableProps('spatial')}>
+      <section className="household-home-page__overview household-home-page__clickable card-glow" {...clickableProps('spatial')}>
         <div className="household-home-page__overview-glow" aria-hidden="true" />
 
         <div className="household-home-page__overview-header">

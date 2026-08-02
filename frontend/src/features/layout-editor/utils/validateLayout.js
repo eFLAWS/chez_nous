@@ -29,13 +29,21 @@
 //
 // MISE À JOUR — REFONTE MUR-ARÊTE (voir la conversation) : `doorSchema`
 // exige maintenant `orientation` ('h'|'v') en plus de `x`/`y` — une
-// porte identifie une ARÊTE précise (bordure entre deux pièces), plus
-// une case de grille comme avant (voir layoutGeneration.js). Un fichier
-// exporté AVANT ce changement (`version: 1`, portes sans orientation)
-// sera désormais rejeté par l'import avec un message clair plutôt que
-// silencieusement mal interprété — comportement voulu, pas un oubli :
-// aucune conversion automatique v1->v2 écrite, le volume de données
-// concerné (plans de test) ne le justifie pas pour l'instant.
+// entrée de `doors` identifie une ARÊTE précise (bordure entre deux
+// pièces), plus une case de grille comme avant (voir
+// layoutGeneration.js). Un fichier exporté AVANT ce changement
+// (`version: 1`, entrées sans orientation) sera désormais rejeté par
+// l'import avec un message clair plutôt que silencieusement mal
+// interprété — comportement voulu, pas un oubli : aucune conversion
+// automatique v1->v2 écrite, le volume de données concerné (plans de
+// test) ne le justifie pas pour l'instant.
+//
+// TERMINOLOGIE (01/08/2026, demande explicite de Paul) : le champ/schéma
+// garde le nom `doors` (aucune migration nécessaire, valeur purement
+// structurelle), mais côté interaction/rendu il ne s'agit plus de
+// "portes" — chaque entrée représente une OUVERTURE (pan de mur retiré),
+// pas un objet de porte ajouté. Un mur plein reste le défaut entre deux
+// pièces qui se touchent.
 import { z } from 'zod';
 
 const pointSchema = z.object({

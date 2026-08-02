@@ -1,0 +1,272 @@
+/* ProfilePage.css — sections spécifiques au Profil (avatar, stats,
+   badges), au-delà de l'habillage partagé d'account-pages.css. */
+
+.profile-page__header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.profile-page__icon-btn {
+  width: 2.3rem;
+  height: 2.3rem;
+  border-radius: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.profile-page__icon-btn:hover:not(:disabled) {
+  color: var(--text-primary);
+  border-color: rgba(16, 185, 129, 0.4);
+}
+
+.profile-page__icon-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.profile-page__eyebrow {
+  font-size: 0.6rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--color-emerald);
+  margin: 0 0 0.1rem;
+}
+
+/* --- Section avatar --- */
+
+.profile-page__avatar-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0 0.25rem;
+}
+
+/* Cadre à bordure dégradée (émeraude → teal → lime), fidèle au
+   prototype — contient soit l'aperçu local de la photo choisie, soit
+   des initiales en repli (pas de "avatar Sims"). */
+.profile-page__avatar-frame {
+  position: relative;
+  width: 5.5rem;
+  height: 5.5rem;
+  border-radius: 1.4rem;
+  padding: 3px;
+  background: linear-gradient(135deg, #34d399, #5eead4, #a3e635);
+  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.2);
+}
+
+.profile-page__avatar-inner {
+  width: 100%;
+  height: 100%;
+  border-radius: 1.2rem;
+  background: var(--bg-app, #0f172a);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.profile-page__avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-page__avatar-initials {
+  font-size: 1.4rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #6ee7b7, #99f6e4);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.profile-page__avatar-camera-btn {
+  position: absolute;
+  bottom: -0.3rem;
+  right: -0.3rem;
+  width: 1.9rem;
+  height: 1.9rem;
+  border-radius: 0.7rem;
+  background: var(--color-emerald);
+  color: #04241c;
+  border: 2px solid var(--bg-app, #0f172a);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+}
+
+.profile-page__avatar-camera-btn:hover {
+  transform: scale(1.08);
+}
+
+.profile-page__avatar-input {
+  display: none;
+}
+
+.profile-page__member-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.profile-page__membership-badge {
+  display: inline-block;
+  padding: 0.2rem 0.7rem;
+  border-radius: 999px;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  color: var(--color-emerald);
+  font-size: 0.6rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.profile-page__member-since {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* --- Stats --- */
+
+.profile-page__stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.6rem;
+}
+
+.profile-page__stat {
+  border-radius: 1.1rem;
+  border: 1px solid var(--border-color);
+  background: rgba(15, 23, 42, 0.6);
+  padding: 0.75rem 0.5rem;
+  text-align: center;
+}
+
+.profile-page__stat-icon {
+  margin-bottom: 0.3rem;
+}
+
+.profile-page__stat-icon--amber { color: var(--color-amber); }
+.profile-page__stat-icon--sky { color: var(--color-sky); }
+.profile-page__stat-icon--emerald { color: var(--color-emerald); }
+
+.profile-page__stat-value {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.profile-page__stat-label {
+  font-size: 0.58rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 0.15rem 0 0;
+}
+
+.profile-page__stats-note {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  text-align: center;
+  margin: -0.6rem 0 0;
+}
+
+/* --- Panneaux (badges, spécialités) --- */
+
+.profile-page__panel {
+  border-radius: 1.4rem;
+  border: 1px solid var(--border-color);
+  background: rgba(15, 23, 42, 0.6);
+  padding: 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.profile-page__panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.profile-page__panel-title {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.profile-page__panel-count {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--color-emerald);
+}
+
+.profile-page__badges-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
+}
+
+.profile-page__badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.3rem;
+  padding: 0.5rem 0.3rem;
+  border-radius: 0.9rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.profile-page__badge--locked {
+  opacity: 0.55;
+}
+
+.profile-page__badge-icon {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  background: rgba(100, 116, 139, 0.18);
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile-page__badge-label {
+  font-size: 0.58rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  line-height: 1.2;
+  margin: 0;
+}
+
+.profile-page__empty-note {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  margin: 0;
+}

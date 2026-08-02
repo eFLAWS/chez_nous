@@ -16,10 +16,12 @@ Le projet reste **en transition** entre deux architectures, mais la bascule a ne
 | **Auth** | Formulaires maison + session `localStorage` | Supabase Auth (`AuthContext`, `LoginPage`, `SignupPage`) |
 | **Foyers (liste + détail + rôles)** | `HouseholdRoot.jsx` → `HousingDashboard.jsx` | `HouseholdDashboardPage.jsx` (`/households`) → `AppLayout.jsx` (`/households/:id/*`, 6 onglets) |
 | **Plan 2D/3D** | `HouseholdSpatialView.jsx` — plus aucun importeur actif (`api.js`/`householdLayoutApi.js` orphelins, confirmé) | `floorPlanService.js` (blob JSONB `floor_plans.layout_data`, verrou optimiste). Monté sur `/spatial`. **Testé en conditions réelles par Paul — fonctionne** |
-| **Tâches / Dépenses / Calendrier / Vie du foyer** | N'existaient pas | Placeholders statiques (`HouseholdTasksPage.jsx`, `HouseholdExpensesPage.jsx`, `HouseholdCalendarPage.jsx`, `HouseholdLifePage.jsx`) — aucune couche de données encore, ni ancien ni nouveau système |
+| **Tâches / Dépenses / Vie du foyer** | N'existaient pas | Placeholders statiques (`HouseholdTasksPage.jsx`, `HouseholdExpensesPage.jsx`) / contenu réel non-Supabase (`HouseholdLifePage.jsx`) — aucune couche de données encore |
+| **Calendrier** | N'existait pas | `HouseholdCalendarPage.jsx` — grille mensuelle **réellement interactive** (calculée dynamiquement, filtres, sélection de jour), événements toujours **statiques/mock** (aucune table `calendar_events`) |
+| **Profil / Réglages / Préférences** | N'existaient pas | `features/account/` (nouveau) — `ProfilePage.jsx`, `SettingsPage.jsx`, `PreferencesPage.jsx`. Interrupteurs de Préférences réellement cliquables, **rien n'est persisté** (pas de table de préférences utilisateur) |
 | **Monté par `AppRouter.jsx`** | ❌ Non — `HouseholdRoot` retiré du flux | ✅ Oui, c'est le flux principal |
 
-**Le flux réel aujourd'hui :** inscription/connexion (Supabase Auth) → si aucun foyer, `/onboarding` (création réelle sur Supabase) → si un seul foyer, redirection directe vers `/households/:id` (Accueil) ; sinon `/households` (liste, ou `?manage=1` pour la gérer explicitement) → `AppLayout` (header avec switcher de foyer + menu profil, 6 onglets : Accueil, Plan, Tâches, Dépenses, Calendrier, Vie du foyer). **Le plan 2D/3D est monté sur `/spatial`, connecté à Supabase, et testé en conditions réelles — fonctionne** (créer un plan, sauvegarder, recharger).
+**Le flux réel aujourd'hui :** inscription/connexion (Supabase Auth) → si aucun foyer, `/onboarding` (création réelle sur Supabase) → si un seul foyer, redirection directe vers `/households/:id` (Accueil) ; sinon `/households` (liste, ou `?manage=1` pour la gérer explicitement) → `AppLayout` (header avec switcher de foyer + menu profil, 6 onglets : Accueil, Plan, Tâches, Dépenses, Calendrier, Vie du foyer). **Le plan 2D/3D est monté sur `/spatial`, connecté à Supabase, et testé en conditions réelles — fonctionne** (créer un plan, sauvegarder, recharger). Depuis le menu profil (header), "Profil" et "Réglages" mènent vers `/profile` et `/settings` (pages plein écran autonomes, pas des onglets du foyer) ; "Notifications et Préférences" dans Réglages mène vers `/settings/preferences`.
 
 ⚠️ **Note historique (voir `docs/PROJET.md` §2, journal) :** une version antérieure de ce README laissait entendre que rien côté données métier n'était sur Supabase — c'est faux pour les foyers, vérifié en lisant `householdService.js`. Le goulot d'étranglement identifié à l'époque (le plan 2D/3D, alors branché sur l'ancien backend et pas monté dans le routing) est **résolu depuis** : reconnecté à Supabase et testé en conditions réelles (voir plus haut).
 
@@ -88,18 +90,24 @@ frontend/
         AuthContext.jsx / RequireAuth.jsx / LoginPage.jsx / SignupPage.jsx / AuthPage.css   # NOUVEAU (Supabase)
         LoginForm.jsx / SignupForm.jsx / InviteForm.jsx / AcceptInvitationForm.jsx / ForgotPasswordForm.jsx / AuthForm.css   # ANCIEN, dormant
 
+      account/                          # NOUVEAU dossier — pages de niveau COMPTE, pas foyer (plein écran, pas de bottom nav)
+        account-pages.css                # NOUVEAU — habillage partagé (header, listes, interrupteurs)
+        ProfilePage.jsx/.css              # NOUVEAU — route /profile (stats/badges à 0, pas de fausses données)
+        SettingsPage.jsx                  # NOUVEAU — route /settings (seuls Profil/Préférences sont réels)
+        PreferencesPage.jsx               # NOUVEAU — route /settings/preferences (interrupteurs non persistés)
+
       household/
         householdService.js / useHouseholds.js / useHouseholdDetail.js / RequireHousehold.jsx   # NOUVEAU (Supabase)
         HouseholdDashboardPage.jsx/.css   # NOUVEAU — route /households (liste, redirige seule si 1 foyer)
         AppLayout.jsx/.css                # NOUVEAU — coquille de /households/:id/* (header + 6 onglets)
         HouseholdSwitcher.jsx/.css        # NOUVEAU — switcher de foyer + "Gérer mes logements" (header)
-        UserMenu.jsx/.css                 # NOUVEAU — menu profil (Réglages/Profil "Bientôt", Déconnexion)
+        UserMenu.jsx/.css                 # NOUVEAU — menu profil (Profil/Réglages -> vraies pages, Déconnexion)
         HouseholdHomePage.jsx/.css        # NOUVEAU — onglet Accueil (données statiques pour l'instant)
         HouseholdSpatialPage.jsx          # NOUVEAU — onglet Plan, monte HouseholdSpatialView (Supabase)
         floorPlanService.js               # NOUVEAU — Supabase (blob JSONB floor_plans.layout_data)
         HouseholdTasksPage.jsx            # NOUVEAU — onglet Tâches (placeholder)
         HouseholdExpensesPage.jsx         # NOUVEAU — onglet Dépenses (placeholder, table déjà en base)
-        HouseholdCalendarPage.jsx         # NOUVEAU — onglet Calendrier (placeholder)
+        HouseholdCalendarPage.jsx/.css    # NOUVEAU — onglet Calendrier (grille mensuelle réelle, événements mock)
         HouseholdLifePage.jsx/.css        # NOUVEAU — onglet Vie du foyer (nom, code d'invitation, membres)
         HouseholdRewardsPage.jsx          # NOUVEAU — page /rewards (placeholder, atteinte via badge gemme)
         StreakModal.jsx                   # NOUVEAU — modale détail streak (badge flamme, header)
@@ -143,7 +151,8 @@ frontend/
 | **4. Auth + Onboarding + retrait de HouseholdRoot** | 🟢 Fait |
 | **5. Coquille applicative (`AppLayout`, 6 onglets, switcher, menu profil)** | 🟢 Fait |
 | **6. Reconnexion du plan 2D/3D (`floor_plans`, JSONB)** | 🟢 Fait et testé en conditions réelles |
-| **7. Tâches / Dépenses / Calendrier / Vie du foyer (Supabase réel)** | 🔴 Pas commencé — placeholders uniquement |
+| **7. Tâches / Dépenses / Vie du foyer (Supabase réel)** | 🔴 Pas commencé — placeholders uniquement |
+| **8. Profil / Réglages / Préférences / Calendrier (UI)** | 🟡 UI construite et interactive (grille calendrier, interrupteurs, recherche) — rien n'est persisté, aucun service Supabase derrière |
 
 ---
 

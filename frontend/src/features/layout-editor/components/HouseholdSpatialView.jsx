@@ -38,29 +38,11 @@
 // que l'écran de création (qui échouerait de toute façon côté backend/
 // RLS). Le backend reste la vraie barrière de sécurité — ceci n'ajuste
 // que l'affichage.
-// GESTION DES ÉTAGES (01/08/2026, demande explicite de Paul) : "+ Étage"
-// (handleStartAddFloor) repart sur un floorId vide, le prochain
-// enregistrement crée un nouvel étage numéroté après ceux déjà présents
-// (voir handleSaveLayout — corrige au passage un bug latent : sans ce
-// calcul, un nouvel étage retombait TOUJOURS sur "Rez-de-chaussée"/RDC/
-// niveau 0, même s'il y en avait déjà un). "🗑️" (handleDeleteFloor,
-// confirmation requise) supprime UN étage déjà enregistré et ses
-// pièces/portes, sans toucher aux autres.
-//
-// "🗑️ Réinitialiser cet étage" (dans LayoutEditor.jsx) — **correction
-// (01/08/2026, "ne fait rien")** : ne passe plus par ce composant du
-// tout. Avant, le bouton appelait `onReset` ici, qui effaçait TOUT LE
-// FOYER côté backend (`resetHouseholdLayout`) puis rechargeait des
-// props vides — sauf que l'état local de LayoutEditor (`useState`) ne
-// se resynchronise jamais avec des props qui changent sans démontage,
-// donc rien ne changeait à l'écran. LayoutEditor gère maintenant sa
-// réinitialisation entièrement en interne (vide son propre brouillon),
-// sans prop `onReset` ni appel backend — voir ce fichier pour le détail.
 import { useState, useMemo, useEffect } from "react";
 import { MOCK_USER } from "./mockData";
 import { generateFloorTiles, extractRoomRectsFromTiles } from "../layout-editor/utils/layoutGeneration";
 import { downloadLayoutAsJson, readLayoutFile } from "../layout-editor/utils/layoutStorage";
-import { fetchHouseholdLayout, saveFloorLayout, resetHouseholdLayout, deleteFloor } from "./floorPlanService";
+import { fetchHouseholdLayout, saveFloorLayout, resetHouseholdLayout } from "./floorPlanService";
 import FloorView3D from "./FloorView3D";
 import Plan2DView from "./Plan2DView";
 import LayoutEditor from "../layout-editor/components/LayoutEditor";
@@ -91,7 +73,6 @@ export default function HouseholdSpatialView({
   const [initialRoomId, setInitialRoomId] = useState(null);
   const [importError, setImportError] = useState(null);
   const [viewMode, setViewMode] = useState("2d");
-  const [deleteFloorConfirmId, setDeleteFloorConfirmId] = useState(null); // id de l'étage en attente de confirmation de suppression, ou null
 
   // Charge le plan du logement depuis le vrai backend au montage (et si
   // jamais householdId changeait, bien que le `key={selectedHousingId}`
@@ -179,15 +160,6 @@ export default function HouseholdSpatialView({
     setMode("editing");
   };
 
-  // "+ Ajouter un étage" (01/08/2026, demande explicite de Paul) :
-  // repart sur un floorId vide -> handleSaveLayout (ci-dessus) crée un
-  // NOUVEL étage à l'enregistrement, numéroté après ceux déjà présents.
-  // Ne touche PAS aux étages existants.
-  const handleStartAddFloor = () => {
-    setSelectedFloorId(null);
-    setMode("editing");
-  };
-
   const editorInitialRooms = mode === "editing" && selectedFloorId ? extractRoomRectsFromTiles(selectedFloorTiles, roomsOnSelectedFloor) : [];
   const editorInitialDoors =
     mode === "editing" && selectedFloorId
@@ -198,25 +170,9 @@ export default function HouseholdSpatialView({
     setSaving(true);
     setSaveError(null);
 
-    // Correction (01/08/2026, découverte en implémentant "+ Ajouter un
-    // étage") : sans ce calcul, `saveFloorLayout` retombe TOUJOURS sur
-    // son défaut "Rez-de-chaussée"/RDC/niveau 0 pour un nouvel étage
-    // (`floorId` null) — un vrai bug dès qu'on a déjà un RDC et qu'on en
-    // ajoute un second, avant même que l'ajout d'étage n'existe comme
-    // fonctionnalité. Numérote maintenant selon le nombre d'étages déjà
-    // présents.
-    const isNewFloor = !selectedFloorId;
-    const nextLevel = floors.length;
-    const floorMeta = isNewFloor
-      ? nextLevel === 0
-        ? { name: "Rez-de-chaussée", shortLabel: "RDC", level: 0 }
-        : { name: `${nextLevel}${nextLevel === 1 ? "er" : "e"} étage`, shortLabel: `E${nextLevel}`, level: nextLevel }
-      : undefined;
-
     const result = await saveFloorLayout({
       householdId,
       floorId: selectedFloorId,
-      floorMeta,
       existingDoorsWithIds: selectedFloorId ? doorsWithIds[selectedFloorId] || [] : [],
       editedRoomRects,
       editedDoors,
@@ -258,34 +214,21 @@ export default function HouseholdSpatialView({
     setMode(hasNothing ? "onboarding" : "app");
   };
 
-  // "🗑️ Supprimer un étage" (01/08/2026, demande explicite de Paul) —
-  // distinct de "Réinitialiser cet étage" dans LayoutEditor.jsx (qui ne
-  // touche qu'au brouillon local en cours d'édition, jamais au backend
-  // ni aux autres étages) : ici on supprime un étage DÉJÀ ENREGISTRÉ
-  // (et ses pièces/portes) côté serveur, garde les autres intacts.
-  // Bascule sur le premier étage restant (ou aucun s'il n'en reste
-  // plus). Précédé d'une confirmation (deleteFloorConfirmId) — action
-  // irréversible.
-  const handleDeleteFloor = async (floorId) => {
+  // Supprime TOUS les étages de ce logement côté backend (cascade vers
+  // pièces/portes/tâches) -> retombe sur l'écran d'accueil.
+  const handleResetLayout = async () => {
     setSaving(true);
-    const result = await deleteFloor(householdId, floorId);
+    const result = await resetHouseholdLayout(householdId);
     setSaving(false);
     if (!result.success) {
       setSaveError(result.error);
       return;
     }
-    setFloors((prev) => prev.filter((f) => f.id !== floorId));
-    setRooms((prev) => prev.filter((r) => r.floorId !== floorId));
-    setDoorsWithIds((prev) => {
-      const next = { ...prev };
-      delete next[floorId];
-      return next;
-    });
-    if (selectedFloorId === floorId) {
-      const remaining = floors.filter((f) => f.id !== floorId);
-      setSelectedFloorId(remaining[0]?.id ?? null);
-      setInitialRoomId(null);
-    }
+    setFloors([]);
+    setRooms([]);
+    setDoorsWithIds({});
+    setSelectedFloorId(null);
+    setMode("onboarding");
   };
 
   const handleExportLayout = () => {
@@ -387,6 +330,7 @@ export default function HouseholdSpatialView({
         onSave={handleSaveLayout}
         saving={saving}
         onCancel={handleCancelEdit}
+        onReset={handleResetLayout}
         onExport={handleExportLayout}
         onImport={handleImportLayout}
         importError={importError || saveError}
@@ -422,21 +366,6 @@ export default function HouseholdSpatialView({
             {floor.shortLabel}
           </button>
         ))}
-        {isOwner && (
-          <button type="button" className="spatial-view__floor-add-btn" onClick={handleStartAddFloor}>
-            + Étage
-          </button>
-        )}
-        {isOwner && selectedFloorId && (
-          <button
-            type="button"
-            className="spatial-view__floor-delete-btn"
-            onClick={() => setDeleteFloorConfirmId(selectedFloorId)}
-            aria-label={`Supprimer ${selectedFloor?.name || "cet étage"}`}
-          >
-            🗑️
-          </button>
-        )}
         {isOwner && (
           <button type="button" className="spatial-view__edit-btn" onClick={handleStartEditLayout}>
             ✏️ Modifier le plan
@@ -478,34 +407,6 @@ export default function HouseholdSpatialView({
           user={user}
           initialRoomId={initialRoomId}
         />
-      )}
-
-      {deleteFloorConfirmId && (
-        <>
-          <div className="spatial-view__confirm-backdrop" onClick={() => setDeleteFloorConfirmId(null)} />
-          <div className="spatial-view__confirm" role="alertdialog" aria-modal="true" aria-label="Confirmer la suppression de l'étage">
-            <p className="spatial-view__confirm-text">
-              Supprimer "{floors.find((f) => f.id === deleteFloorConfirmId)?.name || "cet étage"}" efface définitivement ses pièces et
-              ouvertures — cette action ne peut pas être annulée. Les autres étages ne sont pas concernés.
-            </p>
-            <div className="spatial-view__confirm-actions">
-              <button
-                type="button"
-                className="spatial-view__confirm-danger-btn"
-                onClick={() => {
-                  const floorId = deleteFloorConfirmId;
-                  setDeleteFloorConfirmId(null);
-                  handleDeleteFloor(floorId);
-                }}
-              >
-                Supprimer
-              </button>
-              <button type="button" className="spatial-view__confirm-cancel-btn" onClick={() => setDeleteFloorConfirmId(null)}>
-                Annuler
-              </button>
-            </div>
-          </div>
-        </>
       )}
     </div>
   );

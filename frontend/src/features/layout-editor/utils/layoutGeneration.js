@@ -17,22 +17,32 @@
 //   - bordure entre une pièce et le vide -> "wall-ext"
 //   - bordure entre deux pièces DIFFÉRENTES qui se touchent (gap=0)
 //     -> "wall-int" (cloison), sauf si cette arête précise est marquée
-//     comme porte -> "door"
+//     comme ouverture -> "opening"
 //   - bordure entre deux cases de la MÊME pièce -> aucune arête (invisible)
 //
-// CONSÉQUENCE SUR LE WORKFLOW (inverse de l'ancien modèle) : une porte
-// ne peut exister qu'entre deux pièces qui se touchent RÉELLEMENT
-// (gap=0) — avant, il fallait au contraire un écart d'exactement 1
-// case. Deux pièces avec un espace vide entre elles (gap>=1) affichent
-// désormais chacune leur propre mur extérieur face à ce vide, sans
-// fusion ni erreur, juste deux murs indépendants (plus de cas spécial).
+// OUVERTURE, PAS PORTE (01/08/2026, demande explicite de Paul) : "opening"
+// représente un pan de MUR RETIRÉ, pas un objet de porte physique ajouté
+// — le résultat visuel (WallEdges.jsx) est une absence totale de trait
+// à cet endroit, pas un trait de porte stylé différemment. Le mur plein
+// reste le comportement PAR DÉFAUT entre deux pièces qui se touchent :
+// rien n'empêche deux pièces d'être séparées par un mur plein SANS
+// aucune ouverture, ce n'est pas parce que l'outil existe que toutes les
+// frontières doivent en avoir une.
 //
-// AUTO-DÉTECTION DE PORTE RETIRÉE (`findAutoDoors`, ancien) : avec des
-// cloisons pleine longueur plutôt qu'une case unique dans un écart de 1,
-// une porte "au milieu" n'a plus de sens par défaut — toutes les
-// frontières entre pièces sont des murs pleins tant que l'utilisateur
-// n'en perce pas une explicitement via l'outil de porte
-// (`findDoorCandidates`, qui énumère maintenant tous les segments d'arête
+// CONSÉQUENCE SUR LE WORKFLOW (inverse de l'ancien modèle mur-dalle) :
+// une ouverture ne peut exister qu'entre deux pièces qui se touchent
+// RÉELLEMENT (gap=0) — avec l'ancien modèle mur-dalle, il fallait au
+// contraire un écart d'exactement 1 case. Deux pièces avec un espace
+// vide entre elles (gap>=1) affichent désormais chacune leur propre mur
+// extérieur face à ce vide, sans fusion ni erreur, juste deux murs
+// indépendants (plus de cas spécial).
+//
+// AUCUNE AUTO-DÉTECTION (`findAutoDoors`, ancien modèle mur-dalle,
+// retiré) : avec des cloisons pleine longueur plutôt qu'une case unique
+// dans un écart de 1, une ouverture "au milieu" n'a plus de sens par
+// défaut — toutes les frontières entre pièces sont des murs pleins tant
+// que l'utilisateur n'en retire pas explicitement un pan via l'outil
+// (`findOpenableWallSegments`, qui énumère tous les segments d'arête
 // "wall-int" disponibles, pas juste un point par paire de pièces).
 //
 // VÉRIFIÉ (voir la conversation) : `computeRoomEdges` testé isolément
@@ -75,11 +85,11 @@ export function edgeKey(orientation, x, y) {
 }
 
 /**
- * Calcule TOUTES les arêtes (murs + portes) d'un ensemble de pièces.
+ * Calcule TOUTES les arêtes (murs + ouvertures) d'un ensemble de pièces.
  * Pour chaque case occupée par une pièce, on regarde ses 4 voisins :
  *   - voisin absent (vide) -> arête "wall-ext"
  *   - voisin = pièce DIFFÉRENTE -> arête "wall-int", sauf si sa clé
- *     canonique figure dans `doorEdges` -> "door"
+ *     canonique figure dans `openingEdges` -> "opening"
  *   - voisin = MÊME pièce -> aucune arête (intérieur, invisible)
  *
  * Clé canonique garantissant qu'une frontière physique n'est calculée
@@ -87,8 +97,9 @@ export function edgeKey(orientation, x, y) {
  * (`edges.has(k)` court-circuite le second passage) — vérifié par test
  * (voir en-tête du fichier) sur une géométrie en L à 3 pièces.
  *
- * `doorEdges` : `[{orientation: 'h'|'v', x, y}, ...]` — les arêtes à
- * traiter comme portes plutôt que murs pleins.
+ * `openingEdges` : `[{orientation: 'h'|'v', x, y}, ...]` — les arêtes à
+ * traiter comme des OUVERTURES (pan de mur retiré, PAS un objet de
+ * porte ajouté — voir en-tête du fichier) plutôt que murs pleins.
  *
  * Retourne `[{key, orientation, x, y, kind, roomIdA, roomIdB}, ...]`.
  * `roomIdB` est `null` pour un mur extérieur. `roomIdA`/`roomIdB` ne
@@ -96,7 +107,7 @@ export function edgeKey(orientation, x, y) {
  * adjacentes à cette arête, ou null côté vide") — ne pas s'appuyer sur
  * lequel est A vs B.
  */
-export function computeRoomEdges(rooms, doorEdges = []) {
+export function computeRoomEdges(rooms, openingEdges = []) {
   const floorCellMap = new Map();
   for (const r of rooms) {
     for (let dx = 0; dx < r.width; dx++) {
@@ -106,14 +117,14 @@ export function computeRoomEdges(rooms, doorEdges = []) {
     }
   }
 
-  const doorKeySet = new Set(doorEdges.map((d) => edgeKey(d.orientation, d.x, d.y)));
+  const openingKeySet = new Set(openingEdges.map((d) => edgeKey(d.orientation, d.x, d.y)));
   const edges = new Map();
 
   const addEdge = (orientation, ex, ey, roomIdSelf, roomIdNeighbor) => {
     const k = edgeKey(orientation, ex, ey);
     if (edges.has(k)) return; // déjà calculée depuis l'autre côté (clé canonique)
-    const isDoor = doorKeySet.has(k);
-    const kind = isDoor ? "door" : roomIdNeighbor ? "wall-int" : "wall-ext";
+    const isOpening = openingKeySet.has(k);
+    const kind = isOpening ? "opening" : roomIdNeighbor ? "wall-int" : "wall-ext";
     edges.set(k, { key: k, orientation, x: ex, y: ey, kind, roomIdA: roomIdSelf, roomIdB: roomIdNeighbor ?? null });
   };
 
@@ -134,29 +145,32 @@ export function computeRoomEdges(rooms, doorEdges = []) {
 
 /**
  * Énumère les arêtes "wall-int" (cloisons entre deux pièces qui se
- * touchent) — ce sont les seuls emplacements où une porte peut être
- * placée. Utilisé par l'outil de placement manuel (LayoutEditor.jsx)
- * pour afficher tous les segments disponibles le long d'une cloison,
- * pas juste un point central comme l'ancienne auto-détection.
+ * touchent) — ce sont les seuls emplacements où un pan de mur peut être
+ * retiré (ouverture). Utilisé par l'outil de retrait manuel
+ * (LayoutEditor.jsx) pour afficher tous les segments disponibles le
+ * long d'une cloison, pas juste un point central comme l'ancienne
+ * auto-détection (retirée, voir en-tête du fichier).
  *
- * Contrairement à l'ancien modèle (écart de 1 case requis), une pièce
- * qui n'est PAS directement adjacente à une autre (gap >= 1) n'offre
- * aucun candidat — il n'existe alors aucune cloison entre elles, donc
- * rien où percer une porte.
+ * Contrairement à l'ancien modèle mur-dalle (écart de 1 case requis),
+ * une pièce qui n'est PAS directement adjacente à une autre (gap >= 1)
+ * n'offre aucun candidat — il n'existe alors aucune cloison entre
+ * elles, donc rien à retirer.
  */
-export function findDoorCandidates(rooms) {
+export function findOpenableWallSegments(rooms) {
   return computeRoomEdges(rooms).filter((e) => e.kind === "wall-int");
 }
 
 /**
  * Construit la grille de dalles de SOL (uniquement — plus de dalles de
- * mur/porte, voir en-tête du fichier) à partir d'une liste de
+ * mur/ouverture, voir en-tête du fichier) à partir d'une liste de
  * rectangles de pièces `{id, x, y, width, height}`, plus la liste des
- * arêtes (murs/portes) calculée séparément par `computeRoomEdges`.
+ * arêtes (murs/ouvertures) calculée séparément par `computeRoomEdges`.
  *
- * `doorEdges` (optionnel, `[{orientation, x, y}, ...]`) : arêtes à
- * traiter comme portes. Omis ou vide = toutes les frontières entre
- * pièces sont des murs pleins (plus d'auto-détection, voir en-tête).
+ * `openingEdges` (optionnel, `[{orientation, x, y}, ...]`) : arêtes à
+ * traiter comme des ouvertures (pan de mur retiré). Omis ou vide =
+ * toutes les frontières entre pièces sont des murs pleins (pas
+ * d'auto-détection, voir en-tête) — un mur plein SANS ouverture reste
+ * le comportement par défaut, pas une exception à justifier.
  *
  * `furnitureList` (optionnel) est réappliqué APRÈS génération, uniquement
  * pour les cases qui tombent sur une case "floor" de la BONNE pièce
@@ -167,7 +181,7 @@ export function findDoorCandidates(rooms) {
  * Retourne `{ tiles, edges, gridWidth, gridHeight }` ; grille vide si
  * `rooms` est vide (aucun logement — voir l'écran d'accueil).
  */
-export function generateFloorTiles(rooms, { furnitureList = [], doorEdges = [] } = {}) {
+export function generateFloorTiles(rooms, { furnitureList = [], openingEdges = [] } = {}) {
   if (!rooms || rooms.length === 0) {
     return { tiles: [], edges: [], gridWidth: 0, gridHeight: 0 };
   }
@@ -203,7 +217,7 @@ export function generateFloorTiles(rooms, { furnitureList = [], doorEdges = [] }
     }
   }
 
-  const edges = computeRoomEdges(rooms, doorEdges);
+  const edges = computeRoomEdges(rooms, openingEdges);
 
   const gridWidth = Math.max(...tiles.map((t) => t.x)) + 1;
   const gridHeight = Math.max(...tiles.map((t) => t.y)) + 1;

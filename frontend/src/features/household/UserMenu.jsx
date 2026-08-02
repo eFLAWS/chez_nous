@@ -1,18 +1,19 @@
 // UserMenu.jsx
 // Menu déroulant du profil (header AppLayout) — remplace la cloche de
-// notifications (voir la conversation) : accès rapide à Profil et
-// Réglages (pas encore implémentés, badge "Bientôt" comme ailleurs
-// dans le projet, cf. CreateHousingScreen.jsx) et déconnexion,
-// fonctionnelle celle-ci, via useAuth().signOut() — jusqu'ici aucun
-// écran du foyer n'exposait de bouton de déconnexion facilement
-// accessible.
+// notifications (voir la conversation) : Profil (-> /profile) et
+// Réglages (-> /settings) mènent maintenant vers de vraies pages (voir
+// la conversation, prototypes v0.1.2) ; Déconnexion fonctionnelle via
+// useAuth().signOut() — jusqu'ici aucun écran du foyer n'exposait de
+// bouton de déconnexion facilement accessible.
 import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { UserIcon, SettingsIcon, LogoutIcon } from '../../components/ui/Icons';
 import './UserMenu.css';
 
 export default function UserMenu() {
   const { signOut } = useAuth();
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const menuRef = useRef(null);
 
@@ -44,6 +45,16 @@ export default function UserMenu() {
     signOut();
   }
 
+  function handleProfile() {
+    setOpen(false);
+    navigate('/profile');
+  }
+
+  function handleSettings() {
+    setOpen(false);
+    navigate('/settings');
+  }
+
   return (
     <div className="user-menu" ref={menuRef}>
       <button
@@ -59,16 +70,14 @@ export default function UserMenu() {
 
       {open && (
         <div className="user-menu__panel" role="menu">
-          <button type="button" className="user-menu__item user-menu__item--disabled" role="menuitem" disabled>
+          <button type="button" className="user-menu__item" role="menuitem" onClick={handleProfile}>
             <UserIcon size={15} />
             <span>Profil</span>
-            <span className="user-menu__badge">Bientôt</span>
           </button>
 
-          <button type="button" className="user-menu__item user-menu__item--disabled" role="menuitem" disabled>
+          <button type="button" className="user-menu__item" role="menuitem" onClick={handleSettings}>
             <SettingsIcon size={15} />
             <span>Réglages</span>
-            <span className="user-menu__badge">Bientôt</span>
           </button>
 
           <div className="user-menu__divider" />

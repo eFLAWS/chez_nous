@@ -1,32 +1,59 @@
 // src/features/layout-editor/components/LayoutEditor.jsx
 // Mode édition du plan : tracé de pièces par rectangle, déplacement de
 // pièces existantes, redimensionnement depuis les coins, un outil de
-// placement manuel de porte, et un Inspecteur de Pièce (type, nom,
-// surface) — sur une grille neutre, sans meubles, sans texture de sol
-// par pièce, sans murs 3D. Murs/portes ne sont jamais dessinés ici :
-// dérivés automatiquement au moment d'enregistrer, via
-// generateFloorTiles (features/layout-editor/utils/layoutGeneration.js).
+// retrait manuel de pan de mur (ouverture), et un Inspecteur de Pièce
+// (type, nom, surface) — sur une grille neutre, sans meubles, sans
+// texture de sol par pièce.
+//
+// MURS RENDUS EN DIRECT (corrigé 01/08/2026, voir la conversation) :
+// contrairement à une version précédente de ce commentaire, les murs
+// sont bien dessinés ici, en direct — via `WallEdges` (le même composant
+// que Plan2DView.jsx, pour ne jamais avoir deux logiques de rendu
+// différentes), calculés à chaque rendu par `computeRoomEdges(rooms,
+// doors)`. Avant ce correctif, chaque pièce n'affichait que sa propre
+// bordure CSS, insensible au concept d'ouverture : "retirer un mur"
+// n'avait donc aucun effet visible tant qu'on n'avait pas enregistré et
+// consulté le Plan 2D. Les pièces elles-mêmes n'ont plus de bordure
+// (voir LayoutEditor.css) — `WallEdges` est désormais la SEULE source
+// de vérité visuelle pour les murs, garantissant qu'une ouverture
+// retire réellement le trait, ici comme dans Plan2DView.jsx.
 //
 // Interaction en Pointer Events partout (pas mousedown/touchstart
 // séparés) : un seul modèle unifié souris/tactile.
 //
 // Gestes distincts sur une pièce existante, routés via un minuteur
 // d'appui long partagé (longPressTimerRef) :
-//   - Relâchement AVANT 500ms (le minuteur est encore en attente) ->
-//     tap rapide -> SÉLECTIONNE la pièce (affiche ses 4 poignées de
-//     redimensionnement aux coins).
-//   - Le minuteur se déclenche (500ms tenus) -> démarre un déplacement ;
-//     le relâchement final est alors géré par la grille (le pointeur a
-//     été capturé dessus), pas par la pièce elle-même.
-//   - Poignée ✢ : démarre un déplacement immédiatement, pas de tap
-//     possible dessus (uniquement pour glisser).
-//   - Nom/surface affichés sur la pièce : cible DÉDIÉE et DISTINCTE pour
-//     ouvrir l'Inspecteur — son propre stopPropagation sur pointerDown
-//     (pas seulement onClick) empêche le minuteur d'appui long du parent
-//     de démarrer, puisque pointerdown/up précèdent click dans l'ordre
-//     des événements.
+//   - VERROU (nouveau, voir la conversation) : chaque pièce porte un
+//     cadenas (coin supérieur gauche). Verrouillée (par défaut, y compris
+//     les pièces déjà existantes au chargement) : le déplacement et le
+//     redimensionnement sont désactivés, la pièce affiche son nom et sa
+//     superficie. Déverrouillée : affiche la poignée ✢ de déplacement et
+//     les 4 poignées de redimensionnement, bordure mise en évidence. Une
+//     SEULE pièce déverrouillée à la fois — en déverrouiller une
+//     reverrouille automatiquement l'ancienne (état scalaire unique,
+//     `unlockedRoomId`). Se reverrouille aussi automatiquement dès qu'on
+//     commence à tracer une NOUVELLE pièce, et lors de l'enregistrement
+//     du plan. Une pièce fraîchement créée démarre déverrouillée.
+//   - Relâchement AVANT 500ms sur une pièce déverrouillée (le minuteur
+//     est encore en attente) -> tap rapide -> ne fait plus rien de
+//     spécial (juste nettoyage du minuteur) ; une pièce VERROUILLÉE
+//     n'arme même pas le minuteur.
+//   - Le minuteur se déclenche (500ms tenus, pièce déverrouillée) ->
+//     démarre un déplacement ; le relâchement final est alors géré par
+//     la grille (le pointeur a été capturé dessus), pas par la pièce
+//     elle-même.
+//   - Poignée ✢ (visible seulement pièce déverrouillée) : démarre un
+//     déplacement immédiatement, pas de tap possible dessus (uniquement
+//     pour glisser).
+//   - Nom/surface affichés sur la pièce (visible seulement pièce
+//     VERROUILLÉE — remplace la poignée ✢) : cible DÉDIÉE et DISTINCTE
+//     pour ouvrir l'Inspecteur — son propre stopPropagation sur
+//     pointerDown (pas seulement onClick) empêche le minuteur d'appui
+//     long du parent de démarrer, puisque pointerdown/up précèdent click
+//     dans l'ordre des événements. Fonctionne indépendamment du verrou
+//     (renommer/changer le type n'affecte pas la position).
 //   - Poignées de redimensionnement (coins, visibles seulement pièce
-//     sélectionnée) : démarrent un redimensionnement immédiatement,
+//     déverrouillée) : démarrent un redimensionnement immédiatement,
 //     comme la poignée de déplacement.
 //
 // COLLISION (voir la conversation) : le cadrillage pur pendant le
@@ -40,15 +67,16 @@
 // + computeRoomSurface (layoutGeneration.js).
 //
 // IMPORTANT — limite assumée (voir README) : ce composant ne connaît que
-// des PIÈCES (rectangles) et des PORTES, jamais de meubles (retirés du
-// MVP pour l'instant).
+// des PIÈCES (rectangles) et des OUVERTURES DE MUR, jamais de meubles
+// (retirés du MVP pour l'instant).
 import { useState, useRef } from "react";
 import RoomNameModal from "./RoomNameModal";
 import RoomInspector from "./RoomInspector";
-import { findDoorCandidates, edgeKey } from "../utils/layoutGeneration";
+import { findOpenableWallSegments, edgeKey, computeRoomEdges } from "../utils/layoutGeneration";
 import { rectsOverlap, resolveOverlap } from "../utils/roomCollision";
 import { findRoomType, DEFAULT_ROOM_TYPE } from "../roomTypes";
 import { computeRoomSurface } from "../utils/layoutGeneration";
+import WallEdges from "./WallEdges";
 import "./LayoutEditor.css";
 
 const CELL_PX = 28; // plus petit que dans FloorView3D : besoin de voir toute la grille de tracé à l'écran
@@ -56,12 +84,12 @@ const MIN_ROOM_SIZE = 1; // au moins 1x1 dalle, comme demandé
 const DEFAULT_GRID_WIDTH = 20;
 const DEFAULT_GRID_HEIGHT = 16;
 const LONG_PRESS_MS = 500;
-// Épaisseur du segment cliquable affiché sur une cloison pour une porte
-// (candidat ou déjà placée) — voir le rendu en bas du fichier. Volontai-
-// rement plus large que le simple trait mural (WallEdges.jsx, vue
-// lecture seule) pour rester praticable au doigt malgré la finesse
-// intrinsèque d'une arête (voir TO_DO.md : cible tactile encore petite,
-// amélioration possible plus tard).
+// Épaisseur du segment cliquable affiché sur une cloison pour une
+// ouverture (candidate ou déjà retirée) — voir le rendu en bas du
+// fichier. Volontairement plus large que le simple trait mural
+// (WallEdges.jsx, vue lecture seule) pour rester praticable au doigt
+// malgré la finesse intrinsèque d'une arête (voir TO_DO.md : cible
+// tactile encore petite, amélioration possible plus tard).
 const DOOR_HIT_THICKNESS_PX = 16;
 
 function normalizeRect(a, b) {
@@ -111,22 +139,54 @@ export default function LayoutEditor({
   onSave,
   saving = false,
   onCancel,
-  onReset,
   onExport,
   onImport,
   importError,
   onDismissImportError,
 }) {
   const [rooms, setRooms] = useState(existingRooms);
-  const [doors, setDoors] = useState(existingDoors); // [{orientation: 'h'|'v', x, y}, ...] — voir layoutGeneration.js
+  const [doors, setDoors] = useState(existingDoors); // [{orientation: 'h'|'v', x, y}, ...] — voir layoutGeneration.js. Nom de donnée conservé ("doors") malgré le renommage conceptuel de l'outil en "ouverture" (voir plus bas) : c'est toujours la même liste d'arêtes persistée telle quelle, seul le vocabulaire de l'INTERACTION change.
   const [dragStart, setDragStart] = useState(null);
   const [dragCurrent, setDragCurrent] = useState(null);
   const [pendingRect, setPendingRect] = useState(null);
   const [message, setMessage] = useState(null);
-  const [doorToolActive, setDoorToolActive] = useState(false);
+  const [wallToolActive, setWallToolActive] = useState(false);
   const [inspectedRoomId, setInspectedRoomId] = useState(null);
-  const [selectedRoomId, setSelectedRoomId] = useState(null); // pièce "sélectionnée" -> affiche ses poignées de redimensionnement
+  const [unlockedRoomId, setUnlockedRoomId] = useState(null); // une seule pièce déverrouillée à la fois ; null = toutes verrouillées (défaut à l'ouverture, y compris pièces déjà existantes)
   const [resetConfirmOpen, setResetConfirmOpen] = useState(false);
+
+  // Réinitialiser efface le BROUILLON EN COURS d'édition (cet étage
+  // seulement, ou le nouvel étage en cours de création) — état local
+  // pur, aucun appel backend. **Correction (01/08/2026, demande
+  // explicite de Paul, "ne fait rien")** : appelait auparavant `onReset`
+  // (prop du parent), qui déclenchait un appel backend effaçant TOUT LE
+  // FOYER (tous les étages), puis reposait sur `existingRooms`/
+  // `existingDoors` (props) pour réafficher un plan vide — sauf que
+  // `useState(existingRooms)` ne s'exécute qu'au tout premier montage,
+  // jamais ré-exécuté quand les props changent sans démontage/remontage
+  // du composant (pas de `key` côté parent) : le brouillon affiché à
+  // l'écran ne changeait donc JAMAIS, quoi que fasse le backend derrière
+  // — d'où "ne fait rien" à l'écran. Solution plus simple ET plus sûre :
+  // ne toucher QUE l'état local, comme "Annuler" — rien n'est persisté
+  // tant que l'utilisateur ne clique pas explicitement sur "Enregistrer
+  // le plan" ensuite (qui, lui, écrira bien 0 pièce pour CET étage
+  // uniquement, sans jamais toucher aux autres étages du foyer).
+  const handleConfirmReset = () => {
+    setResetConfirmOpen(false);
+    setRooms([]);
+    setDoors([]);
+    setUnlockedRoomId(null);
+    setInspectedRoomId(null);
+    setWallToolActive(false);
+    setPendingRect(null);
+    setDragStart(null);
+    setDragCurrent(null);
+    setMovingRoomId(null);
+    setMovePreviewRect(null);
+    setResizingRoomId(null);
+    setResizePreviewRect(null);
+    setMessage(null);
+  };
 
   // Déplacement d'une pièce existante.
   const [movingRoomId, setMovingRoomId] = useState(null);
@@ -167,12 +227,13 @@ export default function LayoutEditor({
   /* ------------------------------ Tracé (nouvelle pièce) ------------------------------ */
 
   const handleGridPointerDown = (e) => {
-    if (doorToolActive || pendingRect || movingRoomId || resizingRoomId) return; // outil porte actif, nommage en attente, ou déplacement/redimensionnement déjà en cours
+    if (wallToolActive || pendingRect || movingRoomId || resizingRoomId) return; // outil de retrait de mur actif, nommage en attente, ou déplacement/redimensionnement déjà en cours
     e.currentTarget.setPointerCapture?.(e.pointerId);
     const cell = cellFromPointer(e);
     setDragStart(cell);
     setDragCurrent(cell);
     setMessage(null);
+    setUnlockedRoomId(null); // on commence à dimensionner une nouvelle pièce -> reverrouille la précédente (une seule déverrouillée à la fois)
   };
 
   /* -------------------------------- Déplacement / tap de pièce ------------------------ */
@@ -184,8 +245,9 @@ export default function LayoutEditor({
   };
 
   const handleRoomPointerDown = (room, e) => {
-    if (doorToolActive) return; // en mode porte, les pièces ne se déplacent/inspectent pas
-    e.stopPropagation(); // empêche le tracé d'une nouvelle pièce sur la grille en dessous
+    if (wallToolActive) return; // en mode retrait de mur, les pièces ne se déplacent/inspectent pas
+    e.stopPropagation(); // empêche le tracé d'une nouvelle pièce sur la grille en dessous, verrouillée ou non
+    if (room.id !== unlockedRoomId) return; // verrouillée : ni déplacement ni appui long tant qu'on ne l'a pas déverrouillée via le cadenas
     const startCell = cellFromPointer(e);
     longPressTimerRef.current = window.setTimeout(() => {
       longPressTimerRef.current = null;
@@ -194,16 +256,14 @@ export default function LayoutEditor({
     }, LONG_PRESS_MS);
   };
 
-  const handleRoomPointerUp = (room) => {
-    // Le minuteur est encore en attente (n'a pas eu le temps de se
-    // déclencher) -> relâchement rapide -> tap, pas un appui long ->
-    // SÉLECTIONNE la pièce (affiche ses poignées de redimensionnement).
-    // Pour ouvrir l'Inspecteur, voir handleInfoClick (sur le nom/la
-    // surface affichés, une cible distincte).
+  const handleRoomPointerUp = () => {
+    // Le verrou (toggleLock, sur le cadenas dédié) a remplacé le tap
+    // rapide comme mécanisme de sélection — il ne reste ici qu'à
+    // nettoyer un minuteur d'appui long éventuellement en attente
+    // (pièce déverrouillée, relâchée avant les 500ms).
     if (longPressTimerRef.current) {
       window.clearTimeout(longPressTimerRef.current);
       longPressTimerRef.current = null;
-      setSelectedRoomId((prev) => (prev === room.id ? null : room.id));
     }
   };
 
@@ -215,7 +275,7 @@ export default function LayoutEditor({
   };
 
   const handleHandlePointerDown = (room, e) => {
-    if (doorToolActive) return;
+    if (wallToolActive) return;
     e.stopPropagation();
     e.currentTarget.setPointerCapture?.(e.pointerId);
     gridRef.current?.setPointerCapture?.(e.pointerId);
@@ -223,18 +283,38 @@ export default function LayoutEditor({
   };
 
   // Cible dédiée pour ouvrir l'Inspecteur (le nom/la surface affichés sur
-  // la pièce) — distincte du tap sur le reste de la pièce, qui sélectionne
-  // pour le redimensionnement. `stopPropagation` sur pointerDown (pas
-  // seulement onClick) : nécessaire pour empêcher le minuteur d'appui
-  // long du parent de démarrer, puisque pointerdown/up précèdent click
-  // dans l'ordre des événements — un stopPropagation posé seulement dans
-  // onClick arriverait trop tard.
+  // la pièce, visibles seulement verrouillée) — distincte du reste de la
+  // pièce. `stopPropagation` sur pointerDown (pas seulement onClick) :
+  // nécessaire pour empêcher le minuteur d'appui long du parent de
+  // démarrer, puisque pointerdown/up précèdent click dans l'ordre des
+  // événements — un stopPropagation posé seulement dans onClick
+  // arriverait trop tard. Rendu seulement pièce VERROUILLÉE (voir plus
+  // bas) — pour renommer/changer le type d'une pièce déverrouillée,
+  // la reverrouiller d'abord via son cadenas.
   const handleInfoPointerDown = (e) => {
     e.stopPropagation();
   };
   const handleInfoClick = (room, e) => {
     e.stopPropagation();
     setInspectedRoomId(room.id);
+  };
+
+  /* ----------------------------------- Verrou de pièce ----------------------------------- */
+
+  // Une seule pièce déverrouillée à la fois : déverrouiller room B
+  // reverrouille automatiquement room A (état scalaire unique). Cliquer
+  // le cadenas de la pièce déjà déverrouillée la reverrouille.
+  const toggleLock = (roomId) => {
+    setUnlockedRoomId((prev) => (prev === roomId ? null : roomId));
+  };
+
+  // Même raison que handleInfoPointerDown : stopPropagation sur
+  // pointerDown (pas seulement onClick), sinon le pointerdown remonte
+  // d'abord au conteneur de la pièce et arme quand même son minuteur
+  // d'appui long avant que le clic sur le cadenas n'ait eu l'occasion de
+  // reverrouiller la pièce.
+  const handleLockPointerDown = (e) => {
+    e.stopPropagation();
   };
 
   /* -------------------------------- Redimensionnement de pièce ------------------------- */
@@ -246,20 +326,24 @@ export default function LayoutEditor({
   };
 
   const handleResizeHandlePointerDown = (room, handle, e) => {
-    if (doorToolActive) return;
+    if (wallToolActive) return;
     e.stopPropagation();
     gridRef.current?.setPointerCapture?.(e.pointerId);
     beginResize(room, handle);
   };
 
-  /* --------------------------------- Outil de porte ------------------------------------ */
+  /* ----------------------------- Outil de retrait de mur (ouverture) ------------------- */
 
   // Candidats = arêtes "wall-int" (cloisons entre deux pièces qui se
-  // touchent réellement, gap=0) — voir layoutGeneration.js. Contrairement
-  // à l'ancien modèle, deux pièces espacées n'offrent plus aucun candidat.
-  const doorCandidates = doorToolActive ? findDoorCandidates(rooms) : [];
+  // touchent réellement, gap=0) — voir layoutGeneration.js. Une
+  // ouverture retire le mur sur ce segment (aucun trait dessiné, voir
+  // WallEdges.jsx) — ce n'est PAS un objet de porte ajouté. Deux pièces
+  // peuvent tout à fait rester séparées par un mur plein SANS aucune
+  // ouverture : le mur est le comportement par défaut, l'ouverture est
+  // l'exception explicite.
+  const wallSegments = wallToolActive ? findOpenableWallSegments(rooms) : [];
 
-  const toggleDoor = (candidate) => {
+  const toggleWallSegment = (candidate) => {
     setDoors((prev) => {
       const key = edgeKey(candidate.orientation, candidate.x, candidate.y);
       const exists = prev.some((d) => edgeKey(d.orientation, d.x, d.y) === key);
@@ -362,6 +446,7 @@ export default function LayoutEditor({
     const id = `room-${name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "piece"}-${Date.now()}`;
     setRooms((prev) => [...prev, { ...pendingRect, id, name, type: defaultType.value, icon: defaultType.icon, color: defaultType.color }]);
     setPendingRect(null);
+    setUnlockedRoomId(id); // démarre déverrouillée — prête à être repositionnée/redimensionnée immédiatement si besoin
   };
 
   const handleNameCancel = () => {
@@ -371,11 +456,26 @@ export default function LayoutEditor({
   const removeRoom = (id) => {
     setRooms((prev) => prev.filter((r) => r.id !== id));
     if (inspectedRoomId === id) setInspectedRoomId(null);
-    if (selectedRoomId === id) setSelectedRoomId(null);
+    if (unlockedRoomId === id) setUnlockedRoomId(null);
   };
 
   const previewRect = dragStart && dragCurrent ? normalizeRect(dragStart, dragCurrent) : null;
-  const activeDoorKeys = new Set(doors.map((d) => edgeKey(d.orientation, d.x, d.y)));
+  const openSegmentKeys = new Set(doors.map((d) => edgeKey(d.orientation, d.x, d.y)));
+
+  // Arêtes calculées EN DIRECT (pas seulement au rendu Plan2DView après
+  // enregistrement) — corrige le bug signalé : "retirer un mur" n'avait
+  // aucun effet visible ici, car aucun vrai mur n'était dessiné dans
+  // l'éditeur (chaque pièce n'affichait que sa propre bordure CSS,
+  // insensible au concept d'ouverture). Substitue la pièce en cours de
+  // déplacement/redimensionnement par son rectangle d'APERÇU pour que
+  // le mur suive visuellement le geste, pas la dernière position
+  // enregistrée.
+  const displayRoomsForEdges = rooms.map((r) => {
+    if (r.id === movingRoomId) return movePreviewRect;
+    if (r.id === resizingRoomId) return resizePreviewRect;
+    return r;
+  });
+  const liveEdges = computeRoomEdges(displayRoomsForEdges, doors);
 
   return (
     <div className="layout-editor">
@@ -384,16 +484,16 @@ export default function LayoutEditor({
           Annuler
         </button>
         <p className="layout-editor__hint">
-          {doorToolActive
-            ? "Touchez un mur en surbrillance pour ajouter ou retirer une porte."
-            : `${floorName ? `Modifier : ${floorName}` : "Nouveau logement"} — touchez une pièce pour la sélectionner (redimensionner), touchez son nom pour la qualifier, glissez pour en tracer une nouvelle, appui long pour la déplacer.`}
+          {wallToolActive
+            ? "Touchez une cloison en surbrillance pour en retirer ou reboucher un pan (ouverture)."
+            : `${floorName ? `Modifier : ${floorName}` : "Nouveau logement"} — touchez le cadenas d'une pièce pour la déverrouiller (déplacer/redimensionner), touchez son nom pour la qualifier, glissez sur la grille pour en tracer une nouvelle.`}
         </p>
         <button
           type="button"
-          className={doorToolActive ? "layout-editor__door-tool layout-editor__door-tool--active" : "layout-editor__door-tool"}
-          onClick={() => setDoorToolActive((v) => !v)}
+          className={wallToolActive ? "layout-editor__wall-tool layout-editor__wall-tool--active" : "layout-editor__wall-tool"}
+          onClick={() => setWallToolActive((v) => !v)}
         >
-          🚪 Ajouter une porte
+          🧱 Retirer un mur
         </button>
 
         <div className="layout-editor__toolbar-row">
@@ -411,7 +511,7 @@ export default function LayoutEditor({
             onChange={handleImportFileChange}
           />
           <button type="button" className="layout-editor__toolbar-btn layout-editor__toolbar-btn--danger" onClick={() => setResetConfirmOpen(true)}>
-            🗑️ Réinitialiser le plan
+            🗑️ Réinitialiser cet étage
           </button>
         </div>
       </div>
@@ -448,11 +548,11 @@ export default function LayoutEditor({
             const overlapping = (isMoving || isResizing) && rooms.some((r) => r.id !== room.id && rectsOverlap(displayRect, r));
             const roomType = findRoomType(room.type);
             const { surfaceM2 } = computeRoomSurface(displayRect);
-            const isSelected = room.id === selectedRoomId;
+            const isUnlocked = room.id === unlockedRoomId;
             return (
               <div
                 key={room.id}
-                className={`layout-editor__room${isMoving || isResizing ? " layout-editor__room--moving" : ""}${overlapping ? " layout-editor__room--invalid" : ""}`}
+                className={`layout-editor__room${isMoving || isResizing ? " layout-editor__room--moving" : ""}${overlapping ? " layout-editor__room--invalid" : ""}${isUnlocked ? " layout-editor__room--unlocked" : ""}`}
                 style={{
                   left: displayRect.x * CELL_PX,
                   top: displayRect.y * CELL_PX,
@@ -461,30 +561,49 @@ export default function LayoutEditor({
                   background: room.color,
                 }}
                 onPointerDown={(e) => handleRoomPointerDown(room, e)}
-                onPointerUp={() => handleRoomPointerUp(room)}
+                onPointerUp={handleRoomPointerUp}
                 onPointerLeave={handleRoomPointerLeave}
               >
-                <span
-                  className="layout-editor__room-info"
-                  onPointerDown={handleInfoPointerDown}
-                  onClick={(e) => handleInfoClick(room, e)}
-                >
-                  <span className="layout-editor__room-name">
-                    {roomType.icon} {room.name}
+                {isUnlocked ? (
+                  <button
+                    type="button"
+                    className="layout-editor__room-handle"
+                    onPointerDown={(e) => handleHandlePointerDown(room, e)}
+                    aria-label={`Déplacer ${room.name}`}
+                  >
+                    ✢
+                  </button>
+                ) : (
+                  <span
+                    className="layout-editor__room-info"
+                    onPointerDown={handleInfoPointerDown}
+                    onClick={(e) => handleInfoClick(room, e)}
+                  >
+                    <span className="layout-editor__room-name">
+                      {roomType.icon} {room.name}
+                    </span>
+                    <span className="layout-editor__room-surface">
+                      {surfaceM2} m² ({displayRect.width}×{displayRect.height})
+                    </span>
                   </span>
-                  <span className="layout-editor__room-surface">{surfaceM2} m²</span>
-                </span>
+                )}
                 <button
                   type="button"
-                  className="layout-editor__room-handle"
-                  onPointerDown={(e) => handleHandlePointerDown(room, e)}
-                  aria-label={`Déplacer ${room.name}`}
+                  className="layout-editor__room-lock"
+                  onPointerDown={handleLockPointerDown}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleLock(room.id);
+                  }}
+                  aria-label={isUnlocked ? `Verrouiller ${room.name}` : `Déverrouiller ${room.name}`}
+                  aria-pressed={!isUnlocked}
                 >
-                  ✢
+                  {isUnlocked ? "🔓" : "🔒"}
                 </button>
                 <button
                   type="button"
                   className="layout-editor__room-delete"
+                  onPointerDown={(e) => e.stopPropagation()}
                   onClick={(e) => {
                     e.stopPropagation();
                     removeRoom(room.id);
@@ -494,7 +613,7 @@ export default function LayoutEditor({
                   ×
                 </button>
 
-                {isSelected && !isMoving && (
+                {isUnlocked && !isMoving && (
                   <>
                     {["nw", "ne", "sw", "se"].map((handle) => (
                       <button
@@ -511,6 +630,14 @@ export default function LayoutEditor({
             );
           })}
 
+          <WallEdges
+            edges={liveEdges}
+            cellPx={CELL_PX}
+            width={gridWidth * CELL_PX}
+            height={gridHeight * CELL_PX}
+            wallThickness={3}
+          />
+
           {previewRect && (
             <div
               className="layout-editor__preview"
@@ -523,9 +650,9 @@ export default function LayoutEditor({
             />
           )}
 
-          {doorToolActive &&
-            doorCandidates.map((c) => {
-              const isActive = activeDoorKeys.has(c.key);
+          {wallToolActive &&
+            wallSegments.map((c) => {
+              const isOpen = openSegmentKeys.has(c.key);
               const isHorizontal = c.orientation === "h";
               const style = isHorizontal
                 ? {
@@ -545,13 +672,13 @@ export default function LayoutEditor({
                   type="button"
                   key={c.key}
                   className={
-                    isActive
-                      ? "layout-editor__door-candidate layout-editor__door-candidate--active"
-                      : "layout-editor__door-candidate"
+                    isOpen
+                      ? "layout-editor__wall-segment layout-editor__wall-segment--open"
+                      : "layout-editor__wall-segment"
                   }
                   style={style}
-                  onClick={() => toggleDoor(c)}
-                  aria-label={isActive ? "Retirer cette porte" : "Ajouter une porte ici"}
+                  onClick={() => toggleWallSegment(c)}
+                  aria-label={isOpen ? "Reboucher ce pan de mur" : "Retirer ce pan de mur (ouverture)"}
                 />
               );
             })}
@@ -561,7 +688,10 @@ export default function LayoutEditor({
       <button
         type="button"
         className="layout-editor__save-btn"
-        onClick={() => onSave(rooms, doors)}
+        onClick={() => {
+          setUnlockedRoomId(null); // enregistrer verrouille toutes les pièces
+          onSave(rooms, doors);
+        }}
         disabled={rooms.length === 0 || saving}
       >
         {saving ? "Enregistrement..." : "Enregistrer le plan"}
@@ -582,17 +712,12 @@ export default function LayoutEditor({
           <div className="layout-editor__confirm-backdrop" onClick={() => setResetConfirmOpen(false)} />
           <div className="layout-editor__confirm" role="alertdialog" aria-modal="true" aria-label="Confirmer la réinitialisation">
             <p className="layout-editor__confirm-text">
-              Réinitialiser efface tout le plan actuel (pièces, portes) — cette action ne peut pas être annulée.
+              Réinitialiser efface toutes les pièces et ouvertures de mur de CET étage (le brouillon affiché à l'écran) — les autres
+              étages ne sont pas concernés, et rien n'est définitivement perdu côté serveur tant que tu ne cliques pas sur "Enregistrer
+              le plan" ensuite.
             </p>
             <div className="layout-editor__confirm-actions">
-              <button
-                type="button"
-                className="layout-editor__confirm-danger-btn"
-                onClick={() => {
-                  setResetConfirmOpen(false);
-                  onReset?.();
-                }}
-              >
+              <button type="button" className="layout-editor__confirm-danger-btn" onClick={handleConfirmReset}>
                 Réinitialiser
               </button>
               <button type="button" className="layout-editor__confirm-cancel-btn" onClick={() => setResetConfirmOpen(false)}>

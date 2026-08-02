@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="fr" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Chez nous - Préférences</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <style>
+    :root {
+      color-scheme: dark;
+    }
+    body {
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    .glass {
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.72), rgba(15, 23, 42, 0.5));
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(16,185,129,0.24),_transparent_36%),linear-gradient(135deg,_#020617_0%,_#0f172a_50%,_#111827_100%)] text-slate-100 flex items-center justify-center px-3 py-4 sm:px-4">
+  <div class="w-full max-w-md h-[100dvh] sm:h-[860px] sm:max-h-[860px] sm:rounded-[32px] border border-white/10 shadow-[0_30px_80px_rgba(0,0,0,0.45)] overflow-hidden flex flex-col bg-slate-950/70 relative">
+
+    <!-- HALOS DE LUMIÈRE DÉCORATIFS -->
+    <div class="absolute inset-0 pointer-events-none">
+      <div class="absolute -top-24 -left-24 w-72 h-72 bg-emerald-500/15 rounded-full blur-[100px]"></div>
+      <div class="absolute bottom-0 right-0 w-64 h-64 bg-lime-400/10 rounded-full blur-[90px]"></div>
+    </div>
+
+    <!-- =============================================================== -->
+    <!-- EN-TÊTE ÉPURÉ (BOUTON RETOUR + TITRE + SAUVEGARDE)               -->
+    <!-- =============================================================== -->
+    <header class="relative z-20 px-4 pt-5 pb-4 border-b border-white/10 shrink-0 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <!-- Bouton Retour -->
+        <a href="javascript:history.back()" title="Retour" class="w-10 h-10 rounded-2xl glass border border-white/10 flex items-center justify-center text-slate-300 hover:text-white hover:border-emerald-500/50 transition">
+          <i class="fa-solid fa-arrow-left text-sm"></i>
+        </a>
+        <div>
+          <h1 class="text-base font-extrabold text-white">Préférences</h1>
+          <p class="text-[10px] text-slate-400 font-medium">Notifications & Expérience</p>
+        </div>
+      </div>
+
+      <!-- Barre de recherche -->
+      <div class="relative group transition-all duration-300 w-10 focus-within:w-[220px] mr-3">
+        <input
+          id="search-input"
+          type="search"
+          placeholder="Rechercher"
+          class="w-full h-10 rounded-2xl border border-white/10 bg-slate-900/70 pl-10 pr-3 text-sm text-slate-100 placeholder:text-slate-500 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400/20 transition-all duration-300"
+        />
+        <span class="pointer-events-none absolute inset-y-0 left-1/2 flex items-center justify-center text-slate-500 transition-all duration-300 -translate-x-1/2 group-focus-within:left-3 group-focus-within:-translate-x-0">
+          <i class="fa-solid fa-magnifying-glass text-sm"></i>
+        </span>
+      </div>
+
+    </header>
+
+    <!-- =============================================================== -->
+    <!-- CONTENU PRINCIPAL SCROLLABLE (SECTIONS DE TOGGLES)               -->
+    <!-- =============================================================== -->
+    <main class="relative z-10 flex-1 overflow-y-auto no-scrollbar px-4 py-5 space-y-6">
+
+
+      <!-- SECTION 1 : EXPERIENCE UTILISATEUR -->
+      <section class="space-y-2">
+        <h2 class="text-[10px] uppercase tracking-[0.2em] font-extrabold text-emerald-400 px-1">Expérience Utilisateur</h2>
+
+        <div class="rounded-[24px] border border-white/10 bg-slate-900/60 divide-y divide-white/5 overflow-hidden">
+          
+          <!-- Effets sonores-->
+          <div class="p-3.5 flex items-center justify-between">
+            <div class="flex items-center gap-3 pr-2">
+              <div class="w-9 h-9 rounded-xl bg-purple-500/10 text-purple-300 flex items-center justify-center text-xs font-bold shrink-0">
+                <i class="fa-solid fa-volume-high"></i>
+              </div>
+              <div>
+                <p class="text-xs font-bold text-white">Effets Sonores</p>
+              </div>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer shrink-0">
+              <input type="checkbox" checked class="sr-only peer">
+              <div class="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+            </label>
+          </div>
+
+          <!-- Vibrations -->
+          <div class="p-3.5 flex items-center justify-between">
+            <div class="flex items-center gap-3 pr-2">
+              <div class="w-9 h-9 rounded-xl bg-pink-500/10 text-pink-300 flex items-center justify-center text-xs font-bold shrink-0">
+                <i class="fa-solid fa-mobile-screen-button"></i>
+              </div>
+              <div>
+                <p class="text-xs font-bold text-white">Vibrations</p>
+              </div>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer shrink-0">
+              <input type="checkbox" checked class="sr-only peer">
+              <div class="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+            </label>
+          </div>
+
+          <!-- Animations -->
+          <div class="p-3.5 flex items-center justify-between">
+            <div class="flex items-center gap-3 pr-2">
+              <div class="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-300 flex items-center justify-center text-xs font-bold shrink-0">
+                <i class="fa-solid fa-shapes"></i>
+              </div>
+              <div>
+                <p class="text-xs font-bold text-white">Animations</p>
+              </div>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer shrink-0">
+              <input type="checkbox" checked class="sr-only peer">
+              <div class="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+            </label>
+          </div>
+
+          <!-- Mode sombre -->
+          <div class="p-3.5 flex items-center justify-between">
+            <div class="flex items-center gap-3 pr-2">
+              <div class="w-9 h-9 rounded-xl bg-slate-800 text-slate-300 flex items-center justify-center text-xs font-bold shrink-0">
+                <i class="fa-solid fa-moon"></i>
+              </div>
+              <div>
+                <p class="text-xs font-bold text-white">Mode sombre</p>
+              </div>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer shrink-0">
+              <input type="checkbox" checked class="sr-only peer">
+              <div class="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+            </label>
+          </div>
+
+          <!-- Messages de motivation -->
+          <div class="p-3.5 flex items-center justify-between">
+            <div class="flex items-center gap-3 pr-2">
+              <div class="w-9 h-9 rounded-xl bg-pink-500/10 text-pink-300 flex items-center justify-center text-xs font-bold shrink-0">
+                <i class="fa-solid fa-star"></i>
+              </div>
+              <div>
+                <p class="text-xs font-bold text-white">Messages de motivation</p>
+              </div>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer shrink-0">
+              <input type="checkbox" checked class="sr-only peer">
+              <div class="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+            </label>
+          </div>
+
+          <!-- Conseils -->
+          <div class="p-3.5 flex items-center justify-between">
+            <div class="flex items-center gap-3 pr-2">
+              <div class="w-9 h-9 rounded-xl bg-yellow-500/10 text-yellow-300 flex items-center justify-center text-xs font-bold shrink-0">
+                <i class="fa-solid fa-lightbulb"></i>
+              </div>
+              <div>
+                <p class="text-xs font-bold text-white">Conseils ménage</p>
+              </div>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer shrink-0">
+              <input type="checkbox" checked class="sr-only peer">
+              <div class="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+            </label>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- SECTION 2 : NOTIFICATIONS & RAPPELS -->
+      <section class="space-y-2">
+        <h2 class="text-[10px] uppercase tracking-[0.2em] font-extrabold text-emerald-400 px-1">Notifications & Rappels</h2>
+
+        <div class="rounded-[24px] border border-white/10 bg-slate-900/60 divide-y divide-white/5 overflow-hidden">
+          
+          <!-- Notifications -->
+           <a href="#" class="p-3.5 flex items-center justify-between hover:bg-white/5 transition group">
+              <div class="flex items-center gap-3 pr-2">
+                <div class="w-9 h-9 rounded-xl bg-sky-500/10 text-sky-300 flex items-center justify-center text-xs font-bold shrink-0">
+                  <i class="fa-solid fa-bell"></i>
+                </div>
+                <div>
+                  <p class="text-xs font-bold text-white">Notifications</p>
+                </div>
+              </div>
+              <i class="fa-solid fa-chevron-right text-xs text-slate-500 group-hover:text-slate-300 transition"></i>
+            </a>
+
+          <!-- Tâches -->
+          <a href="#" class="p-3.5 flex items-center justify-between hover:bg-white/5 transition group">
+            <div class="flex items-center gap-3 pr-2">
+              <div class="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-300 flex items-center justify-center text-xs font-bold shrink-0">
+                <i class="fa-solid fa-list-check"></i>
+              </div>
+              <div>
+                <p class="text-xs font-bold text-white">Rappels de tâches</p>
+              </div>
+            </div>
+            <i class="fa-solid fa-chevron-right text-xs text-slate-500 group-hover:text-slate-300 transition"></i>
+          </a>
+
+        <!-- Social -->
+          <a href="#" class="p-3.5 flex items-center justify-between hover:bg-white/5 transition group">
+            <div class="flex items-center gap-3 pr-2">
+              <div class="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center text-xs font-bold shrink-0">
+                <i class="fa-solid fa-users"></i>
+              </div>
+              <div>
+                <p class="text-xs font-bold text-white">Social</p>
+              </div>
+            </div>
+            <i class="fa-solid fa-chevron-right text-xs text-slate-500 group-hover:text-slate-300 transition"></i>
+          </a>
+
+          <!-- Alertes de dépenses -->
+          <a href="#" class="p-3.5 flex items-center justify-between hover:bg-white/5 transition group">
+            <div class="flex items-center gap-3 pr-2">
+              <div class="w-9 h-9 rounded-xl bg-sky-500/10 text-sky-300 flex items-center justify-center text-xs font-bold shrink-0">
+                <i class="fa-solid fa-wallet"></i>
+              </div>
+              <div>
+                <p class="text-xs font-bold text-white">Alertes de dépenses</p>
+              </div>
+            </div>
+            <i class="fa-solid fa-chevron-right text-xs text-slate-500 group-hover:text-slate-300 transition"></i>
+          </a>
+
+          <!-- Foyer -->
+          <a href="#" class="p-3.5 flex items-center justify-between hover:bg-white/5 transition group">
+            <div class="flex items-center gap-3 pr-2">
+              <div class="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-300 flex items-center justify-center text-xs font-bold shrink-0">
+                <i class="fa-solid fa-home"></i>
+              </div>
+              <div>
+                <p class="text-xs font-bold text-white">Foyer</p>
+              </div>
+            </div>
+            <i class="fa-solid fa-chevron-right text-xs text-slate-500 group-hover:text-slate-300 transition"></i>
+          </a>
+
+          <!-- Annonces -->
+          <a href="#" class="p-3.5 flex items-center justify-between hover:bg-white/5 transition group">
+            <div class="flex items-center gap-3 pr-2">
+              <div class="w-9 h-9 rounded-xl bg-purple-500/10 text-purple-300 flex items-center justify-center text-xs font-bold shrink-0">
+                <i class="fa-solid fa-bullhorn"></i>
+              </div>
+              <div>
+                <p class="text-xs font-bold text-white">Annonces</p>
+              </div>
+            </div>
+            <i class="fa-solid fa-chevron-right text-xs text-slate-500 group-hover:text-slate-300 transition"></i>
+          </a>
+
+        </div>
+      </section>
+
+      <!-- SECTION 3 : INTERFACE & GRAPHISMES -->
+      <section class="space-y-2">
+        <h2 class="text-[10px] uppercase tracking-[0.2em] font-extrabold text-emerald-400 px-1">Interface & Performance</h2>
+
+        <div class="rounded-[24px] border border-white/10 bg-slate-900/60 divide-y divide-white/5 overflow-hidden">
+          
+          <!-- Vue 3D -->
+          <div id="view-3d-section" class="p-3.5 flex items-center justify-between transition-opacity duration-200">
+            <div class="flex items-center gap-3 pr-2">
+              <div class="w-9 h-9 rounded-xl bg-teal-500/10 text-teal-300 flex items-center justify-center text-xs font-bold shrink-0">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+              </div>
+              <div>
+                <p class="text-xs font-bold text-white">Vue 3D</p>
+                <p class="text-[10px] text-slate-400">Activer la vue 3D pour une expérience immersive</p>
+              </div>
+            </div>
+            <label id="view-3d-label" class="relative inline-flex items-center cursor-pointer shrink-0">
+              <input id="view-3d-toggle" type="checkbox" checked class="sr-only peer">
+              <div class="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+            </label>
+          </div>
+
+          <!-- Mode Économie de batterie -->
+          <div class="p-3.5 flex items-center justify-between">
+            <div class="flex items-center gap-3 pr-2">
+              <div class="w-9 h-9 rounded-xl bg-slate-800 text-slate-300 flex items-center justify-center text-xs font-bold shrink-0">
+                <i class="fa-solid fa-battery-half"></i>
+              </div>
+              <div>
+                <p class="text-xs font-bold text-white">Économie d'énergie</p>
+                <p class="text-[10px] text-slate-400">Réduire les animations 2.5D pour préserver la batterie</p>
+              </div>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer shrink-0">
+              <input id="energy-toggle" type="checkbox" class="sr-only peer" onchange="toggleEnergyMode(this.checked)">
+              <div class="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+            </label>
+          </div>
+
+          <!-- Mode daltonien -->
+          <div class="p-3.5 flex items-center justify-between">
+            <div class="flex items-center gap-3 pr-2">
+              <div class="w-9 h-9 rounded-xl bg-slate-800 text-slate-300 flex items-center justify-center text-xs font-bold shrink-0">
+                <i class="fa-solid fa-eye"></i>
+              </div>
+              <div>
+                <p class="text-xs font-bold text-white">Mode daltonien</p>
+                <p class="text-[10px] text-slate-400">Adapter l'interface pour les utilisateurs daltoniens</p>
+              </div>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer shrink-0">
+              <input id="daltonism-toggle" type="checkbox" class="sr-only peer">
+              <div class="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+            </label>
+          </div>
+          
+        </div>
+      </section>
+
+    </main>
+
+  </div>
+</body>
+</html>
+
+<script>
+  function toggleEnergyMode(enabled) {
+    const view3DSection = document.getElementById('view-3d-section');
+    const view3DToggle = document.getElementById('view-3d-toggle');
+    const view3DLabel = document.getElementById('view-3d-label');
+
+    if (!view3DSection || !view3DToggle || !view3DLabel) return;
+
+    view3DToggle.disabled = enabled;
+    view3DToggle.checked = !enabled;
+    view3DSection.classList.toggle('opacity-50', enabled);
+    view3DSection.classList.toggle('pointer-events-none', enabled);
+    view3DLabel.classList.toggle('cursor-not-allowed', enabled);
+    view3DLabel.classList.toggle('opacity-70', enabled);
+  }
+</script>

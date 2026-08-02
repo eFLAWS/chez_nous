@@ -170,6 +170,42 @@ export async function saveFloorLayout({
 }
 
 /**
+ * Supprime UN étage précis (et ses pièces/portes) — pour "🗑️ Supprimer
+ * un étage" (01/08/2026, demande explicite de Paul), distinct de
+ * `resetHouseholdLayout` qui efface TOUS les étages du foyer. Même
+ * stratégie que le reste du fichier : lit le blob, filtre, réécrit
+ * atomiquement avec verrou optimiste.
+ */
+export async function deleteFloor(householdId, floorId) {
+  const rowRes = await getOrCreateRow(householdId);
+  if (!rowRes.success) return { success: false, error: rowRes.error };
+
+  const layout = { ...EMPTY_LAYOUT, ...rowRes.data.layout_data };
+  const floors = layout.floors.filter((f) => f.id !== floorId);
+  const rooms = layout.rooms.filter((r) => r.floorId !== floorId);
+  const doors = layout.doors.filter((d) => d.floorId !== floorId);
+  const newLayout = { ...layout, floors, rooms, doors };
+
+  const { data: updated, error } = await supabase
+    .from('floor_plans')
+    .update({ layout_data: newLayout, version: rowRes.data.version + 1 })
+    .eq('household_id', householdId)
+    .eq('version', rowRes.data.version)
+    .select('version')
+    .maybeSingle();
+
+  if (error) return { success: false, error: error.message };
+  if (!updated) {
+    return {
+      success: false,
+      error: "Le plan a été modifié ailleurs entre-temps — recharge la page avant de réessayer.",
+    };
+  }
+
+  return { success: true, floors };
+}
+
+/**
  * Réinitialise tout le plan d'un foyer (bouton "Réinitialiser" de
  * LayoutEditor) — remet le blob à vide plutôt que de supprimer étage
  * par étage comme le faisait l'ancien système.

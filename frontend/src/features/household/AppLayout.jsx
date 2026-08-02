@@ -23,6 +23,7 @@ import { useHouseholds } from './useHouseholds';
 import HouseholdSwitcher from './HouseholdSwitcher';
 import UserMenu from './UserMenu';
 import StreakModal from './StreakModal';
+import AmbientGlow from '../../components/ui/AmbientGlow';
 import {
   HouseIcon,
   FloorPlanIcon,
@@ -54,6 +55,7 @@ export default function AppLayout() {
 
   return (
     <div className="app-layout">
+      <AmbientGlow />
       <header className="app-layout__header">
         <HouseholdSwitcher current={current} households={households} />
 

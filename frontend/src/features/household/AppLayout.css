@@ -2,6 +2,7 @@
    (:root), pas de redéclaration locale : palette officielle unique pour
    toute l'app, cf. docs/ui/code_couelur.md. */
 .app-layout {
+  position: relative;
   height: 100dvh;
   display: flex;
   flex-direction: column;

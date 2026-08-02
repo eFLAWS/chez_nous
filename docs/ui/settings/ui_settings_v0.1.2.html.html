@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="fr" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Chez nous - Réglages</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <style>
+    :root {
+      color-scheme: dark;
+    }
+    body {
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    .glass {
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.72), rgba(15, 23, 42, 0.5));
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(16,185,129,0.24),_transparent_36%),linear-gradient(135deg,_#020617_0%,_#0f172a_50%,_#111827_100%)] text-slate-100 flex items-center justify-center px-3 py-4 sm:px-4">
+  <div class="w-full max-w-md h-[100dvh] sm:h-[860px] sm:max-h-[860px] sm:rounded-[32px] border border-white/10 shadow-[0_30px_80px_rgba(0,0,0,0.45)] overflow-hidden flex flex-col bg-slate-950/70 relative">
+
+    <!-- HALOS DE LUMIÈRE DÉCORATIFS -->
+    <div class="absolute inset-0 pointer-events-none">
+      <div class="absolute -top-24 -left-24 w-72 h-72 bg-emerald-500/15 rounded-full blur-[100px]"></div>
+      <div class="absolute bottom-0 right-0 w-64 h-64 bg-lime-400/10 rounded-full blur-[90px]"></div>
+    </div>
+
+    <!-- =============================================================== -->
+    <!-- EN-TÊTE SIMPLIFIÉ (BOUTON RETOUR + TITRE)                        -->
+    <!-- =============================================================== -->
+    <header class="relative z-20 px-4 pt-5 pb-4 border-b border-white/10 shrink-0 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <!-- Bouton Retour -->
+        <a href="javascript:history.back()" title="Retour" class="w-10 h-10 rounded-2xl glass border border-white/10 flex items-center justify-center text-slate-300 hover:text-white hover:border-emerald-500/50 transition">
+          <i class="fa-solid fa-arrow-left text-sm"></i>
+        </a>
+        <div>
+          <h1 class="text-base font-extrabold text-white">Réglages
+            <span class="text-[10px] font-bold text-slate-500 bg-white/5 border border-white/10 px-2.5 py-1 rounded-full">
+              v0.5.3
+            </span>
+          </h1>
+          <p class="text-[10px] text-slate-400 font-medium">Préférences & Compte</p>
+        </div>
+      </div>
+
+      <!-- Barre de recherche -->
+      <div class="relative group transition-all duration-300 w-10 focus-within:w-[220px] mr-3">
+        <input
+          id="search-input"
+          type="search"
+          placeholder="Rechercher"
+          class="w-full h-10 rounded-2xl border border-white/10 bg-slate-900/70 pl-10 pr-3 text-sm text-slate-100 placeholder:text-slate-500 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400/20 transition-all duration-300"
+        />
+        <span class="pointer-events-none absolute inset-y-0 left-1/2 flex items-center justify-center text-slate-500 transition-all duration-300 -translate-x-1/2 group-focus-within:left-3 group-focus-within:-translate-x-0">
+          <i class="fa-solid fa-magnifying-glass text-sm"></i>
+        </span>
+      </div>
+    </header>
+
+    <!-- =============================================================== -->
+    <!-- CONTENU PRINCIPAL SCROLLABLE                                    -->
+    <!-- =============================================================== -->
+    <main class="relative z-10 flex-1 overflow-y-auto no-scrollbar px-4 py-5 space-y-6">
+
+      <!-- SECTION 1 : COMPTE & PROFIL -->
+      <section class="space-y-2">
+        <h2 class="text-[10px] uppercase tracking-[0.2em] font-extrabold text-emerald-400 px-1">Mon Compte</h2>
+        
+        <div class="rounded-[24px] border border-white/10 bg-slate-900/60 divide-y divide-white/5 overflow-hidden">
+          
+          <!-- Carte Informations personnelles -->
+          <a href="#" class="p-3.5 flex items-center justify-between hover:bg-white/5 transition group">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-300 flex items-center justify-center text-xs font-bold">
+                <i class="fa-regular fa-user"></i>
+              </div>
+              <div>
+                <p class="text-xs font-bold text-white group-hover:text-emerald-300 transition">Profil utilisateur</p>
+                <p class="text-[10px] text-slate-400">Prénom NOM · example@mail.fr</p>
+              </div>
+            </div>
+            <i class="fa-solid fa-chevron-right text-xs text-slate-500 group-hover:text-slate-300 transition"></i>
+          </a>
+
+          <!-- Foyers -->
+          <a href="#" class="p-3.5 flex items-center justify-between hover:bg-white/5 transition group">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-300 flex items-center justify-center text-xs font-bold">
+                <i class="fa-solid fa-home"></i>
+              </div>
+              <div>
+                <p class="text-xs font-bold text-white group-hover:text-emerald-300 transition">Foyers</p>
+                <p class="text-[10px] text-slate-400">Gérer vos foyers et leurs paramètres</p>
+              </div>
+            </div>
+            <i class="fa-solid fa-chevron-right text-xs text-slate-500 group-hover:text-slate-300 transition"></i>
+          </a>
+
+          <!-- Confidentialité -->
+          <a href="#" class="p-3.5 flex items-center justify-between hover:bg-white/5 transition group">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-xl bg-slate-800 text-slate-300 flex items-center justify-center text-xs font-bold">
+                <i class="fa-solid fa-lock"></i>
+              </div>
+              <div>
+                <p class="text-xs font-bold text-white group-hover:text-emerald-300 transition">Confidentialité</p>
+                <p class="text-[10px] text-slate-400">Gérer vos préférences de confidentialité</p>
+              </div>
+            </div>
+            <i class="fa-solid fa-chevron-right text-xs text-slate-500 group-hover:text-slate-300 transition"></i>
+          </a>
+
+          <!-- Notifications et Préférences -->
+          <a href="#" class="p-3.5 flex items-center justify-between hover:bg-white/5 transition group">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-300 flex items-center justify-center text-xs font-bold">
+                <i class="fa-regular fa-bell"></i>
+              </div>
+              <div>
+                <p class="text-xs font-bold text-white group-hover:text-emerald-300 transition">Notifications et Préférences</p>
+                <p class="text-[10px] text-slate-400">Personnaliser votre expérience</p>
+              </div>
+            </div>
+            <i class="fa-solid fa-chevron-right text-xs text-slate-500 group-hover:text-slate-300 transition"></i>
+          </a>
+
+          <!-- Réseaux sociaux -->
+          <a href="#" class="p-3.5 flex items-center justify-between hover:bg-white/5 transition group">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-300 flex items-center justify-center text-xs font-bold">
+                <i class="fa-regular fa-share-from-square"></i>
+              </div>
+              <div>
+                <p class="text-xs font-bold text-white group-hover:text-emerald-300 transition">Réseaux sociaux</p>
+                <p class="text-[10px] text-slate-400">Gérer vos comptes sociaux</p>
+              </div>
+            </div>
+            <i class="fa-solid fa-chevron-right text-xs text-slate-500 group-hover:text-slate-300 transition"></i>
+          </a>
+
+          <!-- Cookies -->
+          <a href="#" class="p-3.5 flex items-center justify-between hover:bg-white/5 transition group">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-xl bg-slate-800 text-slate-300 flex items-center justify-center text-xs font-bold">
+                <i class="fa-solid fa-cookie-bite"></i>
+              </div>
+              <div>
+                <p class="text-xs font-bold text-white group-hover:text-emerald-300 transition">Cookies</p>
+                <p class="text-[10px] text-slate-400">Gérer vos préférences de cookies</p>
+              </div>
+            </div>
+            <i class="fa-solid fa-chevron-right text-xs text-slate-500 group-hover:text-slate-300 transition"></i>
+          </a>
+
+        </div>
+      </section>
+
+      <!-- SECTION 2 : ABONNEMENT -->
+      <section class="space-y-2">
+        <h2 class="text-[10px] uppercase tracking-[0.2em] font-extrabold text-emerald-400 px-1">Abonnement</h2>
+
+        <div class="rounded-[24px] border border-white/10 bg-slate-900/60 divide-y divide-white/5 overflow-hidden">
+          
+          <!-- Gestion de l'abonnement -->
+          <a href="#" class="p-3.5 flex items-center justify-between hover:bg-white/5 transition group">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-xl bg-teal-500/10 text-teal-300 flex items-center justify-center text-xs font-bold">
+                <i class="fa-solid fa-users"></i>
+              </div>
+              <div>
+                <p class="text-xs font-bold text-white group-hover:text-emerald-300 transition">Gestion de l'abonnement</p>
+                <p class="text-[10px] text-slate-400">Modifier ou résilier votre abonnement</p>
+              </div>
+            </div>
+            <i class="fa-solid fa-chevron-right text-xs text-slate-500 group-hover:text-slate-300 transition"></i>
+          </a>
+
+        </div>
+      </section>
+
+      <!-- SECTION 3 : SUPPORT -->
+      <section class="space-y-2">
+        <h2 class="text-[10px] uppercase tracking-[0.2em] font-extrabold text-emerald-400 px-1">Support</h2>
+
+        <div class="rounded-[24px] border border-white/10 bg-slate-900/60 divide-y divide-white/5 overflow-hidden">
+          
+          <!-- Aide & FAQ -->
+          <a href="#" class="p-3.5 flex items-center justify-between hover:bg-white/5 transition group">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-xl bg-sky-500/10 text-sky-300 flex items-center justify-center text-xs font-bold">
+                <i class="fa-solid fa-circle-question"></i>
+              </div>
+              <div>
+                <p class="text-xs font-bold text-white group-hover:text-emerald-300 transition">Aide & FAQ</p>
+                <p class="text-[10px] text-slate-400">Consulter les questions fréquentes</p>
+              </div>
+            </div>
+            <i class="fa-solid fa-chevron-right text-xs text-slate-500 group-hover:text-slate-300 transition"></i>
+          </a>
+
+          <!-- Contacter le support -->
+          <a href="#" class="p-3.5 flex items-center justify-between hover:bg-white/5 transition group">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-300 flex items-center justify-center text-xs font-bold">
+                <i class="fa-solid fa-envelope"></i>
+              </div>
+              <div>
+                <p class="text-xs font-bold text-white group-hover:text-emerald-300 transition">Contacter le support</p>
+                <p class="text-[10px] text-slate-400">Envoyer un message à l'équipe d'assistance</p>
+              </div>
+            </div>
+            <i class="fa-solid fa-chevron-right text-xs text-slate-500 group-hover:text-slate-300 transition"></i>
+          </a>
+        </div>
+
+
+      <!-- SECTION 4 : ACTIONS DE COMPTE / DÉCONNEXION -->
+      <section class="space-y-3 pt-2">
+        
+        <!-- Bouton Déconnexion -->
+        <button type="button" class="w-full py-3.5 rounded-2xl bg-slate-900 border border-rose-500/20 text-rose-300 font-extrabold text-xs flex items-center justify-center gap-2 hover:bg-rose-500/10 hover:border-rose-500/40 transition">
+          <i class="fa-solid fa-arrow-right-from-bracket text-xs"></i>
+          <span>Se déconnecter</span>
+        </button>
+
+        <!-- Supprimer le compte -->
+        <div class="text-center">
+          <a href="#" class="text-[11px] text-slate-500 hover:text-rose-400 transition font-medium">
+            Supprimer mon compte
+          </a>
+        </div>
+
+      </section>
+
+      <!-- SECTION 5 : MENTIONS LÉGALES -->
+      <section class="space-y-3 pt-2">
+        
+        <!-- TERMES ET CONDITIONS -->
+        <div class="text-left">
+          <a href="#" class="text-[11px] text-slate-500 hover:text-emerald-400 transition font-medium">
+            Termes et Conditions
+          </a>
+        </div>
+
+        <!-- POLITIQUE DE CONFIDENTIALITÉ -->
+        <div class="text-left">
+          <a href="#" class="text-[11px] text-slate-500 hover:text-emerald-400 transition font-medium">
+            Politique de Confidentialité
+          </a>
+        </div>
+
+        <!-- ATTRIBUTIONS -->
+        <div class="text-left">
+          <a href="#" class="text-[11px] text-slate-500 hover:text-emerald-400 transition font-medium">
+            Attributions
+          </a>
+        </div>
+
+        <!-- PROPRIÉTÉ INTELLECTUELLE -->
+        <div class="text-left">
+          <a href="#" class="text-[11px] text-slate-500 hover:text-emerald-400 transition font-medium">
+            Propriété Intellectuelle
+          </a>
+        </div>
+      </section>
+    </main>
+
+  </div>
+</body>
+</html>

@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="fr" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Chez nous - Profil</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <style>
+    :root {
+      color-scheme: dark;
+    }
+    body {
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    .glass {
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.72), rgba(15, 23, 42, 0.5));
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+    .card-glow::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      padding: 1px;
+      background: linear-gradient(135deg, rgba(52, 211, 153, 0.45), rgba(163, 230, 53, 0.2));
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(16,185,129,0.24),_transparent_36%),linear-gradient(135deg,_#020617_0%,_#0f172a_50%,_#111827_100%)] text-slate-100 flex items-center justify-center px-3 py-4 sm:px-4">
+  <div class="w-full max-w-md h-[100dvh] sm:h-[860px] sm:max-h-[860px] sm:rounded-[32px] border border-white/10 shadow-[0_30px_80px_rgba(0,0,0,0.45)] overflow-hidden flex flex-col bg-slate-950/70 relative">
+
+    <!-- HALOS DE LUMIÈRE DÉCORATIFS -->
+    <div class="absolute inset-0 pointer-events-none">
+      <div class="absolute -top-24 -left-24 w-72 h-72 bg-emerald-500/20 rounded-full blur-[100px]"></div>
+      <div class="absolute bottom-0 right-0 w-64 h-64 bg-lime-400/15 rounded-full blur-[90px]"></div>
+    </div>
+
+    <!-- =============================================================== -->
+    <!-- HEADER : NOM DU USER (GAUCHE) & PARTAGE + SETTINGS (DROITE)     -->
+    <!-- =============================================================== -->
+    <header class="relative z-20 px-4 pt-4 pb-3 border-b border-white/10 shrink-0">
+      <div class="flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <a href="javascript:history.back()" title="Retour" class="w-10 h-10 rounded-2xl glass border border-white/10 flex items-center justify-center text-slate-300 hover:text-emerald-300 hover:border-emerald-500/40 transition active:scale-95">
+            <i class="fa-solid fa-arrow-left text-sm"></i>
+          </a>
+
+          <!-- Haut Gauche : Nom de l'utilisateur -->
+          <div>
+            <p class="text-[10px] uppercase tracking-[0.22em] text-emerald-400 font-bold">Mon Profil</p>
+            <h1 class="text-base font-extrabold text-white flex items-center gap-1.5">
+              Prénom NOM
+              <i class="fa-solid fa-circle-check text-emerald-400 text-xs" title="Membre vérifié"></i>
+            </h1>
+          </div>
+        </div>
+
+        <!-- Haut Droite : Bouton Partager + Bouton Réglages (Roue crantée) -->
+        <div class="flex items-center gap-2">
+          <!-- Bouton Partager Profil -->
+          <button title="Partager mon profil" class="w-10 h-10 rounded-2xl glass border border-white/10 flex items-center justify-center text-slate-300 hover:text-emerald-300 hover:border-emerald-500/40 transition active:scale-95">
+            <i class="fa-solid fa-share-nodes text-sm"></i>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- =============================================================== -->
+    <!-- CONTENU PRINCIPAL SCROLLABLE                                    -->
+    <!-- =============================================================== -->
+    <main class="relative z-10 flex-1 overflow-y-auto no-scrollbar px-4 py-4 space-y-5"
+
+      <!-- SECTION AVATAR -->
+      <section class="flex flex-col items-center text-center space-y-2 pt-2">
+        <div class="relative group">
+          
+          <!-- Avatar avec bordure lumineuse -->
+          <div class="w-24 h-24 rounded-3xl p-1 bg-gradient-to-tr from-emerald-400 via-teal-300 to-lime-400 shadow-xl shadow-emerald-500/20 relative">
+            <div class="w-full h-full rounded-[22px] bg-slate-900 flex items-center justify-center overflow-hidden">
+              <!-- Remplacer par un <img> si une photo existe -->
+              <span class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-tr from-emerald-300 to-teal-100">
+                PN
+              </span>
+            </div>
+          </div>
+
+          <!-- Bouton modification rapide d'avatar -->
+          <button title="Changer l'avatar" class="absolute -bottom-1 -right-1 w-8 h-8 rounded-xl bg-emerald-500 text-slate-950 flex items-center justify-center text-xs font-bold shadow-lg border-2 border-slate-950 hover:scale-110 transition">
+            <i class="fa-solid fa-camera"></i>
+          </button>
+        </div>
+
+        <div>
+          <span class="inline-block px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-[10px] font-bold uppercase tracking-wider">
+            Membre ChezNous Plus
+          </span>
+          <p class="text-[11px] text-slate-400 mt-1 font-medium">Membre de <span class="text-slate-200 font-semibold">Super Coloc</span> depuis janv. 2026</p>
+        </div>
+      </section>
+
+      <!-- RESUME DES STATS INDIVIDUELLES -->
+      <section class="grid grid-cols-3 gap-2.5">
+        
+        <div class="rounded-2xl border border-white/10 bg-slate-900/60 p-3 text-center">
+          <div class="text-amber-400 text-sm mb-1">
+            <i class="fa-solid fa-fire"></i>
+          </div>
+          <p class="text-base font-extrabold text-white">5 jours</p>
+          <p class="text-[9px] text-slate-400 font-medium uppercase tracking-wider mt-0.5">Série max</p>
+        </div>
+
+        <div class="rounded-2xl border border-white/10 bg-slate-900/60 p-3 text-center">
+          <div class="text-sky-300 text-sm mb-1">
+            <i class="fa-solid fa-gem"></i>
+          </div>
+          <p class="text-base font-extrabold text-white">320</p>
+          <p class="text-[9px] text-slate-400 font-medium uppercase tracking-wider mt-0.5">Points 💎</p>
+        </div>
+
+        <div class="rounded-2xl border border-white/10 bg-slate-900/60 p-3 text-center">
+          <div class="text-emerald-300 text-sm mb-1">
+            <i class="fa-solid fa-circle-check"></i>
+          </div>
+          <p class="text-base font-extrabold text-white">42</p>
+          <p class="text-[9px] text-slate-400 font-medium uppercase tracking-wider mt-0.5">Tâches faites</p>
+        </div>
+
+      </section>
+
+      <!-- SECTION SUCCÈS & BADGES DÉBLOQUÉS -->
+      <section class="rounded-[24px] border border-white/10 bg-slate-900/60 p-3.5 space-y-3">
+        <div class="flex items-center justify-between">
+          <h2 class="text-xs font-extrabold text-white uppercase tracking-wider flex items-center gap-2">
+            <i class="fa-solid fa-award text-amber-400"></i>
+            Badges & Trophées
+          </h2>
+          <span class="text-[10px] text-emerald-400 font-bold">3 / 8 débloqués</span>
+        </div>
+
+        <div class="grid grid-cols-4 gap-2">
+          
+          <!-- Badge 1 : Débloqué -->
+          <div class="flex flex-col items-center text-center p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
+            <div class="w-9 h-9 rounded-full bg-emerald-500/20 text-emerald-300 flex items-center justify-center text-sm mb-1">
+              <i class="fa-solid fa-broom"></i>
+            </div>
+            <p class="text-[9px] font-bold text-white leading-tight">Fée du logis</p>
+          </div>
+
+          <!-- Badge 2 : Débloqué -->
+          <div class="flex flex-col items-center text-center p-2 rounded-xl bg-amber-500/10 border border-amber-500/30">
+            <div class="w-9 h-9 rounded-full bg-amber-500/20 text-amber-300 flex items-center justify-center text-sm mb-1">
+              <i class="fa-solid fa-bolt"></i>
+            </div>
+            <p class="text-[9px] font-bold text-white leading-tight">Régulier</p>
+          </div>
+
+          <!-- Badge 3 : Débloqué -->
+          <div class="flex flex-col items-center text-center p-2 rounded-xl bg-sky-500/10 border border-sky-500/30">
+            <div class="w-9 h-9 rounded-full bg-sky-500/20 text-sky-300 flex items-center justify-center text-sm mb-1">
+              <i class="fa-solid fa-cart-shopping"></i>
+            </div>
+            <p class="text-[9px] font-bold text-white leading-tight">Chef éco</p>
+          </div>
+
+          <!-- Badge 4 : Verrouillé -->
+          <div class="flex flex-col items-center text-center p-2 rounded-xl bg-white/5 border border-white/5 opacity-50">
+            <div class="w-9 h-9 rounded-full bg-slate-800 text-slate-500 flex items-center justify-center text-sm mb-1">
+              <i class="fa-solid fa-lock"></i>
+            </div>
+            <p class="text-[9px] font-bold text-slate-400 leading-tight">Maitre 2.5D</p>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- REPARTITION ET IMPACT DANS LE FOYER -->
+      <section class="rounded-[24px] border border-white/10 bg-slate-900/60 p-3.5 space-y-3">
+        <h2 class="text-xs font-extrabold text-white uppercase tracking-wider flex items-center gap-2">
+          <i class="fa-solid fa-chart-pie text-emerald-400"></i>
+          Spécialités au foyer
+        </h2>
+
+        <div class="space-y-2.5">
+          <div>
+            <div class="flex justify-between text-[11px] font-semibold mb-1">
+              <span class="text-slate-300">Nettoyage Cuisine & Vaisselle</span>
+              <span class="text-emerald-400 font-bold">58%</span>
+            </div>
+            <div class="h-2 w-full bg-slate-950 rounded-full overflow-hidden">
+              <div class="h-full bg-emerald-400 rounded-full" style="width: 58%"></div>
+            </div>
+          </div>
+
+          <div>
+            <div class="flex justify-between text-[11px] font-semibold mb-1">
+              <span class="text-slate-300">Gestion des courses</span>
+              <span class="text-sky-400 font-bold">27%</span>
+            </div>
+            <div class="h-2 w-full bg-slate-950 rounded-full overflow-hidden">
+              <div class="h-full bg-sky-400 rounded-full" style="width: 27%"></div>
+            </div>
+          </div>
+
+          <div>
+            <div class="flex justify-between text-[11px] font-semibold mb-1">
+              <span class="text-slate-300">Entretien Salon & SDB</span>
+              <span class="text-amber-400 font-bold">15%</span>
+            </div>
+            <div class="h-2 w-full bg-slate-950 rounded-full overflow-hidden">
+              <div class="h-full bg-amber-400 rounded-full" style="width: 15%"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+  </div>
+</body>
+</html>

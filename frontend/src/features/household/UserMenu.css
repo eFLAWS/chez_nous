@@ -14,6 +14,8 @@
   align-items: center;
   justify-content: center;
   background: var(--bg-input);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--border-color);
   border-radius: 999px;
   color: var(--text-muted);

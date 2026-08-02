@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="fr" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Chez nous - Préférences</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <style>
+    :root {
+      color-scheme: dark;
+    }
+    body {
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    .glass {
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.72), rgba(15, 23, 42, 0.5));
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(16,185,129,0.24),_transparent_36%),linear-gradient(135deg,_#020617_0%,_#0f172a_50%,_#111827_100%)] text-slate-100 flex items-center justify-center px-3 py-4 sm:px-4">
+  <div class="w-full max-w-md h-[100dvh] sm:h-[860px] sm:max-h-[860px] sm:rounded-[32px] border border-white/10 shadow-[0_30px_80px_rgba(0,0,0,0.45)] overflow-hidden flex flex-col bg-slate-950/70 relative">
+
+    <!-- HALOS DE LUMIÈRE DÉCORATIFS -->
+    <div class="absolute inset-0 pointer-events-none">
+      <div class="absolute -top-24 -left-24 w-72 h-72 bg-emerald-500/15 rounded-full blur-[100px]"></div>
+      <div class="absolute bottom-0 right-0 w-64 h-64 bg-lime-400/10 rounded-full blur-[90px]"></div>
+    </div>
+
+    <!-- =============================================================== -->
+    <!-- EN-TÊTE ÉPURÉ (BOUTON RETOUR + TITRE + SAUVEGARDE)               -->
+    <!-- =============================================================== -->
+    <header class="relative z-20 px-4 pt-5 pb-4 border-b border-white/10 shrink-0 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <!-- Bouton Retour -->
+        <a href="javascript:history.back()" title="Retour" class="w-10 h-10 rounded-2xl glass border border-white/10 flex items-center justify-center text-slate-300 hover:text-white hover:border-emerald-500/50 transition">
+          <i class="fa-solid fa-arrow-left text-sm"></i>
+        </a>
+        <div>
+          <h1 class="text-base font-extrabold text-white">Préférences</h1>
+          <p class="text-[10px] text-slate-400 font-medium">Notifications & Expérience</p>
+        </div>
+      </div>
+
+      <!-- Action Sauvegarder -->
+      <button class="px-3 py-1.5 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-bold hover:bg-emerald-500/30 transition active:scale-95">
+        Enregistrer
+      </button>
+    </header>
+
+    <!-- =============================================================== -->
+    <!-- CONTENU PRINCIPAL SCROLLABLE (SECTIONS DE TOGGLES)               -->
+    <!-- =============================================================== -->
+    <main class="relative z-10 flex-1 overflow-y-auto no-scrollbar px-4 py-5 space-y-6">
+
+      <!-- SECTION 1 : NOTIFICATIONS & RAPPELS -->
+      <section class="space-y-2">
+        <h2 class="text-[10px] uppercase tracking-[0.2em] font-extrabold text-emerald-400 px-1">Notifications & Rappels</h2>
+
+        <div class="rounded-[24px] border border-white/10 bg-slate-900/60 divide-y divide-white/5 overflow-hidden">
+          
+          <!-- Toggle 1 : Tâches assignées -->
+          <div class="p-3.5 flex items-center justify-between">
+            <div class="flex items-center gap-3 pr-2">
+              <div class="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-300 flex items-center justify-center text-xs font-bold shrink-0">
+                <i class="fa-solid fa-list-check"></i>
+              </div>
+              <div>
+                <p class="text-xs font-bold text-white">Rappels de tâches</p>
+                <p class="text-[10px] text-slate-400">Notifier quand une tâche m'est attribuée ou approche de l'échéance</p>
+              </div>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer shrink-0">
+              <input type="checkbox" checked class="sr-only peer">
+              <div class="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+            </label>
+          </div>
+
+          <!-- Toggle 2 : Dépenses partagées -->
+          <div class="p-3.5 flex items-center justify-between">
+            <div class="flex items-center gap-3 pr-2">
+              <div class="w-9 h-9 rounded-xl bg-sky-500/10 text-sky-300 flex items-center justify-center text-xs font-bold shrink-0">
+                <i class="fa-solid fa-wallet"></i>
+              </div>
+              <div>
+                <p class="text-xs font-bold text-white">Alertes de dépenses</p>
+                <p class="text-[10px] text-slate-400">Recevoir une notif pour chaque nouvel achat ou ajout à la liste</p>
+              </div>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer shrink-0">
+              <input type="checkbox" checked class="sr-only peer">
+              <div class="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+            </label>
+          </div>
+
+          <!-- Toggle 3 : Résumé du matin -->
+          <div class="p-3.5 flex items-center justify-between">
+            <div class="flex items-center gap-3 pr-2">
+              <div class="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-300 flex items-center justify-center text-xs font-bold shrink-0">
+                <i class="fa-regular fa-sun"></i>
+              </div>
+              <div>
+                <p class="text-xs font-bold text-white">Briefing du matin</p>
+                <p class="text-[10px] text-slate-400">Recevoir à 8h le récapitulatif des tâches et événements du jour</p>
+              </div>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer shrink-0">
+              <input type="checkbox" class="sr-only peer">
+              <div class="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+            </label>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- SECTION 2 : GAMIFICATION & MOTIVATION -->
+      <section class="space-y-2">
+        <h2 class="text-[10px] uppercase tracking-[0.2em] font-extrabold text-emerald-400 px-1">Gamification & Effets</h2>
+
+        <div class="rounded-[24px] border border-white/10 bg-slate-900/60 divide-y divide-white/5 overflow-hidden">
+          
+          <!-- Toggle 4 : Effets sonores & Retour haptique -->
+          <div class="p-3.5 flex items-center justify-between">
+            <div class="flex items-center gap-3 pr-2">
+              <div class="w-9 h-9 rounded-xl bg-purple-500/10 text-purple-300 flex items-center justify-center text-xs font-bold shrink-0">
+                <i class="fa-solid fa-volume-high"></i>
+              </div>
+              <div>
+                <p class="text-xs font-bold text-white">Sons & Vibrations</p>
+                <p class="text-[10px] text-slate-400">Jouer un effet sonore à la validation d'une tâche</p>
+              </div>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer shrink-0">
+              <input type="checkbox" checked class="sr-only peer">
+              <div class="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+            </label>
+          </div>
+
+          <!-- Toggle 5 : Alerte perte de Streak 🔥 -->
+          <div class="p-3.5 flex items-center justify-between">
+            <div class="flex items-center gap-3 pr-2">
+              <div class="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center text-xs font-bold shrink-0">
+                <i class="fa-solid fa-fire"></i>
+              </div>
+              <div>
+                <p class="text-xs font-bold text-white">Rappel Anti-Rupture de Streak</p>
+                <p class="text-[10px] text-slate-400">Rappel le soir à 20h si aucune tâche n'a été accomplie</p>
+              </div>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer shrink-0">
+              <input type="checkbox" checked class="sr-only peer">
+              <div class="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+            </label>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- SECTION 3 : INTERFACE & GRAPHISMES -->
+      <section class="space-y-2">
+        <h2 class="text-[10px] uppercase tracking-[0.2em] font-extrabold text-emerald-400 px-1">Interface & Performance</h2>
+
+        <div class="rounded-[24px] border border-white/10 bg-slate-900/60 divide-y divide-white/5 overflow-hidden">
+          
+          <!-- Toggle 6 : Flous Glassmorphism -->
+          <div class="p-3.5 flex items-center justify-between">
+            <div class="flex items-center gap-3 pr-2">
+              <div class="w-9 h-9 rounded-xl bg-teal-500/10 text-teal-300 flex items-center justify-center text-xs font-bold shrink-0">
+                <i class="fa-solid fa-[#000000] fa-wand-magic-sparkles"></i>
+              </div>
+              <div>
+                <p class="text-xs font-bold text-white">Effets Glassmorphism</p>
+                <p class="text-[10px] text-slate-400">Activer les flous d'arrière-plan avancés (Désactiver si ralentissements)</p>
+              </div>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer shrink-0">
+              <input type="checkbox" checked class="sr-only peer">
+              <div class="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+            </label>
+          </div>
+
+          <!-- Toggle 7 : Mode Économie de batterie -->
+          <div class="p-3.5 flex items-center justify-between">
+            <div class="flex items-center gap-3 pr-2">
+              <div class="w-9 h-9 rounded-xl bg-slate-800 text-slate-300 flex items-center justify-center text-xs font-bold shrink-0">
+                <i class="fa-solid fa-battery-half"></i>
+              </div>
+              <div>
+                <p class="text-xs font-bold text-white">Économie d'énergie</p>
+                <p class="text-[10px] text-slate-400">Réduire les animations 2.5D pour préserver la batterie</p>
+              </div>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer shrink-0">
+              <input type="checkbox" class="sr-only peer">
+              <div class="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+            </label>
+          </div>
+
+        </div>
+      </section>
+
+    </main>
+
+  </div>
+</body>
+</html>

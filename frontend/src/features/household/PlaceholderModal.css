@@ -17,6 +17,8 @@
   right: 0;
   bottom: 0;
   background: var(--bg-card);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
   border-top: 1px solid var(--border-color);
   border-top-left-radius: 20px;
   border-top-right-radius: 20px;

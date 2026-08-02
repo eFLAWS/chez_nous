@@ -50,6 +50,9 @@ import HouseholdExpensesPage from './features/household/HouseholdExpensesPage';
 import HouseholdCalendarPage from './features/household/HouseholdCalendarPage';
 import HouseholdLifePage from './features/household/HouseholdLifePage';
 import HouseholdRewardsPage from './features/household/HouseholdRewardsPage';
+import ProfilePage from './features/account/ProfilePage';
+import SettingsPage from './features/account/SettingsPage';
+import PreferencesPage from './features/account/PreferencesPage';
 
 export default function AppRouter() {
   return (
@@ -63,6 +66,34 @@ export default function AppRouter() {
             element={
               <RequireAuth>
                 <CreateHouseholdPage />
+              </RequireAuth>
+            }
+          />
+          {/* Profil/Réglages/Préférences : pages plein écran autonomes
+              (bouton retour propre, pas de bottom nav), atteintes depuis
+              UserMenu.jsx — RequireAuth seul, pas besoin d'un foyer pour
+              y accéder (contrairement à /households/*). */}
+          <Route
+            path="/profile"
+            element={
+              <RequireAuth>
+                <ProfilePage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <RequireAuth>
+                <SettingsPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/settings/preferences"
+            element={
+              <RequireAuth>
+                <PreferencesPage />
               </RequireAuth>
             }
           />
