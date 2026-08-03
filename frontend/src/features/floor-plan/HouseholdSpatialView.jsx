@@ -71,6 +71,7 @@ import { MOCK_USER } from "./mockData";
 import { generateFloorTiles, extractRoomRectsFromTiles } from "../layout-editor/utils/layoutGeneration";
 import { downloadLayoutAsJson, readLayoutFile } from "../layout-editor/utils/layoutStorage";
 import { fetchHouseholdLayout, saveFloorLayout, resetHouseholdLayout, deleteFloor } from "./floorPlanService";
+import { useHouseholdTasks } from "../tasks/useHouseholdTasks";
 import FloorView3D from "./FloorView3D";
 import Plan2DView from "./Plan2DView";
 import RoomDetailView from "./RoomDetailView";
@@ -103,6 +104,13 @@ export default function HouseholdSpatialView({
   const [detailRoomId, setDetailRoomId] = useState(null); // pièce affichée en détail (RoomDetailView), ou null = plan/3D normal
   const [importError, setImportError] = useState(null);
   const [viewMode, setViewMode] = useState("2d");
+
+  // Tâches réelles du foyer (03/08/2026, chantier 🅲 — remplace les
+  // compteurs/listes placeholder de Plan2DView/RoomDetailView, voir
+  // TODO.md #10/#11). Un seul fetch pour tout le foyer, filtré/compté
+  // localement par pièce ci-dessous plutôt que refait par sous-vue —
+  // même esprit que floors/rooms, chargés une fois ici puis dérivés.
+  const { tasks, completeTask, reopenTask, addQuickTask } = useHouseholdTasks(householdId);
 
   // Charge le plan du logement depuis le vrai backend au montage (et si
   // jamais householdId changeait, bien que le `key={selectedHousingId}`
@@ -157,6 +165,14 @@ export default function HouseholdSpatialView({
   }, [floors, rooms, doorsWithIds]);
 
   const roomsOnSelectedFloor = rooms.filter((r) => r.floorId === selectedFloorId);
+  // Compteur réel par pièce (tâches non terminées) — remplace le
+  // placeholder `room.activeTaskCount` toujours à 0 (voir TODO.md #10).
+  // Recalculé à chaque rendu comme `roomsOnSelectedFloor` lui-même
+  // (listes modestes par foyer, pas besoin de useMemo ici).
+  const roomsOnSelectedFloorWithTasks = roomsOnSelectedFloor.map((r) => ({
+    ...r,
+    activeTaskCount: tasks.filter((t) => t.roomId === r.id && t.status !== "DONE").length,
+  }));
   const selectedFloor = floors.find((f) => f.id === selectedFloorId) || floors[0];
   const selectedFloorTiles = floorTiles[selectedFloorId] || [];
   const selectedFloorEdges = floorEdges[selectedFloorId] || [];
@@ -426,6 +442,11 @@ export default function HouseholdSpatialView({
   }
 
   const detailRoom = detailRoomId ? rooms.find((r) => r.id === detailRoomId) : null;
+  // Tâches de la pièce en détail — même liste que roomsOnSelectedFloorWithTasks
+  // ci-dessus, filtrée sur cette pièce précise (toutes, pas seulement
+  // les non-terminées : RoomDetailView gère lui-même ses propres
+  // filtres "Toutes"/"Pour moi").
+  const detailRoomTasks = detailRoom ? tasks.filter((t) => t.roomId === detailRoom.id) : [];
 
   return (
     <div className="spatial-view">
@@ -439,7 +460,16 @@ export default function HouseholdSpatialView({
       )}
 
       {detailRoom ? (
-        <RoomDetailView room={detailRoom} floor={selectedFloor} onBack={handleBackToPlanFromDetail} />
+        <RoomDetailView
+          room={detailRoom}
+          floor={selectedFloor}
+          onBack={handleBackToPlanFromDetail}
+          tasks={detailRoomTasks}
+          currentUserId={user?.id}
+          onCompleteTask={completeTask}
+          onReopenTask={reopenTask}
+          onAddQuickTask={(title) => addQuickTask({ roomId: detailRoom.id, title })}
+        />
       ) : (
         <>
           <div className="spatial-view__floor-selector" role="tablist" aria-label="Choix de l'étage">
@@ -486,7 +516,7 @@ export default function HouseholdSpatialView({
           {roomsOnSelectedFloor.length === 0 ? (
             <p className="spatial-view__empty-floor">Aucune pièce sur cet étage — ouvre "Modifier le plan" pour en tracer.</p>
           ) : viewMode === "2d" ? (
-            <Plan2DView key={selectedFloorId} floor={selectedFloor} edges={selectedFloorEdges} rooms={roomsOnSelectedFloor} onSelectRoom={handleSelectRoomFromPlan} />
+            <Plan2DView key={selectedFloorId} floor={selectedFloor} edges={selectedFloorEdges} rooms={roomsOnSelectedFloorWithTasks} onSelectRoom={handleSelectRoomFromPlan} />
           ) : (
             <FloorView3D
               key={selectedFloorId}

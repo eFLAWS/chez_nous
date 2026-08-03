@@ -21,7 +21,7 @@ import { useState } from 'react';
 import { Outlet, NavLink, useNavigate, useParams } from 'react-router-dom';
 import { useHouseholds } from './useHouseholds';
 import HouseholdSwitcher from './HouseholdSwitcher';
-import UserMenu from './UserMenu';
+import UserMenu from '../account/UserMenu';
 import StreakModal from './StreakModal';
 import AmbientGlow from '../../components/ui/AmbientGlow';
 import {

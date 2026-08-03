@@ -2,11 +2,6 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import AppRouter from "./AppRouter";
 import "./assets/theme.css";
-import "./assets/ui-feedback.css";
-import "./assets/visual-hierarchy.css";
-import "./assets/floor-plan.css";
-import "./assets/task-overview.css";
-import "./assets/room-3d.css";
 
 // -----------------------------------------------------------------------
 // AppRouter gère le point d'entrée : /login, /signup (Supabase Auth),

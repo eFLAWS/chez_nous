@@ -284,6 +284,59 @@
   font-weight: 700;
 }
 
+.room-detail-view__quick-add {
+  display: flex;
+  gap: 8px;
+}
+.room-detail-view__quick-add-input {
+  flex: 1;
+  padding: 9px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-size: 12px;
+}
+.room-detail-view__quick-add-input:focus {
+  outline: none;
+  border-color: var(--color-emerald);
+}
+.room-detail-view__quick-add-submit {
+  padding: 9px 14px;
+  border-radius: 12px;
+  border: none;
+  background: linear-gradient(90deg, var(--color-emerald), var(--color-teal));
+  color: var(--text-on-accent);
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.room-detail-view__quick-add-submit:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.room-detail-view__task-group {
+  color: var(--text-muted);
+}
+
+.room-detail-view__task-importance {
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+}
+.room-detail-view__task-importance--basse {
+  color: var(--text-muted);
+}
+.room-detail-view__task-importance--normale {
+  color: var(--color-sky);
+}
+.room-detail-view__task-importance--haute {
+  color: var(--color-rose);
+}
+
 .room-detail-view__history {
   border-top: 1px solid var(--border-color);
   padding-top: 8px;

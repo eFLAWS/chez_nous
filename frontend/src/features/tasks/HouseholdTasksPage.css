@@ -1,0 +1,131 @@
+/* HouseholdTasksPage.css — pas de prototype Tailwind fourni pour cet
+   écran (contrairement aux autres onglets) : présentation modeste,
+   tokens de theme.css réutilisés à l'identique de RoomDetailView.css
+   pour rester cohérent visuellement en attendant mieux. */
+
+.household-tasks-page {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 12px;
+  box-sizing: border-box;
+}
+
+.household-tasks-page__header {
+  padding: 4px 2px;
+}
+
+.household-tasks-page__title {
+  font-size: 1.1rem;
+  font-weight: 900;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.household-tasks-page__subtitle {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin: 4px 0 0;
+}
+
+.household-tasks-page__hint {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 2rem 1rem;
+}
+
+.household-tasks-page__group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.household-tasks-page__group-title {
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  margin: 0;
+  cursor: default;
+}
+
+.household-tasks-page__done-summary {
+  cursor: pointer;
+}
+
+.household-tasks-page__list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.household-tasks-page__task {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 18px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+  backdrop-filter: blur(10px);
+}
+
+.household-tasks-page__checkbox {
+  margin-top: 3px;
+  width: 18px;
+  height: 18px;
+  accent-color: var(--color-emerald);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.household-tasks-page__task-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.household-tasks-page__task-sub {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin: 2px 0 0;
+}
+.household-tasks-page__task-sub span {
+  color: var(--color-emerald);
+  font-weight: 600;
+}
+
+.household-tasks-page__task-footer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 4px;
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.household-tasks-page__task-group {
+  color: var(--text-muted);
+}
+
+.household-tasks-page__task-importance {
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+}
+.household-tasks-page__task-importance--basse {
+  color: var(--text-muted);
+}
+.household-tasks-page__task-importance--normale {
+  color: var(--color-sky);
+}
+.household-tasks-page__task-importance--haute {
+  color: var(--color-rose);
+}

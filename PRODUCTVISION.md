@@ -154,7 +154,47 @@ Cette proposition est un bon point de départ **si** l'hypothèse "statut simpli
 
 ---
 
-## 9. Ce qui ne change pas (déjà stable, pas remis en question ici)
+## 9. Sécurité & Domotique spatiale (Vision long terme — V2/V3, hors périmètre actuel)
+
+*(Idées proposées par Paul le 03/08/2026, pendant le chantier 🅲 — documentées ici pour ne pas les perdre, mais **explicitement hors périmètre du travail en cours** : Phase 1/2 reste le moteur de tâches Supabase, PRODUCTVISION.md §4.)*
+
+Deux idées distinctes, nées du même constat : le plan 2D/3D est un actif structurant que peu de concurrents (listes de tâches génériques, trackers de dépenses) possèdent — il peut porter bien plus que la propreté.
+
+### 9.1 — Vue "Sécurité" (toggle spatial, à côté de "Propreté")
+
+- **Concept** : un second mode d'affichage du plan, au même niveau que le filtre propreté déjà construit (`Plan2DView.jsx`, `showHeatmap`) — bascule "Propreté" / "Sécurité".
+- **V1 — déclaratif, sans matériel** : chaque ouverture (porte/fenêtre) porte un statut Fermé/Ouvert que l'utilisateur bascule lui-même manuellement (ex. avant de partir en vacances/se coucher). Aucune dépendance matérielle, valeur immédiate ("check-list avant de partir"), et un bon moyen de valider l'usage avant d'investir dans du matériel.
+- **V2/V3 — capteurs réels** : connexion à des écosystèmes domotiques (Ring, Home Assistant, Tuya, SmartThings, Zigbee) pour un statut réel, poussé par webhook plutôt que déclaré à la main.
+
+**⚠️ Écart de modèle à résoudre avant de coder quoi que ce soit ici — pas juste l'ajout d'une colonne** : aujourd'hui, une entrée de `doors` (`DATAMODEL.md` §5) représente une **ouverture structurelle** — un pan de mur *retiré*, pas un objet porte/fenêtre installé (terminologie actée le 01/08/2026 : "ce n'est plus une porte posée, c'est un mur absent"). Une ouverture n'a donc aujourd'hui aucune notion d'état ouvert/fermé au sens voulu ici : elle est soit là (mur absent), soit inexistante (mur plein) — binaire et **permanent**, pas un état qui varie dans le temps. Pour que "la porte d'entrée est restée ouverte" ait un sens, il faudra distinguer au moins trois choses aujourd'hui confondues dans une seule entrée `doors` :
+  1. **Un mur plein** (comportement actuel par défaut, rien à faire).
+  2. **Une ouverture sans porte/fenêtre** (passage libre, ex. une arche) — non concernée par la sécurité.
+  3. **Une porte ou une fenêtre réellement installée** (un objet qui peut être ouvert ou fermé) — la seule des trois qui a besoin d'un état.
+
+Concrètement : ce chantier ne pourra probablement pas se limiter à "ajouter `isOpen` à `doors`" — il faudra vraisemblablement un champ `type` (`'opening' | 'door' | 'window'`) par entrée. Les **fenêtres** en particulier n'existent aujourd'hui dans aucune partie du schéma (ni conceptuellement, ni en base) et ne "retirent" pas un mur de la même façon qu'une porte (une fenêtre reste dans un mur qui reste un mur visuellement) — à concevoir de zéro le moment venu, pas à caser dans le champ `doors` existant.
+
+**Sur les intégrations IoT nommées (Ring notamment)** : à vérifier au moment venu — Ring est avant tout un écosystème de caméras/sonnettes vidéo ; les capteurs d'ouverture porte/fenêtre ("contact sensors") relèvent plutôt de *Ring Alarm* ou d'autres marques (Aqara/Zigbee, SmartThings). **Recommandation** : plutôt qu'intégrer chaque marque une par une (Ring + Tuya + Zigbee + ...), un point d'intégration unique avec **Home Assistant** (open-source, auto-hébergé, agrège déjà des centaines d'écosystèmes dont tous ceux cités) réduirait la surface de maintenance à une seule API au lieu de N — même recommandation qu'en 9.2 ci-dessous.
+
+### 9.2 — Électroménager connecté (déclenchement de tâches, contrôle à distance)
+
+- **Concept** : relier les tâches ménagères à de vrais appareils connectés (aspirateur robot, lave-vaisselle, lave-linge), depuis le plan 2D.
+- **Deux directions de complexité et de risque très différentes, à ne pas traiter comme un seul chantier :**
+  1. **Réactif (lecture seule, faible risque)** : un cycle d'appareil se termine (lave-vaisselle terminé) → webhook reçu → tâche créée automatiquement ("Vider le lave-vaisselle"). N'exige qu'un accès en LECTURE à l'état de l'appareil.
+  2. **Actif (écriture, risque plus élevé)** : déclencher un nettoyage ciblé en cliquant une pièce sur le plan → exige un accès en ÉCRITURE à l'appareil (démarrer un cycle à distance). Plus de valeur perçue, mais plus de surface de risque (sécurité de l'accès, appareil qui se déclenche au mauvais moment, gestion des pannes/appareil hors-ligne) et plus dépendant de la fiabilité de l'API tierce.
+  - **Recommandation** : commencer par (1) si ce chantier est un jour lancé — valeur réelle, risque minimal, permet de valider l'usage avant d'investir dans (2).
+- **Faisabilité par marque (aucune création de matériel requise, confirmé)** :
+  - **Home Connect (Bosch/Siemens)** : programme développeur public et documenté — la cible la plus réaliste pour un premier vrai branchement.
+  - **Tuya** : plateforme IoT ouverte, couvre une très grande partie des objets connectés "génériques"/marque blanche du marché — probablement le meilleur rapport couverture d'appareils / effort d'intégration.
+  - **SmartThings (Samsung)** : API publique existante, également un agrégateur multi-marques comme Home Assistant.
+  - **iRobot (Roomba)** : ⚠️ l'API développeur grand public a été largement fermée par iRobot ces dernières années — l'intégration directe y est plus incertaine que pour Home Connect/Tuya. **Roborock**, en comparaison, a un écosystème plus ouvert (bibliothèques communautaires actives) — à considérer comme alternative si "aspirateur robot" reste une cible prioritaire.
+  - **Même recommandation qu'en 9.1** : un unique point d'intégration Home Assistant couvrirait déjà Roomba/Roborock/Home Connect/Tuya/SmartThings simultanément — probablement plus rentable qu'une intégration sur-mesure par marque, vu la taille actuelle du projet.
+- **Question de positionnement produit, pas seulement technique** : cette fonctionnalité suppose que le foyer possède déjà des appareils connectés — un public plus restreint (passionnés domotique) que la cible principale (colocations/familles/couples, §1). À trancher : fonctionnalité cœur pour tous, ou palier premium pour foyers équipés (cohérent avec le brouillon de pricing déjà évoqué en Phase 4 de `PROJECT.md`) ?
+
+**Dépendance commune aux deux idées** : toutes deux supposent un MVP tâches/plan qui tourne d'abord (Phase 1/2 en cours) — aucune des deux ne bloque ni n'est bloquée par le chantier 🅲 actuel, elles s'y raccrocheront (événements de tâches pour 9.2, modèle d'ouverture pour 9.1) le moment venu.
+
+---
+
+## 10. Ce qui ne change pas (déjà stable, pas remis en question ici)
 
 - Palette émeraude/teal, glassmorphisme, mobile-first, dark mode natif.
 - Modèle PROPRIETAIRE/LOCATAIRE et ses règles de transfert/suppression.
@@ -163,7 +203,7 @@ Cette proposition est un bon point de départ **si** l'hypothèse "statut simpli
 
 ---
 
-## 10. Récapitulatif des questions ouvertes
+## 11. Récapitulatif des questions ouvertes
 
 *(Pour discussion — à trancher au fur et à mesure, pas besoin de tout résoudre avant de commencer à coder.)*
 
@@ -175,12 +215,14 @@ Cette proposition est un bon point de départ **si** l'hypothèse "statut simpli
 6. Invités : statut de compte, durée fixe ou libre, tâches auto-créées ou deadline coïncidente, portée du cloisonnement, "location courte durée" vs "statut simplifié" ? (§7 — le plus gros bloc de questions, à éclaircir avant d'estimer l'ampleur du chantier)
 7. Skip onboarding : que voit un compte sans foyer ? (§8)
 8. Invitation : QR code et email sont deux canaux pour le même `invite_code`, ou deux systèmes distincts ? (§8)
+9. Modèle d'ouverture (`doors`) à faire évoluer pour porter un état ouvert/fermé : quel champ `type` exact (`opening`/`door`/`window`), les fenêtres comme toute nouvelle entité du plan ? À trancher avant tout code sur la Vue Sécurité (§9.1).
+10. Domotique électroménagère : fonctionnalité cœur pour tous, ou palier premium réservé aux foyers déjà équipés en smart home ? Home Assistant comme point d'intégration IoT unique, ou connecteurs sur-mesure par marque (Ring/Tuya/iRobot/SmartThings) ? (§9.2)
 
 ~~Anciennes questions ouvertes sur les Tâches~~ **Toutes tranchées le 03/08/2026** (voir §4 pour le détail de chaque décision) : tâches multi-pièces → concept de groupe (plus de `task_rooms`) ; sémantique de complétion à plusieurs assignés → n'importe qui coche, terminé pour tous ; comportement d'une dépendance non remplie → avertissement visuel, jamais bloquant en V1 ; décalage de récurrence entre une tâche et sa dépendance → couplage direct des occurrences (`depends_on_every_n`), pas une vérification d'historique.
 
 ---
 
-## 11. Journal des mises à jour
+## 12. Journal des mises à jour
 
 | Date | Changement |
 | :--- | :--- |
@@ -188,4 +230,5 @@ Cette proposition est un bon point de départ **si** l'hypothèse "statut simpli
 | 31/07/2026 | Ajout de l'équilibrage automatique des dépenses (§5), du schéma en 3 piliers (§1) et d'une proposition de base pour les Invités (§7, statut d'occupant simplifié) — repris et adaptés d'une réponse de Gemini au même brief, avec réserves explicites conservées (notamment : la proposition Invités tranche implicitement une question ouverte sans le dire). |
 | 03/08/2026 | **§4 (Tâches ménagères) substantiellement enrichie** avant le début du chantier 🅲 (demande explicite de Paul : documenter clairement avant de coder). Nouveaux champs détaillés : niveau d'importance, délai adapté aux tâches récurrentes (`deadline_offset_days` proposé), assignation multi-personnes (`task_assignees`, doit couvrir le cas occupant non-utilisateur déjà en base). **Concept de "groupe de tâches" introduit** — résout l'ancienne question ouverte sur les tâches multi-pièces (`task_rooms`) d'une manière plus réaliste : plusieurs instances de tâches (une par pièce), rattachées à un groupe commun, plutôt qu'une tâche unique couvrant plusieurs pièces avec un seul état d'avancement. **Dépendances entre tâches** : distinction faite entre dépendance d'instance (V1, informative, pas bloquante) et dépendance de groupe/règle générique (V2) — recommandation de ne PAS construire de système bloquant dès la V1 (gestion de cycles, dépendances jamais remplies, décalages de récurrence — complexité disproportionnée avant d'avoir la boucle de base qui tourne). Phasage V1/V2 explicite pour toute la section. 2 nouvelles questions ouvertes ajoutées à §10 (sémantique multi-assignés, comportement des dépendances non remplies). |
 | 03/08/2026 | **4 décisions actées par Paul, toutes les questions ouvertes sur les Tâches fermées** (§4, §10 mis à jour en conséquence) : (1) groupe de tâches adopté définitivement. (2) Dépendance non remplie → avertissement visuel seulement, jamais bloquant en V1. (3) **Décalage de récurrence, précision importante de Paul** : pas une vérification a posteriori ("la dépendance a-t-elle été faite récemment ?") mais un **couplage direct des occurrences** — une tâche dépendante (ex. serpillère) est toujours au moins aussi récurrente que sa dépendance (ex. aspirateur), et une occurrence de la dépendance est TOUJOURS générée le même jour qu'une occurrence de la tâche dépendante (pas de vérification d'historique nécessaire, elles naissent ensemble par construction). Implique que la récurrence d'une tâche dépendante devient DÉRIVÉE de celle de sa dépendance (`recurrence_days × depends_on_every_n`, même ancrage de date) plutôt qu'indépendante — nouveau champ `depends_on_every_n` proposé. Algorithme de planification exact pas encore figé, à concevoir avec soin à l'implémentation. (4) Multi-assignés : n'importe qui coche termine pour tout le monde. |
+| 03/08/2026 | **Nouvelle section §9 "Sécurité & Domotique spatiale"** ajoutée (deux idées de Paul, pendant le chantier 🅲 — vue Sécurité en toggle sur le plan, et électroménager connecté) : documentées comme vision long terme (V2/V3), explicitement hors périmètre de la Phase 1/2 en cours. **Point technique soulevé côté Claude** : le modèle actuel d'ouverture (`doors`) représente un mur retiré de façon permanente, pas un objet porte/fenêtre avec un état qui varie dans le temps — un vrai statut ouvert/fermé demandera de faire évoluer ce modèle (distinction ouverture/porte/fenêtre via un champ `type`, fenêtres à concevoir de zéro), pas juste d'ajouter une colonne `isOpen`. **Recommandation d'intégration IoT** (les deux idées) : un point d'intégration unique via Home Assistant plutôt que des connecteurs par marque un par un (Ring/Tuya/iRobot/SmartThings) — réduit fortement la surface de maintenance. 2 nouvelles questions ouvertes ajoutées (§11, #9/#10). **Renumérotation** : anciennes §9/§10/§11 devenues §10/§11/§12 — références externes à l'ancien §10 corrigées dans `PROJECT.md` (aucune autre référence externe trouvée à ces numéros). |
 

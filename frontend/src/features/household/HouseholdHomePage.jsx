@@ -42,9 +42,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ChecklistIcon, CartIcon, PointerIcon } from '../../components/ui/Icons';
-import { fetchHouseholdLayout } from './floorPlanService';
+import { fetchHouseholdLayout } from '../floor-plan/floorPlanService';
 import { generateFloorTiles } from '../layout-editor/utils/layoutGeneration';
-import Plan2DView from './Plan2DView';
+import Plan2DView from '../floor-plan/Plan2DView';
 import './HouseholdHomePage.css';
 
 const MOCK_CLEANLINESS = 78;
