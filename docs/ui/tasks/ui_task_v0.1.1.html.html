@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="fr" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Chez nous - Catalogue des tâches</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <style>
+    :root { color-scheme: dark; }
+    body { font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    
+    .glass {
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.75), rgba(15, 23, 42, 0.5));
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+    
+    .card-glow::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      padding: 1px;
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.45), rgba(14, 165, 233, 0.2));
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(16,185,129,0.22),_transparent_36%),linear-gradient(135deg,_#020617_0%,_#0f172a_50%,_#111827_100%)] text-slate-100 flex items-center justify-center px-3 py-4 sm:px-4">
+  
+  <div class="w-full max-w-md h-[100dvh] sm:h-[860px] sm:max-h-[860px] sm:rounded-[32px] border border-white/10 shadow-[0_30px_80px_rgba(0,0,0,0.45)] overflow-hidden flex flex-col bg-slate-950/70 relative">
+
+    <!-- HALOS DE LUMIÈRE DÉCORATIFS -->
+    <div class="absolute inset-0 pointer-events-none">
+      <div class="absolute -top-24 -left-24 w-72 h-72 bg-emerald-500/20 rounded-full blur-[100px]"></div>
+      <div class="absolute bottom-0 right-0 w-64 h-64 bg-sky-500/15 rounded-full blur-[90px]"></div>
+    </div>
+
+    <!-- HEADER GENERAL -->
+    <header class="relative z-20 px-4 pt-4 pb-3 border-b border-white/10 shrink-0">
+      <div class="flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <button class="relative w-10 h-10 rounded-2xl glass border border-white/10 flex items-center justify-center text-emerald-300 shadow-lg shadow-emerald-500/10">
+            <i class="fa-solid fa-house-chimney text-emerald-300"></i>
+          </button>
+          <div>
+            <p class="text-[10px] uppercase tracking-[0.22em] text-slate-400">Foyer actif</p>
+            <button class="flex items-center gap-1.5 text-sm font-semibold text-white">
+              <span>Super Coloc</span>
+              <i class="fa-solid fa-chevron-down text-[10px] text-slate-400"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button class="rounded-2xl border border-amber-500/20 bg-amber-500/10 px-2.5 py-1.5 flex items-center gap-1.5 text-[11px] font-semibold text-amber-300">
+            <i class="fa-solid fa-fire"></i>
+            <span>5</span>
+          </button>
+          <button class="rounded-2xl border border-sky-500/20 bg-sky-500/10 px-2.5 py-1.5 flex items-center gap-1.5 text-[11px] font-semibold text-sky-300">
+            <i class="fa-solid fa-gem"></i>
+            <span>320</span>
+          </button>
+          <div class="relative w-10 h-10 rounded-2xl glass border border-white/10 flex items-center justify-center text-slate-300">
+            <i class="fa-regular fa-user"></i>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- MAIN SCROLLABLE -->
+    <main class="relative z-10 flex-1 overflow-y-auto no-scrollbar px-4 py-4 space-y-4">
+
+      <!-- TITRE DE SECTION ET ACTION CREATION SUR-MESURE -->
+      <section class="flex items-center justify-between">
+        <div>
+          <h2 class="text-lg font-extrabold text-white">Catalogue des tâches</h2>
+          <p class="text-[11px] text-slate-400">Modèles pré-configurés pour votre foyer</p>
+        </div>
+
+        <button class="py-1.5 px-3 rounded-xl bg-slate-900 border border-white/15 text-emerald-400 font-bold text-xs hover:bg-slate-800 transition flex items-center gap-1.5 shrink-0">
+          <i class="fa-solid fa-plus text-[10px]"></i>
+          <span>Sur-mesure</span>
+        </button>
+      </section>
+
+      <!-- BARRE DE RECHERCHE -->
+      <section class="relative">
+        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+        <input type="text" placeholder="Rechercher une tâche (ex: détartrage, aspirateur...)" class="w-full bg-slate-900/90 border border-white/10 rounded-2xl pl-9 pr-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/50 transition shadow-inner" />
+      </section>
+
+      <!-- FILTRES PAR PIÈCES / CATÉGORIES -->
+      <section class="flex gap-1.5 overflow-x-auto no-scrollbar pt-0.5">
+        <button class="px-3.5 py-1.5 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-extrabold text-xs shrink-0 shadow-sm">
+          Toutes
+        </button>
+        <button class="px-3.5 py-1.5 rounded-xl bg-slate-900 border border-white/10 text-slate-400 hover:text-white font-semibold text-xs shrink-0">
+          Cuisine
+        </button>
+        <button class="px-3.5 py-1.5 rounded-xl bg-slate-900 border border-white/10 text-slate-400 hover:text-white font-semibold text-xs shrink-0">
+          Salle d'eau
+        </button>
+        <button class="px-3.5 py-1.5 rounded-xl bg-slate-900 border border-white/10 text-slate-400 hover:text-white font-semibold text-xs shrink-0">
+          Bureau / Séjour
+        </button>
+        <button class="px-3.5 py-1.5 rounded-xl bg-slate-900 border border-white/10 text-slate-400 hover:text-white font-semibold text-xs shrink-0">
+          Saisonnier
+        </button>
+      </section>
+
+      <!-- LISTE DES MODÈLES DE TÂCHES RÉFÉRENCÉS -->
+      <section class="space-y-3 pt-1">
+
+        <!-- CATEGORIE : CUISINE -->
+        <div class="space-y-2">
+          <h3 class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+            <i class="fa-solid fa-utensils text-emerald-400"></i>
+            <span>Cuisine (Modèles courants)</span>
+          </h3>
+
+          <!-- CARTE TÂCHE MODÈLE 1 -->
+          <article class="p-3.5 rounded-[22px] bg-slate-900/80 border border-white/10 glass flex items-center justify-between gap-3 shadow-md card-glow group">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 text-base shrink-0">
+                <i class="fa-solid fa-fire-burner"></i>
+              </div>
+              <div class="space-y-0.5">
+                <h4 class="text-xs font-bold text-white group-hover:text-emerald-300 transition">Dégraisser les plaques & la hotte</h4>
+                <div class="flex items-center gap-2 text-[10px] text-slate-400">
+                  <span>Hebdomadaire</span>
+                  <span>·</span>
+                  <span>~15 min</span>
+                  <span>·</span>
+                  <span class="text-sky-300 font-bold">+30 Gemmes 💎</span>
+                </div>
+              </div>
+            </div>
+
+            <button title="Ajouter cette tâche au foyer" class="py-1.5 px-3 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 hover:bg-emerald-500 hover:text-slate-950 font-bold text-xs transition shrink-0 flex items-center gap-1">
+              <i class="fa-solid fa-plus text-[10px]"></i>
+              <span>Ajouter</span>
+            </button>
+          </article>
+
+          <!-- CARTE TÂCHE MODÈLE 2 -->
+          <article class="p-3.5 rounded-[22px] bg-slate-900/80 border border-white/10 glass flex items-center justify-between gap-3 shadow-md card-glow group">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-2xl bg-sky-500/15 border border-sky-500/30 flex items-center justify-center text-sky-400 text-base shrink-0">
+                <i class="fa-solid fa-mug-hot"></i>
+              </div>
+              <div class="space-y-0.5">
+                <h4 class="text-xs font-bold text-white group-hover:text-emerald-300 transition">Détartrer la cafetière</h4>
+                <div class="flex items-center gap-2 text-[10px] text-slate-400">
+                  <span>Mensuel</span>
+                  <span>·</span>
+                  <span>~10 min</span>
+                  <span>·</span>
+                  <span class="text-sky-300 font-bold">+20 Gemmes 💎</span>
+                </div>
+              </div>
+            </div>
+
+            <button title="Ajouter cette tâche au foyer" class="py-1.5 px-3 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 hover:bg-emerald-500 hover:text-slate-950 font-bold text-xs transition shrink-0 flex items-center gap-1">
+              <i class="fa-solid fa-plus text-[10px]"></i>
+              <span>Ajouter</span>
+            </button>
+          </article>
+        </div>
+
+        <!-- CATEGORIE : SANITAIRES / SDB -->
+        <div class="space-y-2 pt-2">
+          <h3 class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+            <i class="fa-solid fa-shower text-sky-400"></i>
+            <span>Salle d'eau & Sanitaires</span>
+          </h3>
+
+          <!-- CARTE TÂCHE MODÈLE 3 -->
+          <article class="p-3.5 rounded-[22px] bg-slate-900/80 border border-white/10 glass flex items-center justify-between gap-3 shadow-md card-glow group">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-2xl bg-teal-500/15 border border-teal-500/30 flex items-center justify-center text-teal-300 text-base shrink-0">
+                <i class="fa-solid fa-soap"></i>
+              </div>
+              <div class="space-y-0.5">
+                <h4 class="text-xs font-bold text-white group-hover:text-emerald-300 transition">Nettoyer les joints & parois de douche</h4>
+                <div class="flex items-center gap-2 text-[10px] text-slate-400">
+                  <span>Bi-mensuel</span>
+                  <span>·</span>
+                  <span>~20 min</span>
+                  <span>·</span>
+                  <span class="text-sky-300 font-bold">+40 Gemmes 💎</span>
+                </div>
+              </div>
+            </div>
+
+            <button title="Ajouter cette tâche au foyer" class="py-1.5 px-3 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 hover:bg-emerald-500 hover:text-slate-950 font-bold text-xs transition shrink-0 flex items-center gap-1">
+              <i class="fa-solid fa-plus text-[10px]"></i>
+              <span>Ajouter</span>
+            </button>
+          </article>
+        </div>
+
+      </section>
+
+    </main>
+
+    <!-- FOOTER NAV -->
+    <footer class="relative z-20 border-t border-white/10 bg-slate-950/80 px-2 py-2 shrink-0">
+      <nav class="rounded-[24px] border border-white/10 bg-slate-900/80 p-1.5 flex justify-between items-center gap-1 overflow-x-auto no-scrollbar">
+        <a href="#accueil" class="flex-1 flex flex-col items-center justify-center gap-1 py-1.5 px-1 rounded-2xl text-slate-400 hover:text-white transition min-w-[50px]">
+          <i class="fa-solid fa-house text-xs"></i>
+          <span class="text-[8px] sm:text-[9px] font-semibold">Accueil</span>
+        </a>
+        <a href="#plan" class="flex-1 flex flex-col items-center justify-center gap-1 py-1.5 px-1 rounded-2xl text-slate-400 hover:text-white transition min-w-[50px]">
+          <i class="fa-solid fa-cubes text-xs"></i>
+          <span class="text-[8px] sm:text-[9px] font-semibold">Plan</span>
+        </a>
+        <a href="#taches" class="flex-1 flex flex-col items-center justify-center gap-1 py-1.5 px-1 rounded-2xl bg-emerald-500/15 text-emerald-300 min-w-[50px]">
+          <i class="fa-solid fa-check-double text-xs"></i>
+          <span class="text-[8px] sm:text-[9px] font-semibold">Tâches</span>
+        </a>
+        <a href="#depenses" class="flex-1 flex flex-col items-center justify-center gap-1 py-1.5 px-1 rounded-2xl text-slate-400 hover:text-white transition min-w-[50px]">
+          <i class="fa-solid fa-wallet text-xs"></i>
+          <span class="text-[8px] sm:text-[9px] font-semibold">Dépenses</span>
+        </a>
+        <a href="#calendrier" class="flex-1 flex flex-col items-center justify-center gap-1 py-1.5 px-1 rounded-2xl text-slate-400 hover:text-white transition min-w-[50px]">
+          <i class="fa-solid fa-calendar-days text-xs"></i>
+          <span class="text-[8px] sm:text-[9px] font-semibold">Calendrier</span>
+        </a>
+        <a href="#viedufoyer" class="flex-1 flex flex-col items-center justify-center gap-1 py-1.5 px-1 rounded-2xl text-slate-400 hover:text-white transition min-w-[50px]">
+          <i class="fa-solid fa-users text-xs"></i>
+          <span class="text-[8px] sm:text-[9px] font-semibold">Vie du foyer</span>
+        </a>
+      </nav>
+    </footer>
+
+  </div>
+</body>
+</html>

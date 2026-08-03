@@ -16,7 +16,7 @@ Le projet reste **en transition** entre deux architectures, mais la bascule a ne
 | **Auth** | Formulaires maison + session `localStorage` | Supabase Auth (`AuthContext`, `LoginPage`, `SignupPage`) |
 | **Foyers (liste + détail + rôles)** | `HouseholdRoot.jsx` → `HousingDashboard.jsx` | `HouseholdDashboardPage.jsx` (`/households`) → `AppLayout.jsx` (`/households/:id/*`, 6 onglets) |
 | **Plan 2D/3D** | `HouseholdSpatialView.jsx` — plus aucun importeur actif (`api.js`/`householdLayoutApi.js` orphelins, confirmé) | `floorPlanService.js` (blob JSONB `floor_plans.layout_data`, verrou optimiste). Monté sur `/spatial`. **Testé en conditions réelles par Paul — fonctionne** |
-| **Tâches / Dépenses / Vie du foyer** | N'existaient pas | Placeholders statiques (`HouseholdTasksPage.jsx`, `HouseholdExpensesPage.jsx`) / contenu réel non-Supabase (`HouseholdLifePage.jsx`) — aucune couche de données encore |
+| **Tâches / Dépenses / Vie du foyer** | N'existaient pas | Tâches : **schéma Supabase V1 exécuté** (`tasks` enrichie + `task_groups` + `task_assignees`, 03/08/2026) mais aucun service/UI frontend ne l'utilise encore (`HouseholdTasksPage.jsx` toujours placeholder). Dépenses (`HouseholdExpensesPage.jsx`) / Vie du foyer (`HouseholdLifePage.jsx`, contenu réel non-Supabase) : inchangés, aucune couche de données |
 | **Calendrier** | N'existait pas | `HouseholdCalendarPage.jsx` — grille mensuelle **réellement interactive** (calculée dynamiquement, filtres, sélection de jour), événements toujours **statiques/mock** (aucune table `calendar_events`) |
 | **Profil / Réglages / Préférences** | N'existaient pas | `features/account/` (nouveau) — `ProfilePage.jsx`, `SettingsPage.jsx`, `PreferencesPage.jsx`. Interrupteurs de Préférences réellement cliquables, **rien n'est persisté** (pas de table de préférences utilisateur) |
 | **Monté par `AppRouter.jsx`** | ❌ Non — `HouseholdRoot` retiré du flux | ✅ Oui, c'est le flux principal |
@@ -151,7 +151,7 @@ frontend/
 | **4. Auth + Onboarding + retrait de HouseholdRoot** | 🟢 Fait |
 | **5. Coquille applicative (`AppLayout`, 6 onglets, switcher, menu profil)** | 🟢 Fait |
 | **6. Reconnexion du plan 2D/3D (`floor_plans`, JSONB)** | 🟢 Fait et testé en conditions réelles |
-| **7. Tâches / Dépenses / Vie du foyer (Supabase réel)** | 🔴 Pas commencé — placeholders uniquement |
+| **7. Tâches / Dépenses / Vie du foyer (Supabase réel)** | 🟡 Tâches : schéma V1 exécuté (`04_tasks_v1_schema.sql`, 03/08/2026, voir `PROJECT.md` §3.11/`DATAMODEL.md` §7) — service/UI frontend pas encore branchés. Dépenses/Vie du foyer : toujours 🔴 placeholders |
 | **8. Profil / Réglages / Préférences / Calendrier (UI)** | 🟡 UI construite et interactive (grille calendrier, interrupteurs, recherche) — rien n'est persisté, aucun service Supabase derrière |
 
 ---
