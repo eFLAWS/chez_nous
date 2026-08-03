@@ -1,25 +1,14 @@
 /* theme.css
    Design System & Tokens de couleur — "Chez nous", direction Dark Mode
-   néon (Vert Émeraude / Teal / Lime). Valeurs de :root conservées et
-   complétées au fil des sessions — jamais réinventées, toujours
-   recopiées depuis un document/prototype fourni.
+   néon (Vert Émeraude / Teal / Lime), fournie par l'utilisateur
+   (code_couleur.md). Déclarés en :root comme demandé explicitement,
+   pour être réutilisables par de futures pages — appliqués pour
+   l'instant uniquement à l'écran de connexion/inscription (voir
+   HouseholdRoot.css/AuthForm.css), le reste de l'app garde son thème
+   clair existant tant qu'un changement plus large n'est pas demandé.
 
-   Réécriture du 02/08/2026 (voir la conversation) : ajout de la
-   configuration typographique globale (Inter, graisses 400-900) et de
-   toutes les classes utilitaires visuelles présentes dans les
-   prototypes fournis (.glass, .card-glow, .no-scrollbar, halos
-   lumineux, animation plumbob) — jusqu'ici, chaque page qui en avait
-   besoin réimplémentait ses propres règles au lieu de piocher dans un
-   theme.css partagé et complet. */
-
-/* --- POLICE --- */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
-
-html,
-body {
-  font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-}
-
+   Valeurs recopiées telles quelles depuis le document fourni — pas de
+   token réinventé ici. */
 :root {
   /* --- SURFACES & FONDS --- */
   --bg-app: #090d16; /* Dark Slate très profond (fond principal) */
@@ -41,136 +30,17 @@ body {
   --color-rose: #f43f5e; /* Alertes fortes (tâche en retard, pièce à faire) */
   --color-violet: #8b5cf6; /* Tag de pièce sur une tâche */
 
-  /* --- AJOUTÉS POUR PROFIL/RÉGLAGES/PRÉFÉRENCES/CALENDRIER (prototypes
-     v0.1.2) — voir la conversation. Le "bleu" du prototype (Tailwind
-     blue-500, réseaux sociaux/support/animations) est volontairement
-     fondu sur --color-sky déjà existant plutôt que dupliqué : les deux
-     teintes sont visuellement proches et jouent le même rôle
-     "informatif", pas la peine d'un 10e token pour ça. */
-  --color-purple: #a855f7; /* Effets sonores, annonces */
-  --color-pink: #ec4899; /* Vibrations, messages de motivation */
+  /* --- AJOUTÉS POUR LE FILTRE PROPRETÉ DU PLAN 2D (03/08/2026, demande
+     explicite de Paul, prototype ui_2d_v0.3.1.html) — complètent
+     l'échelle à 4 niveaux (0/1/2/3+ tâches en attente) : emerald (0) et
+     rose (3+) existaient déjà ci-dessus, il manquait les deux teintes
+     intermédiaires. Même convention que les tokens ci-dessus (teinte
+     "500" Tailwind). */
+  --color-yellow: #eab308; /* Propreté : 1 tâche en attente */
+  --color-orange: #f97316; /* Propreté : 2 tâches en attente */
 
   /* --- TYPOGRAPHIE & CONTRASTES --- */
   --text-primary: #ffffff; /* Titres & textes principaux */
   --text-muted: #94a3b8; /* Labels & sous-titres */
   --text-on-accent: #090d16; /* Texte très sombre sur les boutons néon */
-
-  /* --- GRAISSES DE POLICE (référence, voir directive 02/08/2026) ---
-     Utiliser ces valeurs plutôt que des poids arbitraires : les
-     prototypes marquent une différence nette entre "extrabold" (titres)
-     et "black" (accroches très fortes) — pas la peine d'improviser une
-     graisse intermédiaire. */
-  --font-weight-regular: 400;
-  --font-weight-medium: 500;
-  --font-weight-semibold: 600;
-  --font-weight-bold: 700;
-  --font-weight-extrabold: 800;
-  --font-weight-black: 900;
-}
-
-/* --- UTILITAIRES VISUELS PARTAGÉS (voir la conversation : directive de
-   conversion prototype -> React, ne jamais supprimer/simplifier ces
-   effets). Globaux plutôt que dupliqués par page. --- */
-
-/* Scrollbar invisible (zones de défilement horizontales/verticales qui
-   ne doivent pas montrer de barre — filtres, carrousels, contenu
-   principal des pages plein écran). */
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-
-.no-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-/* Effet "verre" (fond semi-transparent + flou d'arrière-plan) — boutons
-   et cartes qui doivent se détacher du fond sans être opaques. */
-.glass {
-  background: linear-gradient(135deg, rgba(15, 23, 42, 0.72), rgba(15, 23, 42, 0.5));
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-}
-
-/* Bordure à dégradé (coin haut-gauche émeraude vers bas-droit lime),
-   technique de masquage CSS reprise telle quelle des prototypes. Le
-   conteneur doit être en `position: relative` (ou `overflow: hidden`
-   avec un rayon de bordure) pour un rendu propre. */
-.card-glow {
-  position: relative;
-}
-
-.card-glow::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  padding: 1px;
-  background: linear-gradient(135deg, rgba(52, 211, 153, 0.45), rgba(163, 230, 53, 0.2));
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  pointer-events: none;
-}
-
-/* Halos d'ambiance en arrière-plan de page (coin haut-gauche émeraude,
-   coin bas-droit lime) — présents sur quasiment tous les prototypes
-   fournis. Utilisés via le composant partagé
-   components/ui/AmbientGlow.jsx ; le conteneur parent doit être
-   `position: relative` + `overflow: hidden`. Tailles/opacités
-   normalisées sur une valeur médiane commune aux différents
-   prototypes (qui varient légèrement d'un fichier à l'autre, ex.
-   emerald-500/15 à /20 selon la page — écart mineur, pas la peine
-   d'une variante par page). */
-.ambient-glow {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  overflow: hidden;
-  z-index: 0;
-}
-
-.ambient-glow__blob {
-  position: absolute;
-  border-radius: 999px;
-}
-
-.ambient-glow__blob--emerald {
-  top: -6rem;
-  left: -6rem;
-  width: 18rem;
-  height: 18rem;
-  background: rgba(16, 185, 129, 0.2);
-  filter: blur(100px);
-}
-
-.ambient-glow__blob--lime {
-  bottom: -1rem;
-  right: -1rem;
-  width: 18rem;
-  height: 18rem;
-  background: rgba(163, 230, 53, 0.15);
-  filter: blur(90px);
-}
-
-/* Animation de l'avatar "plumbob" (gemme flottante façon Sims, écran
-   Profil). ⚠️ Actuellement INUTILISÉE dans le code — le prototype
-   ui_profile_v0.1.2 qui l'utilisait s'est révélé erroné (voir la
-   conversation), remplacé par ui_profile_v0.1.1 qui n'a pas ce concept.
-   Conservée ici comme utilitaire disponible si le concept d'avatar
-   Sims est repris un jour, plutôt que supprimée. */
-@keyframes plumbob-float {
-  0%,
-  100% {
-    transform: translateY(0px) rotate(0deg);
-    filter: drop-shadow(0 0 12px rgba(52, 211, 153, 0.8));
-  }
-  50% {
-    transform: translateY(-8px) rotate(5deg);
-    filter: drop-shadow(0 0 20px rgba(52, 211, 153, 1));
-  }
-}
-
-.plumbob {
-  animation: plumbob-float 2.5s ease-in-out infinite;
 }

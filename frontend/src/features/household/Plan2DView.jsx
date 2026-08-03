@@ -51,6 +51,38 @@
 // fusionner visuellement deux pièces séparées par une cloison pleine
 // avec le vide, l'inverse du bug déjà corrigé sur ce sujet.
 //
+// MURS BLANCS 2PX (03/08/2026, demande explicite de Paul, prototype
+// ui_2d_v0.3.1.html — "bordures blanches de 2px, angles droits
+// stricts") : le prototype dessine un `border-2 border-white` autour de
+// CHAQUE pièce individuellement — repris tel quel, ça aurait réintroduit
+// exactement le bug déjà corrigé (une bordure par pièce ignore les
+// ouvertures, deux pièces séparées par une cloison PLEINE se
+// retrouveraient quand même avec un "mur" dessiné même là où il ne
+// devrait pas — et une ouverture resterait invisible sous la bordure de
+// chaque pièce). Choix fait à la place : GARDER `WallEdges` (correct par
+// construction), juste changer sa couleur en blanc et son épaisseur à
+// 2px (`strokeColor`/`wallThickness`, voir WallEdges.jsx) — même rendu
+// visuel que demandé, sans regarder en arrière sur la correction du bug
+// d'origine. "Angles droits stricts" : déjà le cas, `.plan2d-room` n'a
+// jamais eu de `border-radius` (seul le cadre extérieur `.plan2d-grid`
+// est arrondi).
+//
+// FILTRE PROPRETÉ / HEATMAP (03/08/2026, demande explicite de Paul,
+// même prototype) : `showHeatmap` (état local, bouton dédié) bascule
+// entre couleur NEUTRE (`room.color`, choisie par l'utilisateur — voir
+// roomTypes.js/ROOM_COLORS) et couleur THERMIQUE dérivée du nombre de
+// tâches actives (0=vert, 1=jaune, 2=orange, 3+=rouge, voir
+// `heatColor()`). Masqué en mode compact (`showHint=false`, voir plus
+// bas) — inutile dans un aperçu réduit (HouseholdHomePage.jsx).
+//
+// CLIC SUR UNE PIÈCE — CHANGEMENT DE COMPORTEMENT (03/08/2026, demande
+// explicite de Paul) : `onSelectRoom(room.id)` n'ouvre plus la Vue 3D —
+// c'est maintenant au PARENT de décider (voir HouseholdSpatialView.jsx,
+// qui bascule vers `RoomDetailView.jsx`, la vue détaillée d'une pièce).
+// Ce composant reste inchangé de ce point de vue : il appelle juste
+// `onSelectRoom` si fourni, sans connaître ni se soucier de la
+// destination.
+//
 // DÉFILEMENT NATIF, PAS react-zoom-pan-pinch (voir la conversation) :
 // la bibliothèque de zoom/pincement a causé un vrai bug visuel signalé
 // ici (le mur coupé à droite/en bas, contenu pas entièrement visible) —
@@ -75,16 +107,24 @@
 // arêtes (`WallEdges`, via `offsetXPx`/`offsetYPx`) sont décalées de
 // l'origine de cette bounding box, pas de la grille complète.
 //
-// Clic sur une pièce : optionnel (`onSelectRoom`), pour sauter directement
-// dans la Vue 3D centrée sur cette pièce si le parent le souhaite.
+// INTÉGRATION COMPACTE (03/08/2026, demande explicite de Paul — intégrer
+// ce composant dans la carte "Vue du foyer" de HouseholdHomePage.jsx, à
+// la place des données placeholder) : `maxHeight` (optionnel) permet au
+// parent de réduire la hauteur du cadre (65vh par défaut, bien trop
+// grand pour une carte d'aperçu compacte) sans dupliquer tout le
+// composant. `showHint` (optionnel, true par défaut) masque la ligne
+// d'aide ET le bouton de filtre propreté (inutiles dans un aperçu
+// réduit).
 import { useState, useRef, useEffect } from "react";
 import WallEdges from "../layout-editor/components/WallEdges";
+import { FlameIcon } from "../../components/ui/Icons";
 import "./Plan2DView.css";
 
 const DEFAULT_CELL_PX = 40; // filet de sécurité avant la toute première mesure du conteneur
 const MIN_CELL_PX = 14; // grand appartement : jamais illisible pour autant tenir dans le cadre
 const MAX_CELL_PX = 64; // petit appartement : jamais démesurément agrandi
-const WALL_THICKNESS_PX = 4;
+const WALL_THICKNESS_PX = 2; // 2px, "bordures blanches" du prototype (voir en-tête)
+const WALL_COLOR = "#ffffff";
 const BBOX_PADDING_CELLS = 1; // ~1 case de marge tout autour des pièces, demandé explicitement
 
 /** "Aucune tâche" / "1 tâche active" / "N tâches actives" — accord singulier/pluriel. */
@@ -94,9 +134,22 @@ function formatTaskCount(count) {
   return `${count} tâches actives`;
 }
 
-export default function Plan2DView({ floor, edges = [], rooms, onSelectRoom }) {
+/**
+ * Couleur thermique selon le nombre de tâches actives — échelle fixée
+ * par Paul : 0=vert, 1=jaune, 2=orange, 3+=rouge (`--color-emerald`/
+ * `--color-yellow`/`--color-orange`/`--color-rose`, voir theme.css).
+ */
+function heatColor(count) {
+  if (!count) return "var(--color-emerald)";
+  if (count === 1) return "var(--color-yellow)";
+  if (count === 2) return "var(--color-orange)";
+  return "var(--color-rose)";
+}
+
+export default function Plan2DView({ floor, edges = [], rooms, onSelectRoom, maxHeight, showHint = true }) {
   const scrollRef = useRef(null);
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
+  const [showHeatmap, setShowHeatmap] = useState(false);
 
   // Bounding box réelle des pièces + marge — filet de sécurité sur la
   // grille complète de l'étage si jamais `rooms` était vide (ne devrait
@@ -143,12 +196,46 @@ export default function Plan2DView({ floor, edges = [], rooms, onSelectRoom }) {
 
   return (
     <div className="plan2d-view">
-      <p className="plan2d-hint">{floor.name} — vue d'ensemble (touchez une pièce pour vous y rendre en 3D)</p>
+      {showHint && (
+        <div className="plan2d-toolbar">
+          <p className="plan2d-hint">{floor.name} — touchez une pièce pour voir son détail</p>
+          <button
+            type="button"
+            className={showHeatmap ? "plan2d-heatmap-btn plan2d-heatmap-btn--active" : "plan2d-heatmap-btn"}
+            onClick={() => setShowHeatmap((v) => !v)}
+            aria-pressed={showHeatmap}
+          >
+            <FlameIcon size={12} />
+            <span>Filtre propreté</span>
+          </button>
+        </div>
+      )}
 
-      <div className="plan2d-scroll" ref={scrollRef}>
+      {showHint && showHeatmap && (
+        <div className="plan2d-legend">
+          <span className="plan2d-legend__label">Ménage :</span>
+          <span className="plan2d-legend__item" style={{ color: "var(--color-emerald)" }}>
+            <span className="plan2d-legend__dot" style={{ background: "var(--color-emerald)" }} />0
+          </span>
+          <span className="plan2d-legend__item" style={{ color: "var(--color-yellow)" }}>
+            <span className="plan2d-legend__dot" style={{ background: "var(--color-yellow)" }} />1
+          </span>
+          <span className="plan2d-legend__item" style={{ color: "var(--color-orange)" }}>
+            <span className="plan2d-legend__dot" style={{ background: "var(--color-orange)" }} />2
+          </span>
+          <span className="plan2d-legend__item" style={{ color: "var(--color-rose)" }}>
+            <span className="plan2d-legend__dot" style={{ background: "var(--color-rose)" }} />
+            3+
+          </span>
+        </div>
+      )}
+
+      <div className="plan2d-scroll" ref={scrollRef} style={maxHeight ? { maxHeight } : undefined}>
         <div className="plan2d-grid" style={{ width: gridWidthPx, height: gridHeightPx }}>
           {rooms.map((room) => {
             const clickable = Boolean(onSelectRoom);
+            const taskCount = room.activeTaskCount ?? 0;
+            const background = showHeatmap ? heatColor(taskCount) : room.color;
             return (
               <div
                 key={room.id}
@@ -158,15 +245,15 @@ export default function Plan2DView({ floor, edges = [], rooms, onSelectRoom }) {
                   top: (room.y - contentMinY) * cellPx,
                   width: room.width * cellPx,
                   height: room.height * cellPx,
-                  background: room.color,
+                  background,
                   cursor: clickable ? "pointer" : "default",
                 }}
                 onClick={clickable ? () => onSelectRoom(room.id) : undefined}
                 role={clickable ? "button" : undefined}
-                aria-label={clickable ? `Aller à ${room.name}` : undefined}
+                aria-label={clickable ? `Voir le détail de ${room.name}` : undefined}
               >
                 <span className="plan2d-room__name">{room.name}</span>
-                <span className="plan2d-room__tasks">{formatTaskCount(room.activeTaskCount ?? 0)}</span>
+                <span className="plan2d-room__tasks">{formatTaskCount(taskCount)}</span>
               </div>
             );
           })}
@@ -177,6 +264,7 @@ export default function Plan2DView({ floor, edges = [], rooms, onSelectRoom }) {
             width={gridWidthPx}
             height={gridHeightPx}
             wallThickness={WALL_THICKNESS_PX}
+            strokeColor={WALL_COLOR}
             offsetXPx={offsetXPx}
             offsetYPx={offsetYPx}
           />

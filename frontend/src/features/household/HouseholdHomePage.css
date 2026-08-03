@@ -108,32 +108,19 @@
   gap: 0.75rem;
 }
 
-.household-home-page__room-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
+/* Intégration compacte de Plan2DView (03/08/2026, demande explicite de
+   Paul) — remplace les pastilles de pièces .household-home-page__room-chip*
+   ci-dessous, retirées. .plan2d-view a son propre padding (12px, pensé
+   pour un usage pleine page) : annulé ici, .household-home-page__overview-inner
+   fournit déjà l'espacement de la carte. */
+.household-home-page__plan-embed {
+  border-radius: 1.25rem;
+  overflow: hidden;
 }
 
-.household-home-page__room-chip {
-  border-radius: 999px;
-  padding: 0.35rem 0.75rem;
-  font-size: 0.68rem;
-  font-weight: 700;
-}
-
-.household-home-page__room-chip--clean {
-  background: rgba(52, 211, 153, 0.9);
-  color: #052e21;
-}
-
-.household-home-page__room-chip--pending {
-  background: rgba(252, 211, 77, 0.9);
-  color: #452c00;
-}
-
-.household-home-page__room-chip--todo {
-  background: rgba(251, 113, 133, 0.9);
-  color: #ffffff;
+.household-home-page__plan-embed .plan2d-view {
+  padding: 0;
+  gap: 0;
 }
 
 .household-home-page__hint {

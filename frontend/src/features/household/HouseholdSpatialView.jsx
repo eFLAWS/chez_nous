@@ -73,6 +73,7 @@ import { downloadLayoutAsJson, readLayoutFile } from "../layout-editor/utils/lay
 import { fetchHouseholdLayout, saveFloorLayout, resetHouseholdLayout, deleteFloor } from "./floorPlanService";
 import FloorView3D from "./FloorView3D";
 import Plan2DView from "./Plan2DView";
+import RoomDetailView from "./RoomDetailView";
 import LayoutEditor from "../layout-editor/components/LayoutEditor";
 import OnboardingScreen from "./OnboardingScreen";
 import "./HouseholdSpatialView.css";
@@ -99,6 +100,7 @@ export default function HouseholdSpatialView({
   const [mode, setMode] = useState(startInEditor ? "editing" : "onboarding");
   const [selectedFloorId, setSelectedFloorId] = useState(null);
   const [initialRoomId, setInitialRoomId] = useState(null);
+  const [detailRoomId, setDetailRoomId] = useState(null); // pièce affichée en détail (RoomDetailView), ou null = plan/3D normal
   const [importError, setImportError] = useState(null);
   const [viewMode, setViewMode] = useState("2d");
 
@@ -171,11 +173,18 @@ export default function HouseholdSpatialView({
     setViewMode("3d");
   };
 
-  // Clic sur une pièce depuis Plan2DView (lecture seule) : bascule vers
-  // la Vue 3D, centrée sur CETTE pièce précisément.
+  // Clic sur une pièce depuis Plan2DView (lecture seule) — **changement
+  // de comportement (03/08/2026, demande explicite de Paul)** : bascule
+  // vers RoomDetailView.jsx (la vue détaillée de CETTE pièce), plus vers
+  // la Vue 3D comme avant. `handleBackToPlanFromDetail` (ci-dessous)
+  // ramène au Plan 2D.
   const handleSelectRoomFromPlan = (roomId) => {
-    setInitialRoomId(roomId);
-    setViewMode("3d");
+    setDetailRoomId(roomId);
+  };
+
+  const handleBackToPlanFromDetail = () => {
+    setDetailRoomId(null);
+    setViewMode("2d"); // "Retour au PLAN 2D", littéralement — au cas où viewMode aurait changé entre-temps
   };
 
   /* ------------------------------ Mode Édition ------------------------------ */
@@ -416,6 +425,8 @@ export default function HouseholdSpatialView({
     );
   }
 
+  const detailRoom = detailRoomId ? rooms.find((r) => r.id === detailRoomId) : null;
+
   return (
     <div className="spatial-view">
       {onBackToDashboard && (
@@ -427,60 +438,66 @@ export default function HouseholdSpatialView({
         </div>
       )}
 
-      <div className="spatial-view__floor-selector" role="tablist" aria-label="Choix de l'étage">
-        {floors.map((floor) => (
-          <button
-            key={floor.id}
-            type="button"
-            role="tab"
-            aria-selected={floor.id === selectedFloorId}
-            className={floor.id === selectedFloorId ? "spatial-view__floor-btn spatial-view__floor-btn--active" : "spatial-view__floor-btn"}
-            onClick={() => handleSelectFloor(floor.id)}
-          >
-            {floor.shortLabel}
-          </button>
-        ))}
-        {isOwner && (
-          <button type="button" className="spatial-view__edit-btn" onClick={handleStartEditLayout}>
-            ✏️ Modifier le plan
-          </button>
-        )}
-      </div>
-
-      <div className="spatial-view__switcher" role="tablist" aria-label="Choix de la vue">
-        <button
-          type="button"
-          role="tab"
-          aria-selected={viewMode === "2d"}
-          className={viewMode === "2d" ? "spatial-view__tab spatial-view__tab--active" : "spatial-view__tab"}
-          onClick={() => setViewMode("2d")}
-        >
-          🗺️ Plan 2D
-        </button>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={viewMode === "3d"}
-          className={viewMode === "3d" ? "spatial-view__tab spatial-view__tab--active" : "spatial-view__tab"}
-          onClick={handleShowFloorView}
-        >
-          🏠 Vue 3D
-        </button>
-      </div>
-
-      {roomsOnSelectedFloor.length === 0 ? (
-        <p className="spatial-view__empty-floor">Aucune pièce sur cet étage — ouvre "Modifier le plan" pour en tracer.</p>
-      ) : viewMode === "2d" ? (
-        <Plan2DView key={selectedFloorId} floor={selectedFloor} edges={selectedFloorEdges} rooms={roomsOnSelectedFloor} onSelectRoom={handleSelectRoomFromPlan} />
+      {detailRoom ? (
+        <RoomDetailView room={detailRoom} floor={selectedFloor} onBack={handleBackToPlanFromDetail} />
       ) : (
-        <FloorView3D
-          key={selectedFloorId}
-          floor={selectedFloor}
-          tiles={selectedFloorTiles}
-          rooms={roomsOnSelectedFloor}
-          user={user}
-          initialRoomId={initialRoomId}
-        />
+        <>
+          <div className="spatial-view__floor-selector" role="tablist" aria-label="Choix de l'étage">
+            {floors.map((floor) => (
+              <button
+                key={floor.id}
+                type="button"
+                role="tab"
+                aria-selected={floor.id === selectedFloorId}
+                className={floor.id === selectedFloorId ? "spatial-view__floor-btn spatial-view__floor-btn--active" : "spatial-view__floor-btn"}
+                onClick={() => handleSelectFloor(floor.id)}
+              >
+                {floor.shortLabel}
+              </button>
+            ))}
+            {isOwner && (
+              <button type="button" className="spatial-view__edit-btn" onClick={handleStartEditLayout}>
+                ✏️ Modifier le plan
+              </button>
+            )}
+          </div>
+
+          <div className="spatial-view__switcher" role="tablist" aria-label="Choix de la vue">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={viewMode === "2d"}
+              className={viewMode === "2d" ? "spatial-view__tab spatial-view__tab--active" : "spatial-view__tab"}
+              onClick={() => setViewMode("2d")}
+            >
+              🗺️ Plan 2D
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={viewMode === "3d"}
+              className={viewMode === "3d" ? "spatial-view__tab spatial-view__tab--active" : "spatial-view__tab"}
+              onClick={handleShowFloorView}
+            >
+              🏠 Vue 3D
+            </button>
+          </div>
+
+          {roomsOnSelectedFloor.length === 0 ? (
+            <p className="spatial-view__empty-floor">Aucune pièce sur cet étage — ouvre "Modifier le plan" pour en tracer.</p>
+          ) : viewMode === "2d" ? (
+            <Plan2DView key={selectedFloorId} floor={selectedFloor} edges={selectedFloorEdges} rooms={roomsOnSelectedFloor} onSelectRoom={handleSelectRoomFromPlan} />
+          ) : (
+            <FloorView3D
+              key={selectedFloorId}
+              floor={selectedFloor}
+              tiles={selectedFloorTiles}
+              rooms={roomsOnSelectedFloor}
+              user={user}
+              initialRoomId={initialRoomId}
+            />
+          )}
+        </>
       )}
     </div>
   );

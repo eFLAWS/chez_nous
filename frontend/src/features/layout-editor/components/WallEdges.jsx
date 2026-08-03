@@ -28,7 +28,13 @@
 // bounding box (pas forcément (0,0) de la grille complète de l'étage).
 // Défaut 0 : comportement inchangé pour LayoutEditor.jsx, qui trace
 // toujours depuis (0,0) et n'a pas besoin de ce recadrage.
-export default function WallEdges({ edges, cellPx, width, height, wallThickness = 4, offsetXPx = 0, offsetYPx = 0, className }) {
+//
+// `strokeColor` (03/08/2026, prototype ui_2d_v0.3.1.html, demande
+// explicite de Paul) : couleur du trait, personnalisable par
+// l'appelant. Plan2DView.jsx passe désormais du blanc (`#ffffff`,
+// "bordures blanches" du prototype) — défaut `#2b2b2b` (gris foncé)
+// inchangé pour LayoutEditor.jsx, qui garde son propre style.
+export default function WallEdges({ edges, cellPx, width, height, wallThickness = 4, strokeColor = "#2b2b2b", offsetXPx = 0, offsetYPx = 0, className }) {
   return (
     <svg
       className={className}
@@ -51,7 +57,7 @@ export default function WallEdges({ edges, cellPx, width, height, wallThickness 
             y1={y1}
             x2={x2}
             y2={y2}
-            stroke="#2b2b2b"
+            stroke={strokeColor}
             strokeWidth={wallThickness}
             strokeLinecap="square"
           />

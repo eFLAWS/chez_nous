@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="fr" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Chez nous - Vue Détaillée Bureau</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <style>
+    :root { color-scheme: dark; }
+    body { font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    
+    .glass {
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.75), rgba(15, 23, 42, 0.5));
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+    
+    .card-glow::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      padding: 1px;
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.45), rgba(14, 165, 233, 0.2));
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(16,185,129,0.22),_transparent_36%),linear-gradient(135deg,_#020617_0%,_#0f172a_50%,_#111827_100%)] text-slate-100 flex items-center justify-center px-3 py-4 sm:px-4">
+  
+  <div class="w-full max-w-md h-[100dvh] sm:h-[860px] sm:max-h-[860px] sm:rounded-[32px] border border-white/10 shadow-[0_30px_80px_rgba(0,0,0,0.45)] overflow-hidden flex flex-col bg-slate-950/70 relative">
+
+    <!-- HALOS DE LUMIÈRE DÉCORATIFS -->
+    <div class="absolute inset-0 pointer-events-none">
+      <div class="absolute -top-24 -left-24 w-72 h-72 bg-emerald-500/20 rounded-full blur-[100px]"></div>
+      <div class="absolute bottom-0 right-0 w-64 h-64 bg-sky-500/15 rounded-full blur-[90px]"></div>
+    </div>
+
+    <!-- HEADER GENERAL -->
+    <header class="relative z-20 px-4 pt-4 pb-3 border-b border-white/10 shrink-0">
+      <div class="flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <button class="relative w-10 h-10 rounded-2xl glass border border-white/10 flex items-center justify-center text-emerald-300 shadow-lg shadow-emerald-500/10">
+            <i class="fa-solid fa-house-chimney text-emerald-300"></i>
+          </button>
+          <div>
+            <p class="text-[10px] uppercase tracking-[0.22em] text-slate-400">Foyer actif</p>
+            <button class="flex items-center gap-1.5 text-sm font-semibold text-white">
+              <span>Super Coloc</span>
+              <i class="fa-solid fa-chevron-down text-[10px] text-slate-400"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button class="rounded-2xl border border-amber-500/20 bg-amber-500/10 px-2.5 py-1.5 flex items-center gap-1.5 text-[11px] font-semibold text-amber-300">
+            <i class="fa-solid fa-fire"></i>
+            <span>5</span>
+          </button>
+          <button class="rounded-2xl border border-sky-500/20 bg-sky-500/10 px-2.5 py-1.5 flex items-center gap-1.5 text-[11px] font-semibold text-sky-300">
+            <i class="fa-solid fa-gem"></i>
+            <span>320</span>
+          </button>
+          <div class="relative w-10 h-10 rounded-2xl glass border border-white/10 flex items-center justify-center text-slate-300">
+            <i class="fa-regular fa-user"></i>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- MAIN SCROLLABLE -->
+    <main class="relative z-10 flex-1 overflow-y-auto no-scrollbar px-4 py-4 space-y-4">
+
+      <!-- RETOUR AU PLAN & NAVIGATION DÉDIÉE -->
+      <section class="flex items-center justify-between">
+        <a href="#plan" class="flex items-center gap-2 py-1.5 px-3 rounded-xl bg-slate-900 border border-white/10 text-xs font-bold text-slate-200 hover:text-white transition">
+          <i class="fa-solid fa-arrow-left text-[10px]"></i>
+          <span>Retour au plan 2D</span>
+        </a>
+
+        <button title="Éditer la pièce" class="w-8 h-8 rounded-xl bg-slate-900 border border-white/10 flex items-center justify-center text-slate-300 hover:text-white text-xs transition">
+          <i class="fa-solid fa-pen text-[10px] text-emerald-400"></i>
+        </button>
+      </section>
+
+      <!-- CARTE EN-TÊTE PIÈCE AVEC JAUGE DE PROPRETÉ THERMIQUE -->
+      <section class="relative overflow-hidden rounded-[28px] border border-white/10 p-4 glass card-glow space-y-3">
+        <div class="flex items-start justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-2xl bg-sky-500/15 border border-sky-500/30 flex items-center justify-center text-sky-400 text-xl shadow-lg shadow-sky-500/10">
+              <i class="fa-solid fa-laptop"></i>
+            </div>
+            <div>
+              <h2 class="text-xl font-extrabold text-white">Bureau</h2>
+              <p class="text-[10px] text-slate-400">Étage : <span class="text-slate-200 font-semibold">RDC</span> · Surface : <span class="text-slate-200 font-semibold">12 m²</span></p>
+            </div>
+          </div>
+
+          <span class="px-2.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-[10px] font-extrabold flex items-center gap-1 shadow-sm">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Nickel
+          </span>
+        </div>
+
+        <!-- BARRE DE PROPRETÉ (GAUGE SPATIALE) -->
+        <div class="space-y-1.5 pt-1">
+          <div class="flex items-center justify-between text-[10px]">
+            <span class="text-slate-400 font-semibold uppercase tracking-wider">État de propreté</span>
+            <span class="text-emerald-300 font-extrabold">85% (1 tâche restante)</span>
+          </div>
+          <div class="w-full h-2 rounded-full bg-slate-950 border border-white/5 overflow-hidden p-0.5">
+            <div class="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-400" style="width: 85%;"></div>
+          </div>
+        </div>
+
+        <!-- RECAPITULATIF RECOMPENSES & DERNIER MENAGE -->
+        <div class="grid grid-cols-2 gap-2 pt-2 border-t border-white/10 text-[11px]">
+          <div class="bg-white/5 p-2.5 rounded-xl">
+            <p class="text-[10px] text-slate-400 font-medium">Dernier ménage</p>
+            <p class="text-xs font-bold text-slate-200 mt-0.5">Hier <span class="text-[10px] font-normal text-slate-400">(par Alex)</span></p>
+          </div>
+          <div class="bg-white/5 p-2.5 rounded-xl">
+            <p class="text-[10px] text-slate-400 font-medium">Gains potentiels</p>
+            <p class="text-xs font-bold text-sky-300 mt-0.5">+35 Gemmes 💎</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- FILTRES DE TÂCHES INTERNES À LA PIÈCE -->
+      <section class="flex items-center justify-between gap-2 pt-1">
+        <div class="flex gap-1.5 overflow-x-auto no-scrollbar">
+          <button class="px-3 py-1 rounded-full bg-sky-500/20 border border-sky-500/40 text-sky-300 font-semibold text-[11px] shrink-0">
+            Toutes (2)
+          </button>
+          <button class="px-3 py-1 rounded-full bg-slate-900 border border-white/10 text-slate-400 hover:text-white font-semibold text-[11px] shrink-0">
+            Pour moi (1)
+          </button>
+          <button class="px-3 py-1 rounded-full bg-slate-900 border border-white/10 text-slate-400 hover:text-white font-semibold text-[11px] shrink-0">
+            Ménage
+          </button>
+        </div>
+
+        <button class="py-1.5 px-3 rounded-xl bg-gradient-to-r from-emerald-400 to-teal-400 text-slate-950 font-black text-xs shadow-lg shadow-emerald-500/20 hover:brightness-110 active:scale-95 transition flex items-center gap-1 shrink-0">
+          <i class="fa-solid fa-plus text-xs"></i>
+          <span>Tâche</span>
+        </button>
+      </section>
+
+      <!-- LISTE DES TÂCHES SPECIFIQUES AU BUREAU -->
+      <section class="space-y-2.5">
+        
+        <!-- TÂCHE 1 : Á FAIRE (ATTRIBUÉE À SOI) -->
+        <article class="p-3.5 rounded-[22px] bg-slate-900/80 border border-amber-500/30 glass flex items-start justify-between gap-3 shadow-md relative overflow-hidden group">
+          <div class="absolute left-0 top-0 bottom-0 w-1 bg-amber-400"></div>
+          
+          <div class="flex items-start gap-3 pl-1">
+            <input type="checkbox" class="mt-0.5 h-4.5 w-4.5 rounded border-amber-500/50 bg-slate-950 accent-amber-400 cursor-pointer shrink-0" />
+            <div class="space-y-1">
+              <div class="flex items-center gap-2">
+                <h4 class="text-xs font-bold text-white group-hover:text-emerald-300 transition">Dépoussiérer l'écran et le bureau</h4>
+                <span class="px-1.5 py-0.5 text-[9px] font-extrabold bg-amber-500/20 text-amber-300 rounded border border-amber-500/40">À faire</span>
+              </div>
+              <p class="text-[10px] text-slate-400">Attribuée à <span class="text-emerald-400 font-semibold">Toi</span> · Fréquence : Hebdo</p>
+              
+              <div class="flex items-center gap-3 pt-1 text-[10px] text-slate-400">
+                <span class="flex items-center gap-1"><i class="fa-regular fa-clock text-slate-500"></i> ~10 min</span>
+                <span class="flex items-center gap-1 text-sky-300 font-bold"><i class="fa-solid fa-gem"></i> +25 pts</span>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- TÂCHE 2 : ATTRIBUÉE À UN AUTRE MEMBRE -->
+        <article class="p-3.5 rounded-[22px] bg-slate-900/80 border border-white/10 glass flex items-start justify-between gap-3 shadow-md relative overflow-hidden group">
+          <div class="flex items-start gap-3">
+            <input type="checkbox" class="mt-0.5 h-4.5 w-4.5 rounded border-white/20 bg-slate-950 accent-emerald-400 cursor-pointer shrink-0" />
+            <div class="space-y-1">
+              <div class="flex items-center gap-2">
+                <h4 class="text-xs font-bold text-white group-hover:text-emerald-300 transition">Vider la corbeille à papier</h4>
+              </div>
+              <p class="text-[10px] text-slate-400">Attribuée à <span class="text-slate-200 font-semibold">Sam</span> · Fréquence : Bi-mensuel</p>
+              
+              <div class="flex items-center gap-3 pt-1 text-[10px] text-slate-400">
+                <span class="flex items-center gap-1"><i class="fa-regular fa-clock text-slate-500"></i> ~2 min</span>
+                <span class="flex items-center gap-1 text-sky-300 font-bold"><i class="fa-solid fa-gem"></i> +10 pts</span>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- TÂCHES FINIES (DÉPLIABLE) -->
+        <details class="group pt-1" open>
+          <summary class="flex items-center justify-between cursor-pointer list-none py-1">
+            <h4 class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+              <i class="fa-solid fa-circle-check text-emerald-400"></i>
+              <span>Historique récent dans le Bureau (1)</span>
+            </h4>
+            <i class="fa-solid fa-chevron-down text-slate-500 text-xs transition-transform group-open:rotate-180"></i>
+          </summary>
+
+          <div class="mt-2 space-y-2">
+            <article class="p-3 rounded-2xl bg-slate-950/40 border border-white/5 flex items-center justify-between text-xs opacity-60">
+              <div class="flex items-center gap-2.5">
+                <input type="checkbox" checked class="h-4 w-4 rounded border-white/20 bg-emerald-500 accent-emerald-400 cursor-pointer" />
+                <div>
+                  <h5 class="line-through text-slate-300 font-medium">Ranger les câbles & multiprises</h5>
+                  <p class="text-[9px] text-slate-500">Fait hier par Alex (+20 pts)</p>
+                </div>
+              </div>
+            </article>
+          </div>
+        </details>
+
+      </section>
+
+    </main>
+
+    <!-- FOOTER NAV (PLAN ACTIF) -->
+    <footer class="relative z-20 border-t border-white/10 bg-slate-950/80 px-2 py-2 shrink-0">
+      <nav class="rounded-[24px] border border-white/10 bg-slate-900/80 p-1.5 flex justify-between items-center gap-1 overflow-x-auto no-scrollbar">
+        <a href="#accueil" class="flex-1 flex flex-col items-center justify-center gap-1 py-1.5 px-1 rounded-2xl text-slate-400 hover:text-white transition min-w-[50px]">
+          <i class="fa-solid fa-house text-xs"></i>
+          <span class="text-[8px] sm:text-[9px] font-semibold">Accueil</span>
+        </a>
+        <a href="#plan" class="flex-1 flex flex-col items-center justify-center gap-1 py-1.5 px-1 rounded-2xl bg-emerald-500/15 text-emerald-300 min-w-[50px]">
+          <i class="fa-solid fa-cubes text-xs"></i>
+          <span class="text-[8px] sm:text-[9px] font-semibold">Plan</span>
+        </a>
+        <a href="#taches" class="flex-1 flex flex-col items-center justify-center gap-1 py-1.5 px-1 rounded-2xl text-slate-400 hover:text-white transition min-w-[50px]">
+          <i class="fa-solid fa-check-double text-xs"></i>
+          <span class="text-[8px] sm:text-[9px] font-semibold">Tâches</span>
+        </a>
+        <a href="#depenses" class="flex-1 flex flex-col items-center justify-center gap-1 py-1.5 px-1 rounded-2xl text-slate-400 hover:text-white transition min-w-[50px]">
+          <i class="fa-solid fa-wallet text-xs"></i>
+          <span class="text-[8px] sm:text-[9px] font-semibold">Dépenses</span>
+        </a>
+        <a href="#calendrier" class="flex-1 flex flex-col items-center justify-center gap-1 py-1.5 px-1 rounded-2xl text-slate-400 hover:text-white transition min-w-[50px]">
+          <i class="fa-solid fa-calendar-days text-xs"></i>
+          <span class="text-[8px] sm:text-[9px] font-semibold">Calendrier</span>
+        </a>
+        <a href="#viedufoyer" class="flex-1 flex flex-col items-center justify-center gap-1 py-1.5 px-1 rounded-2xl text-slate-400 hover:text-white transition min-w-[50px]">
+          <i class="fa-solid fa-users text-xs"></i>
+          <span class="text-[8px] sm:text-[9px] font-semibold">Vie du foyer</span>
+        </a>
+      </nav>
+    </footer>
+
+  </div>
+</body>
+</html>

@@ -1,7 +1,16 @@
 /* Plan2DView.css
    Défilement natif (overflow: auto), même approche éprouvée que
    LayoutEditor.css — pas de bibliothèque de zoom tierce. Le plan entier
-   reste TOUJOURS accessible en faisant défiler, jamais coupé. */
+   reste TOUJOURS accessible en faisant défiler, jamais coupé.
+
+   VARIABLES DE THEME.CSS (03/08/2026, demande explicite de Paul) :
+   jusqu'ici ce fichier gardait des couleurs codées en dur pensées pour
+   un fond clair (`#eef0e9`, `rgba(0,0,0,0.6)`...), sans lien avec
+   `theme.css` — probablement un reste d'avant la bascule de l'app vers
+   le thème sombre. `--bg-app` (`#090d16`) correspond d'ailleurs
+   exactement au fond du canevas du prototype `ui_2d_v0.3.1.html`
+   (`bg-[#090d16]`), confirmant que c'est la bonne teinte. Basculé sur
+   les tokens partout où c'est pertinent. */
 
 .plan2d-view {
   display: flex;
@@ -14,11 +23,79 @@
   box-sizing: border-box;
 }
 
+.plan2d-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+}
+
 .plan2d-hint {
   font-size: 13px;
-  color: rgba(0, 0, 0, 0.6);
+  color: var(--text-muted);
   margin: 0;
-  text-align: center;
+  text-align: left;
+  flex: 1;
+}
+
+.plan2d-heatmap-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.plan2d-heatmap-btn svg {
+  color: var(--color-amber);
+}
+.plan2d-heatmap-btn--active {
+  border-color: rgba(245, 158, 11, 0.5);
+  background: rgba(245, 158, 11, 0.15);
+  color: var(--color-amber);
+}
+
+.plan2d-legend {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  background: var(--bg-card);
+}
+
+.plan2d-legend__label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-amber);
+}
+
+.plan2d-legend__item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.plan2d-legend__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
 }
 
 .plan2d-scroll {
@@ -32,17 +109,15 @@
      sécurité pour un très grand appartement où MIN_CELL_PX (voir
      Plan2DView.jsx) empêcherait le contenu de rétrécir suffisamment
      pour tenir entièrement (cas limite, zoom manuel retiré depuis).
-     RÔLE (03/08/2026, demande explicite de Paul — corrige les bandes
-     grises restantes au dézoom max) : ce conteneur ne sert plus qu'à
-     MESURER l'espace disponible (ResizeObserver, dans Plan2DView.jsx) —
-     plus de fond ni de coins arrondis ici, sinon sa taille FIXE (480px/
-     65vh) restait visible autour du plan dès que le ratio largeur/
-     hauteur de l'appartement ne correspondait pas exactement à celui du
-     cadre. Le "carré noir" visible à l'écran est maintenant
-     .plan2d-grid lui-même (voir plus bas), qui colle exactement à la
-     taille réelle du plan (+ le padding d'1 case déjà en place) —
-     aucune bande au-delà de ce padding volontaire, quel que soit le
-     ratio.
+     RÔLE : ce conteneur ne sert plus qu'à MESURER l'espace disponible
+     (ResizeObserver, dans Plan2DView.jsx) — plus de fond ni de coins
+     arrondis ici, sinon sa taille FIXE (480px/65vh) restait visible
+     autour du plan dès que le ratio largeur/hauteur de l'appartement ne
+     correspondait pas exactement à celui du cadre. Le "carré noir"
+     visible à l'écran est maintenant .plan2d-grid lui-même (voir plus
+     bas), qui colle exactement à la taille réelle du plan (+ le padding
+     d'1 case déjà en place) — aucune bande au-delà de ce padding
+     volontaire, quel que soit le ratio.
   */
   display: flex;
   align-items: center;
@@ -51,8 +126,9 @@
 
 .plan2d-grid {
   position: relative;
-  background: #eef0e9;
-  border-radius: 12px;
+  background: var(--bg-app);
+  border-radius: 24px;
+  border: 1px solid var(--border-color);
   flex-shrink: 0; /* ne pas écraser la grille sous sa taille réelle (filet de sécurité, voir MIN_CELL_PX dans Plan2DView.jsx) */
 }
 
@@ -67,12 +143,16 @@
   text-align: center;
   padding: 4px;
   overflow: hidden;
+  transition: filter 0.2s ease;
+}
+.plan2d-room:hover {
+  filter: brightness(1.1);
 }
 
 .plan2d-room__name {
   font-size: 15px;
-  font-weight: 700;
-  color: #ffffff;
+  font-weight: 800;
+  color: var(--text-primary);
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
   line-height: 1.2;
 }
