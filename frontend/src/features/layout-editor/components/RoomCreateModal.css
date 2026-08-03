@@ -1,13 +1,13 @@
-/* RoomInspector.css */
+/* RoomCreateModal.css — renommé depuis RoomNameModal.css (02/08/2026) */
 
-.room-inspector-backdrop {
+.room-create-modal-backdrop {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.35);
   z-index: 400;
 }
 
-.room-inspector {
+.room-create-modal {
   position: fixed;
   left: 0;
   right: 0;
@@ -24,7 +24,7 @@
   overflow-y: auto;
 }
 
-.room-inspector__handle {
+.room-create-modal__handle {
   width: 36px;
   height: 4px;
   background: rgba(0, 0, 0, 0.2);
@@ -32,38 +32,13 @@
   margin: 0 auto 16px;
 }
 
-.room-inspector__title {
+.room-create-modal__title {
   font-size: 16px;
   font-weight: 700;
   margin: 0 0 12px;
 }
 
-.room-inspector__label {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  font-size: 13px;
-  color: rgba(0, 0, 0, 0.7);
-  margin-bottom: 10px;
-}
-
-.room-inspector__input {
-  min-height: 44px;
-  border-radius: 8px;
-  border: 1px solid rgba(0, 0, 0, 0.15);
-  padding: 0 12px;
-  font-size: 15px;
-  box-sizing: border-box;
-}
-
-.room-inspector__surface {
-  font-size: 14px;
-  font-weight: 600;
-  color: rgba(0, 0, 0, 0.75);
-  margin: 0 0 16px;
-}
-
-.room-inspector__section-label {
+.room-create-modal__section-label {
   font-size: 12px;
   font-weight: 600;
   color: rgba(0, 0, 0, 0.5);
@@ -72,14 +47,14 @@
   margin: 0 0 8px;
 }
 
-.room-inspector__types {
+.room-create-modal__types {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 8px;
   margin-bottom: 16px;
 }
 
-.room-inspector__type {
+.room-create-modal__type {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -91,27 +66,46 @@
   font-size: 13px;
   text-align: left;
 }
-.room-inspector__type--active {
+.room-create-modal__type--active {
   border-color: #1c1c1c;
 }
-.room-inspector__type-icon {
+.room-create-modal__type-icon {
   font-size: 16px;
 }
-.room-inspector__type-label {
+.room-create-modal__type-label {
   font-weight: 600;
   color: rgba(0, 0, 0, 0.8);
 }
 
-/* Grille de couleurs (02/08/2026) — même principe que .room-inspector__type
-   mais plus petite/carrée (pas de texte, la couleur EST l'information). */
-.room-inspector__colors {
+.room-create-modal__label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: rgba(0, 0, 0, 0.7);
+  margin-bottom: 16px;
+}
+
+.room-create-modal__input {
+  width: 100%;
+  min-height: 44px;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  padding: 0 12px;
+  font-size: 15px;
+  box-sizing: border-box;
+}
+
+/* Grille de couleurs — même principe que .room-create-modal__type mais
+   plus petite/carrée (pas de texte, la couleur EST l'information). */
+.room-create-modal__colors {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 8px;
   margin-bottom: 16px;
 }
 
-.room-inspector__color {
+.room-create-modal__color {
   aspect-ratio: 1;
   min-height: 36px;
   border-radius: 8px;
@@ -119,19 +113,40 @@
   cursor: pointer;
   box-sizing: border-box;
 }
-.room-inspector__color--active {
+.room-create-modal__color--active {
   border-color: #1c1c1c;
   box-shadow: 0 0 0 2px #ffffff inset;
 }
 
-.room-inspector__close-btn {
-  width: 100%;
+.room-create-modal__error {
+  font-size: 13px;
+  color: #b3261e;
+  margin: 0 0 12px;
+}
+
+.room-create-modal__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.room-create-modal__submit,
+.room-create-modal__cancel {
   min-height: 44px;
   border-radius: 8px;
+  font-size: 15px;
   border: 1px solid rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.room-create-modal__submit {
   background: #1c1c1c;
   color: #fff;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
+  border-color: #1c1c1c;
+}
+
+.room-create-modal__cancel {
+  background: #fff;
+  color: #1c1c1c;
 }

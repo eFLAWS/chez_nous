@@ -38,14 +38,22 @@
 // que l'écran de création (qui échouerait de toute façon côté backend/
 // RLS). Le backend reste la vraie barrière de sécurité — ceci n'ajuste
 // que l'affichage.
-// GESTION DES ÉTAGES (01/08/2026, demande explicite de Paul) : "+ Étage"
-// (handleStartAddFloor) repart sur un floorId vide, le prochain
-// enregistrement crée un nouvel étage numéroté après ceux déjà présents
-// (voir handleSaveLayout — corrige au passage un bug latent : sans ce
-// calcul, un nouvel étage retombait TOUJOURS sur "Rez-de-chaussée"/RDC/
-// niveau 0, même s'il y en avait déjà un). "🗑️" (handleDeleteFloor,
-// confirmation requise) supprime UN étage déjà enregistré et ses
-// pièces/portes, sans toucher aux autres.
+// GESTION DES ÉTAGES (01/08/2026, demande explicite de Paul) : "🏢
+// Ajouter un étage" ET "🗑️ Supprimer cet étage" — **tous deux déplacés
+// le 02/08/2026** de l'écran de consultation du plan vers
+// `LayoutEditor.jsx` (ce sont des actions D'ÉDITION, demande explicite
+// de Paul, en deux temps : d'abord "Ajouter", puis "Supprimer" par
+// cohérence) : boutons + confirmations vivent maintenant dans
+// LayoutEditor, qui appelle `onAddFloor`/`onDeleteFloor`
+// (= `handleStartAddFloor`/`handleDeleteFloor` ci-dessous). `onDeleteFloor`
+// n'est passé que si un étage existant est sélectionné (rien à
+// supprimer sur un étage pas encore enregistré) — LayoutEditor masque
+// son bouton "Supprimer" si ce prop est absent. `handleStartAddFloor`
+// repart sur un floorId vide, le prochain enregistrement crée un
+// nouvel étage numéroté après ceux déjà présents (voir handleSaveLayout
+// — corrige au passage un bug latent : sans ce calcul, un nouvel étage
+// retombait TOUJOURS sur "Rez-de-chaussée"/RDC/niveau 0, même s'il y en
+// avait déjà un).
 //
 // "🗑️ Réinitialiser cet étage" (dans LayoutEditor.jsx) — **correction
 // (01/08/2026, "ne fait rien")** : ne passe plus par ce composant du
@@ -56,6 +64,8 @@
 // donc rien ne changeait à l'écran. LayoutEditor gère maintenant sa
 // réinitialisation entièrement en interne (vide son propre brouillon),
 // sans prop `onReset` ni appel backend — voir ce fichier pour le détail.
+// Le même mécanisme (vider l'état local avant de prévenir le parent)
+// est réutilisé par "Ajouter un étage" ci-dessus.
 import { useState, useMemo, useEffect } from "react";
 import { MOCK_USER } from "./mockData";
 import { generateFloorTiles, extractRoomRectsFromTiles } from "../layout-editor/utils/layoutGeneration";
@@ -91,7 +101,6 @@ export default function HouseholdSpatialView({
   const [initialRoomId, setInitialRoomId] = useState(null);
   const [importError, setImportError] = useState(null);
   const [viewMode, setViewMode] = useState("2d");
-  const [deleteFloorConfirmId, setDeleteFloorConfirmId] = useState(null); // id de l'étage en attente de confirmation de suppression, ou null
 
   // Charge le plan du logement depuis le vrai backend au montage (et si
   // jamais householdId changeait, bien que le `key={selectedHousingId}`
@@ -179,10 +188,16 @@ export default function HouseholdSpatialView({
     setMode("editing");
   };
 
-  // "+ Ajouter un étage" (01/08/2026, demande explicite de Paul) :
-  // repart sur un floorId vide -> handleSaveLayout (ci-dessus) crée un
-  // NOUVEL étage à l'enregistrement, numéroté après ceux déjà présents.
-  // Ne touche PAS aux étages existants.
+  // "🏢 Ajouter un étage" (01/08/2026, déplacé le 02/08/2026 — demande
+  // explicite de Paul : c'est une action D'ÉDITION, elle doit vivre
+  // dans LayoutEditor.jsx, pas dans l'écran de consultation du plan.
+  // Passée en prop `onAddFloor`, appelée par LayoutEditor APRÈS avoir
+  // vidé son propre brouillon local, voir ce composant). Repart sur un
+  // floorId vide -> handleSaveLayout (ci-dessus) crée un NOUVEL étage à
+  // l'enregistrement, numéroté après ceux déjà présents. Ne touche PAS
+  // aux étages existants. `setMode("editing")` est un no-op si déjà en
+  // Mode Édition (cas normal désormais, appelé depuis l'éditeur
+  // lui-même) — reste utile si un jour appelé d'ailleurs.
   const handleStartAddFloor = () => {
     setSelectedFloorId(null);
     setMode("editing");
@@ -238,11 +253,13 @@ export default function HouseholdSpatialView({
     setDoorsWithIds((prev) => ({ ...prev, [floorId]: result.doors }));
     setSelectedFloorId(floorId);
     setMode("app");
-    setViewMode("3d");
-    // Bascule vers la Vue 3D après enregistrement, comme demandé
-    // explicitement — l'avatar apparaît immédiatement dans le plan qui
-    // vient d'être enregistré.
-    setInitialRoomId(null); // utilise floor.avatarStart, qu'on vient de recevoir
+    setViewMode("2d");
+    // Bascule vers le Plan 2D après enregistrement (demande explicite de
+    // Paul, 02/08/2026 — **remplace** une demande antérieure qui
+    // préférait la Vue 3D). L'utilisateur voit d'abord l'ensemble du
+    // plan qu'il vient de dessiner, avant de basculer lui-même en 3D
+    // s'il le souhaite.
+    setInitialRoomId(null); // utilise floor.avatarStart si l'utilisateur bascule ensuite en Vue 3D
   };
 
   const handleCancelEdit = () => {
@@ -258,14 +275,14 @@ export default function HouseholdSpatialView({
     setMode(hasNothing ? "onboarding" : "app");
   };
 
-  // "🗑️ Supprimer un étage" (01/08/2026, demande explicite de Paul) —
-  // distinct de "Réinitialiser cet étage" dans LayoutEditor.jsx (qui ne
-  // touche qu'au brouillon local en cours d'édition, jamais au backend
-  // ni aux autres étages) : ici on supprime un étage DÉJÀ ENREGISTRÉ
-  // (et ses pièces/portes) côté serveur, garde les autres intacts.
-  // Bascule sur le premier étage restant (ou aucun s'il n'en reste
-  // plus). Précédé d'une confirmation (deleteFloorConfirmId) — action
-  // irréversible.
+  // "🗑️ Supprimer cet étage" (01/08/2026, déplacé le 02/08/2026 dans
+  // LayoutEditor.jsx — demande explicite de Paul, même raison que "+
+  // Ajouter un étage" : une action destructrice sur LE PLAN doit vivre
+  // dans l'éditeur, pas dans l'écran de consultation). Appelée
+  // désormais toujours avec `floorId === selectedFloorId` (LayoutEditor
+  // n'opère que sur l'étage en cours), après confirmation gérée par
+  // l'éditeur lui-même. Sort du Mode Édition en conséquence : vers la
+  // vue si un autre étage reste, vers l'accueil sinon.
   const handleDeleteFloor = async (floorId) => {
     setSaving(true);
     const result = await deleteFloor(householdId, floorId);
@@ -281,11 +298,10 @@ export default function HouseholdSpatialView({
       delete next[floorId];
       return next;
     });
-    if (selectedFloorId === floorId) {
-      const remaining = floors.filter((f) => f.id !== floorId);
-      setSelectedFloorId(remaining[0]?.id ?? null);
-      setInitialRoomId(null);
-    }
+    const remaining = floors.filter((f) => f.id !== floorId);
+    setSelectedFloorId(remaining[0]?.id ?? null);
+    setInitialRoomId(null);
+    setMode(remaining.length > 0 ? "app" : "onboarding");
   };
 
   const handleExportLayout = () => {
@@ -387,6 +403,8 @@ export default function HouseholdSpatialView({
         onSave={handleSaveLayout}
         saving={saving}
         onCancel={handleCancelEdit}
+        onAddFloor={handleStartAddFloor}
+        onDeleteFloor={selectedFloorId ? () => handleDeleteFloor(selectedFloorId) : undefined}
         onExport={handleExportLayout}
         onImport={handleImportLayout}
         importError={importError || saveError}
@@ -423,21 +441,6 @@ export default function HouseholdSpatialView({
           </button>
         ))}
         {isOwner && (
-          <button type="button" className="spatial-view__floor-add-btn" onClick={handleStartAddFloor}>
-            + Étage
-          </button>
-        )}
-        {isOwner && selectedFloorId && (
-          <button
-            type="button"
-            className="spatial-view__floor-delete-btn"
-            onClick={() => setDeleteFloorConfirmId(selectedFloorId)}
-            aria-label={`Supprimer ${selectedFloor?.name || "cet étage"}`}
-          >
-            🗑️
-          </button>
-        )}
-        {isOwner && (
           <button type="button" className="spatial-view__edit-btn" onClick={handleStartEditLayout}>
             ✏️ Modifier le plan
           </button>
@@ -468,7 +471,7 @@ export default function HouseholdSpatialView({
       {roomsOnSelectedFloor.length === 0 ? (
         <p className="spatial-view__empty-floor">Aucune pièce sur cet étage — ouvre "Modifier le plan" pour en tracer.</p>
       ) : viewMode === "2d" ? (
-        <Plan2DView key={selectedFloorId} floor={selectedFloor} tiles={selectedFloorTiles} edges={selectedFloorEdges} rooms={roomsOnSelectedFloor} onSelectRoom={handleSelectRoomFromPlan} />
+        <Plan2DView key={selectedFloorId} floor={selectedFloor} edges={selectedFloorEdges} rooms={roomsOnSelectedFloor} onSelectRoom={handleSelectRoomFromPlan} />
       ) : (
         <FloorView3D
           key={selectedFloorId}
@@ -478,34 +481,6 @@ export default function HouseholdSpatialView({
           user={user}
           initialRoomId={initialRoomId}
         />
-      )}
-
-      {deleteFloorConfirmId && (
-        <>
-          <div className="spatial-view__confirm-backdrop" onClick={() => setDeleteFloorConfirmId(null)} />
-          <div className="spatial-view__confirm" role="alertdialog" aria-modal="true" aria-label="Confirmer la suppression de l'étage">
-            <p className="spatial-view__confirm-text">
-              Supprimer "{floors.find((f) => f.id === deleteFloorConfirmId)?.name || "cet étage"}" efface définitivement ses pièces et
-              ouvertures — cette action ne peut pas être annulée. Les autres étages ne sont pas concernés.
-            </p>
-            <div className="spatial-view__confirm-actions">
-              <button
-                type="button"
-                className="spatial-view__confirm-danger-btn"
-                onClick={() => {
-                  const floorId = deleteFloorConfirmId;
-                  setDeleteFloorConfirmId(null);
-                  handleDeleteFloor(floorId);
-                }}
-              >
-                Supprimer
-              </button>
-              <button type="button" className="spatial-view__confirm-cancel-btn" onClick={() => setDeleteFloorConfirmId(null)}>
-                Annuler
-              </button>
-            </div>
-          </div>
-        </>
       )}
     </div>
   );

@@ -70,11 +70,11 @@
 // des PIÈCES (rectangles) et des OUVERTURES DE MUR, jamais de meubles
 // (retirés du MVP pour l'instant).
 import { useState, useRef } from "react";
-import RoomNameModal from "./RoomNameModal";
+import RoomCreateModal from "./RoomCreateModal";
 import RoomInspector from "./RoomInspector";
 import { findOpenableWallSegments, edgeKey, computeRoomEdges } from "../utils/layoutGeneration";
 import { rectsOverlap, resolveOverlap } from "../utils/roomCollision";
-import { findRoomType, DEFAULT_ROOM_TYPE } from "../roomTypes";
+import { findRoomType } from "../roomTypes";
 import { computeRoomSurface } from "../utils/layoutGeneration";
 import WallEdges from "./WallEdges";
 import "./LayoutEditor.css";
@@ -139,6 +139,8 @@ export default function LayoutEditor({
   onSave,
   saving = false,
   onCancel,
+  onAddFloor,
+  onDeleteFloor,
   onExport,
   onImport,
   importError,
@@ -154,6 +156,8 @@ export default function LayoutEditor({
   const [inspectedRoomId, setInspectedRoomId] = useState(null);
   const [unlockedRoomId, setUnlockedRoomId] = useState(null); // une seule pièce déverrouillée à la fois ; null = toutes verrouillées (défaut à l'ouverture, y compris pièces déjà existantes)
   const [resetConfirmOpen, setResetConfirmOpen] = useState(false);
+  const [addFloorConfirmOpen, setAddFloorConfirmOpen] = useState(false);
+  const [deleteFloorConfirmOpen, setDeleteFloorConfirmOpen] = useState(false);
 
   // Réinitialiser efface le BROUILLON EN COURS d'édition (cet étage
   // seulement, ou le nouvel étage en cours de création) — état local
@@ -186,6 +190,45 @@ export default function LayoutEditor({
     setResizingRoomId(null);
     setResizePreviewRect(null);
     setMessage(null);
+  };
+
+  // "+ Ajouter un étage" (02/08/2026, demande explicite de Paul —
+  // déplacé depuis l'écran de consultation du plan vers l'éditeur,
+  // c'est bien ici une action D'ÉDITION). Vide le brouillon local EXACTEMENT
+  // comme "Réinitialiser le plan" (même bug de resynchronisation des
+  // props à éviter, voir handleConfirmReset), PUIS prévient le parent
+  // via `onAddFloor` : c'est lui qui gère la liste des étages
+  // (`selectedFloorId` -> null), pour que le PROCHAIN "Enregistrer le
+  // plan" crée un nouvel étage plutôt que d'écraser celui en cours.
+  // Confirmation demandée seulement s'il y a un brouillon à perdre
+  // (`rooms.length > 0`) — rien à confirmer sur un étage déjà vierge.
+  const handleRequestAddFloor = () => {
+    if (rooms.length > 0) {
+      setAddFloorConfirmOpen(true);
+    } else {
+      handleConfirmAddFloor();
+    }
+  };
+
+  const handleConfirmAddFloor = () => {
+    setAddFloorConfirmOpen(false);
+    handleConfirmReset();
+    onAddFloor?.();
+  };
+
+  // "🗑️ Supprimer cet étage" (02/08/2026, déplacé depuis l'écran de
+  // consultation du plan — demande explicite de Paul : c'est une action
+  // destructrice sur LE PLAN, elle doit vivre ici comme les autres.
+  // Contrairement à "Réinitialiser", celle-ci appelle bien le backend
+  // (via `onDeleteFloor`, fourni par le parent SEULEMENT si l'étage en
+  // cours existe déjà côté serveur — voir HouseholdSpatialView.jsx) :
+  // rien à confirmer localement au préalable, la confirmation ci-dessous
+  // est la seule étape avant l'appel réel. Bouton masqué si
+  // `onDeleteFloor` est absent (nouvel étage jamais enregistré, rien à
+  // supprimer).
+  const handleConfirmDeleteFloor = () => {
+    setDeleteFloorConfirmOpen(false);
+    onDeleteFloor?.();
   };
 
   // Déplacement d'une pièce existante.
@@ -362,11 +405,23 @@ export default function LayoutEditor({
     setRooms((prev) => prev.map((r) => (r.id === inspectedRoomId ? { ...r, name } : r)));
   };
 
+  // Changer de type met à jour le nom ET l'icône, mais PAS la couleur
+  // (02/08/2026, demande explicite de Paul — avant, la couleur était
+  // TOUJOURS dérivée du type ; ce n'est plus le cas, voir
+  // handleUpdateRoomColor juste en dessous et roomTypes.js/ROOM_COLORS).
+  // Une pièce déjà personnalisée avec une couleur au choix garde cette
+  // couleur même si son type change ensuite.
   const handleUpdateRoomType = (type) => {
     const roomType = findRoomType(type);
-    setRooms((prev) =>
-      prev.map((r) => (r.id === inspectedRoomId ? { ...r, type, icon: roomType.icon, color: roomType.color, name: roomType.label } : r))
-    );
+    setRooms((prev) => prev.map((r) => (r.id === inspectedRoomId ? { ...r, type, icon: roomType.icon, name: roomType.label } : r)));
+  };
+
+  // Couleur INDÉPENDANTE du type (02/08/2026, demande explicite de
+  // Paul, voir handleUpdateRoomType juste au-dessus et roomTypes.js/
+  // ROOM_COLORS pour la palette). Change uniquement la couleur, jamais
+  // le type/nom/icône.
+  const handleUpdateRoomColor = (color) => {
+    setRooms((prev) => prev.map((r) => (r.id === inspectedRoomId ? { ...r, color } : r)));
   };
 
   /* --------------------------- Gestes partagés sur la grille --------------------------- */
@@ -441,10 +496,12 @@ export default function LayoutEditor({
     setPendingRect(rect);
   };
 
-  const handleNameSubmit = (name) => {
-    const defaultType = findRoomType(DEFAULT_ROOM_TYPE);
+  // Reçoit {name, type, icon, color} depuis RoomCreateModal.jsx (02/08/2026,
+  // demande explicite de Paul : type ET couleur choisis DÈS la création,
+  // plus seulement le nom avec un type imposé par défaut).
+  const handleNameSubmit = ({ name, type, icon, color }) => {
     const id = `room-${name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "piece"}-${Date.now()}`;
-    setRooms((prev) => [...prev, { ...pendingRect, id, name, type: defaultType.value, icon: defaultType.icon, color: defaultType.color }]);
+    setRooms((prev) => [...prev, { ...pendingRect, id, name, type, icon, color }]);
     setPendingRect(null);
     setUnlockedRoomId(id); // démarre déverrouillée — prête à être repositionnée/redimensionnée immédiatement si besoin
   };
@@ -497,6 +554,9 @@ export default function LayoutEditor({
         </button>
 
         <div className="layout-editor__toolbar-row">
+          <button type="button" className="layout-editor__toolbar-btn" onClick={handleRequestAddFloor}>
+            🏢 Ajouter un étage
+          </button>
           <button type="button" className="layout-editor__toolbar-btn" onClick={onExport}>
             📥 Exporter (.json)
           </button>
@@ -511,8 +571,13 @@ export default function LayoutEditor({
             onChange={handleImportFileChange}
           />
           <button type="button" className="layout-editor__toolbar-btn layout-editor__toolbar-btn--danger" onClick={() => setResetConfirmOpen(true)}>
-            🗑️ Réinitialiser cet étage
+            🗑️ Réinitialiser le plan
           </button>
+          {onDeleteFloor && (
+            <button type="button" className="layout-editor__toolbar-btn layout-editor__toolbar-btn--danger" onClick={() => setDeleteFloorConfirmOpen(true)}>
+              🗑️ Supprimer cet étage
+            </button>
+          )}
         </div>
       </div>
 
@@ -697,12 +762,13 @@ export default function LayoutEditor({
         {saving ? "Enregistrement..." : "Enregistrer le plan"}
       </button>
 
-      {pendingRect && <RoomNameModal onSubmit={handleNameSubmit} onCancel={handleNameCancel} />}
+      {pendingRect && <RoomCreateModal onSubmit={handleNameSubmit} onCancel={handleNameCancel} />}
       {inspectedRoom && (
         <RoomInspector
           room={inspectedRoom}
           onUpdateName={handleUpdateRoomName}
           onUpdateType={handleUpdateRoomType}
+          onUpdateColor={handleUpdateRoomColor}
           onClose={() => setInspectedRoomId(null)}
         />
       )}
@@ -721,6 +787,46 @@ export default function LayoutEditor({
                 Réinitialiser
               </button>
               <button type="button" className="layout-editor__confirm-cancel-btn" onClick={() => setResetConfirmOpen(false)}>
+                Annuler
+              </button>
+            </div>
+          </div>
+        </>
+      )}
+
+      {addFloorConfirmOpen && (
+        <>
+          <div className="layout-editor__confirm-backdrop" onClick={() => setAddFloorConfirmOpen(false)} />
+          <div className="layout-editor__confirm" role="alertdialog" aria-modal="true" aria-label="Confirmer l'ajout d'un étage">
+            <p className="layout-editor__confirm-text">
+              Passer à un nouvel étage efface le brouillon affiché à l'écran (pas encore enregistré) — clique "Enregistrer le plan"
+              d'abord si tu veux le garder.
+            </p>
+            <div className="layout-editor__confirm-actions">
+              <button type="button" className="layout-editor__confirm-danger-btn" onClick={handleConfirmAddFloor}>
+                Passer au nouvel étage
+              </button>
+              <button type="button" className="layout-editor__confirm-cancel-btn" onClick={() => setAddFloorConfirmOpen(false)}>
+                Annuler
+              </button>
+            </div>
+          </div>
+        </>
+      )}
+
+      {deleteFloorConfirmOpen && (
+        <>
+          <div className="layout-editor__confirm-backdrop" onClick={() => setDeleteFloorConfirmOpen(false)} />
+          <div className="layout-editor__confirm" role="alertdialog" aria-modal="true" aria-label="Confirmer la suppression de l'étage">
+            <p className="layout-editor__confirm-text">
+              Supprimer "{floorName || "cet étage"}" efface définitivement ses pièces et ouvertures côté serveur — cette action ne peut
+              pas être annulée. Les autres étages ne sont pas concernés.
+            </p>
+            <div className="layout-editor__confirm-actions">
+              <button type="button" className="layout-editor__confirm-danger-btn" onClick={handleConfirmDeleteFloor}>
+                Supprimer
+              </button>
+              <button type="button" className="layout-editor__confirm-cancel-btn" onClick={() => setDeleteFloorConfirmOpen(false)}>
                 Annuler
               </button>
             </div>

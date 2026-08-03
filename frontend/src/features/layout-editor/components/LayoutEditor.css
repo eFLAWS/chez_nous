@@ -2,7 +2,7 @@
    Rendu volontairement épuré (pas de murs 3D, pas de texture de sol, pas
    de meubles) : juste une grille neutre 1m x 1m et des blocs semi-
    transparents pour les pièces déjà tracées. La modale de nommage vit
-   dans RoomNameModal.css (composant séparé), pas ici. */
+   dans RoomCreateModal.css (composant séparé), pas ici. */
 
 .layout-editor {
   display: flex;
@@ -176,8 +176,8 @@
    pendant l'édition. */
 .layout-editor__grid {
   position: relative;
-  background-image: linear-gradient(to right, rgba(0, 0, 0, 0.12) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(0, 0, 0, 0.12) 1px, transparent 1px);
+  background-image: linear-gradient(to right, rgba(0, 0, 0, 0.22) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.22) 1px, transparent 1px);
   background-color: #f9f8f5;
   touch-action: none; /* le tracé gère lui-même le geste, pas de défilement natif pendant qu'on trace */
   cursor: crosshair;

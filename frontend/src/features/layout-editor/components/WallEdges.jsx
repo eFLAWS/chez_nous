@@ -20,7 +20,15 @@
 // à (x,y) est la bordure HAUTE de la case (x,y) ; une arête 'v' à (x,y)
 // est la bordure GAUCHE de la case (x,y). Traduction en pixels directe
 // via `cellPx`, aucune autre transformation nécessaire.
-export default function WallEdges({ edges, cellPx, width, height, wallThickness = 4, className }) {
+//
+// `offsetXPx`/`offsetYPx` (03/08/2026, ajouté pour le recadrage
+// dynamique de Plan2DView.jsx sur la bounding box des pièces — voir la
+// conversation) : décalage en PIXELS à soustraire de chaque coordonnée
+// calculée, pour que l'origine du rendu corresponde à l'origine de la
+// bounding box (pas forcément (0,0) de la grille complète de l'étage).
+// Défaut 0 : comportement inchangé pour LayoutEditor.jsx, qui trace
+// toujours depuis (0,0) et n'a pas besoin de ce recadrage.
+export default function WallEdges({ edges, cellPx, width, height, wallThickness = 4, offsetXPx = 0, offsetYPx = 0, className }) {
   return (
     <svg
       className={className}
@@ -32,8 +40,8 @@ export default function WallEdges({ edges, cellPx, width, height, wallThickness 
     >
       {edges.map((edge) => {
         if (edge.kind === "opening") return null; // mur retiré : rien à dessiner, ouverture pure
-        const x1 = edge.x * cellPx;
-        const y1 = edge.y * cellPx;
+        const x1 = edge.x * cellPx - offsetXPx;
+        const y1 = edge.y * cellPx - offsetYPx;
         const x2 = edge.orientation === "h" ? x1 + cellPx : x1;
         const y2 = edge.orientation === "h" ? y1 : y1 + cellPx;
         return (

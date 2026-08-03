@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="fr" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Chez nous - Plan 2D Thermique du logement</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <style>
+    :root { color-scheme: dark; }
+    body { font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    
+    .glass {
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.75), rgba(15, 23, 42, 0.5));
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(16,185,129,0.22),_transparent_36%),linear-gradient(135deg,_#020617_0%,_#0f172a_50%,_#111827_100%)] text-slate-100 flex items-center justify-center px-3 py-4 sm:px-4">
+  
+  <div class="w-full max-w-md h-[100dvh] sm:h-[860px] sm:max-h-[860px] sm:rounded-[32px] border border-white/10 shadow-[0_30px_80px_rgba(0,0,0,0.45)] overflow-hidden flex flex-col bg-slate-950/70 relative">
+
+    <!-- HALOS DE LUMIÈRE DÉCORATIFS -->
+    <div class="absolute inset-0 pointer-events-none">
+      <div class="absolute -top-24 -left-24 w-72 h-72 bg-emerald-500/20 rounded-full blur-[100px]"></div>
+      <div class="absolute bottom-0 right-0 w-64 h-64 bg-sky-500/15 rounded-full blur-[90px]"></div>
+    </div>
+
+    <!-- HEADER GENERAL -->
+    <header class="relative z-20 px-4 pt-4 pb-3 border-b border-white/10 shrink-0">
+      <div class="flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <button class="relative w-10 h-10 rounded-2xl glass border border-white/10 flex items-center justify-center text-emerald-300 shadow-lg shadow-emerald-500/10">
+            <i class="fa-solid fa-house-chimney text-emerald-300"></i>
+          </button>
+          <div>
+            <p class="text-[10px] uppercase tracking-[0.22em] text-slate-400">Foyer actif</p>
+            <button class="flex items-center gap-1.5 text-sm font-semibold text-white">
+              <span>Super Coloc</span>
+              <i class="fa-solid fa-chevron-down text-[10px] text-slate-400"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button class="rounded-2xl border border-amber-500/20 bg-amber-500/10 px-2.5 py-1.5 flex items-center gap-1.5 text-[11px] font-semibold text-amber-300">
+            <i class="fa-solid fa-fire"></i>
+            <span>5</span>
+          </button>
+          <button class="rounded-2xl border border-sky-500/20 bg-sky-500/10 px-2.5 py-1.5 flex items-center gap-1.5 text-[11px] font-semibold text-sky-300">
+            <i class="fa-solid fa-gem"></i>
+            <span>320</span>
+          </button>
+          <div class="relative w-10 h-10 rounded-2xl glass border border-white/10 flex items-center justify-center text-slate-300">
+            <i class="fa-regular fa-user"></i>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- MAIN SCROLLABLE -->
+    <main class="relative z-10 flex-1 overflow-y-auto no-scrollbar px-4 py-3 space-y-3 flex flex-col">
+
+      <!-- BARRE D'ACTIONS DU PLAN -->
+      <section class="flex items-center justify-between gap-2 shrink-0">
+        <!-- MENU DÉROULANT ÉTAGE -->
+        <div class="relative group">
+          <button class="px-3.5 py-1.5 rounded-xl bg-slate-900 border border-white/15 text-white font-extrabold text-xs shadow-sm flex items-center gap-2 hover:bg-slate-800 transition">
+            <span>RDC</span>
+            <i class="fa-solid fa-chevron-down text-[10px] text-slate-400"></i>
+          </button>
+          <div class="absolute top-full left-0 mt-1 w-32 bg-slate-800 border border-white/10 rounded-xl shadow-lg py-2 z-20 hidden group-hover:block">
+            <a href="#rdc" class="block px-3 py-1.5 text-sm text-slate-300 hover:bg-slate-600">RDC</a>
+            <a href="#rdc" class="block px-3 py-1.5 text-sm text-slate-300 hover:bg-slate-600">1er étage</a>
+            <a href="#rdc" class="block px-3 py-1.5 text-sm text-slate-300 hover:bg-slate-600">2ème étage</a>
+          </div>
+        </div>
+
+        <button class="py-1.5 px-3 rounded-xl bg-slate-900 border border-white/10 text-slate-200 hover:bg-slate-800 font-bold text-xs transition flex items-center gap-1.5">
+          <i class="fa-solid fa-pen text-[10px] text-emerald-400"></i>
+          <span>Éditer</span>
+        </button>
+      </section>
+
+      <!-- COMMUTATEUR VUE 2D / VUE 3D -->
+      <section class="bg-slate-950/80 p-1 rounded-2xl flex border border-white/10 shadow-inner shrink-0">
+        <button class="flex-1 py-1.5 text-center text-xs font-extrabold rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 shadow-sm transition flex items-center justify-center gap-1.5">
+          <i class="fa-solid fa-map text-xs"></i>
+          <span>Plan 2D</span>
+        </button>
+        <button class="flex-1 py-1.5 text-center text-xs font-semibold rounded-xl text-slate-400 hover:text-white transition flex items-center justify-center gap-1.5">
+          <i class="fa-solid fa-house text-xs"></i>
+          <span>Vue 3D</span>
+        </button>
+      </section>
+
+      <!-- LÉGENDE DE PROPRETÉ THERMIQUE -->
+      <section class="bg-slate-900/80 border border-white/10 rounded-xl p-2 flex items-center justify-between text-[10px] font-bold text-slate-300 shrink-0 px-3">
+        <span class="text-slate-400 font-medium">État :</span>
+        <span class="flex items-center gap-1 text-green-400"><span class="w-2 h-2 rounded-full bg-gren-400"></span> 0 tâche</span>
+        <span class="flex items-center gap-1 text-yellow-400"><span class="w-2 h-2 rounded-full bg-yellow-400"></span> 1 tâche</span>
+        <span class="flex items-center gap-1 text-amber-400"><span class="w-2 h-2 rounded-full bg-amber-400"></span> 2 tâches</span>
+        <span class="flex items-center gap-1 text-orange-400"><span class="w-2 h-2 rounded-full bg-orange-500"></span> 3+ tâches</span>
+        <span class="flex items-center gap-1 text-red-400"><span class="w-2 h-2 rounded-full bg-red-500"></span> Urgent</span>
+      </section>
+
+      <!-- CANVAS APPARTEMENT 2D THERMIQUE -->
+      <section class="flex-1 min-h-[360px] rounded-[24px] border border-white/10 bg-slate-950/90 p-3 relative overflow-hidden flex items-center justify-center shadow-inner">
+        
+        <!-- PLAN DE LOGEMENT 5 PIÈCES SANS TROU -->
+        <div class="relative w-[290px] h-[280px]">
+          
+          <!-- 1. ENTRÉE (Propre -> Vert) -->
+          <div class="absolute top-0 left-0 w-[100px] h-[90px] bg-gradient-to-br from-green-600 to-green-700 border-2 border-white p-2 flex flex-col items-center justify-center text-center cursor-pointer hover:brightness-110 transition z-10 rounded-none shadow-md">
+            <span class="text-xs font-extrabold text-white">Entrée</span>
+            <span class="text-[9px] text-green-100 font-semibold mt-0.5">0 tâche</span>
+          </div>
+
+          <!-- 2. COULOIR (1 Tâche -> Jaune/Yellow) -->
+          <div class="absolute top-[90px] left-0 w-[100px] h-[190px] bg-gradient-to-br from-yellow-600 to-yellow-700 border-2 border-white p-2 flex flex-col items-center justify-center text-center cursor-pointer hover:brightness-110 transition z-10 rounded-none shadow-md">
+            <span class="text-xs font-extrabold text-white">Couloir</span>
+            <span class="text-[9px] text-yellow-100 font-semibold mt-0.5">1 tâche</span>
+          </div>
+
+          <!-- 3. CHAMBRE (2 Tâches -> Amber) -->
+          <div class="absolute top-0 left-[100px] w-[190px] h-[130px] bg-gradient-to-br from-amber-400 to-amber-500 border-2 border-white p-2 flex flex-col items-center justify-center text-center cursor-pointer hover:brightness-110 transition z-10 rounded-none shadow-md">
+            <span class="text-xs font-extrabold text-white">Chambre</span>
+            <span class="text-[9px] text-amber-100 font-semibold mt-0.5">2 tâches</span>
+          </div>
+
+          <!-- 4. CUISINE (3+ Tâches -> Orange) -->
+          <div class="absolute top-[130px] left-[100px] w-[100px] h-[150px] bg-gradient-to-br from-orange-600 to-orange-700 border-2 border-white p-2 flex flex-col items-center justify-center text-center cursor-pointer hover:brightness-110 transition z-10 rounded-none shadow-md">
+            <span class="text-xs font-extrabold text-white">Cuisine</span>
+            <span class="text-[9px] text-orange-100 font-semibold mt-0.5">3 tâches</span>
+          </div>
+
+          <!-- 5. SALLE D'EAU (Urgent -> Rouge) -->
+          <div class="absolute top-[130px] left-[200px] w-[90px] h-[150px] bg-gradient-to-br from-red-600 to-red-700 border-2 border-white p-2 flex flex-col items-center justify-center text-center cursor-pointer hover:brightness-110 transition z-10 rounded-none shadow-md">
+            <span class="text-xs font-extrabold text-white">Salle d'eau</span>
+            <span class="text-[9px] text-red-100 font-semibold mt-0.5">1 tâche urgente</span>
+          </div>
+
+        </div>
+
+      </section>
+
+    </main>
+
+    <!-- FOOTER NAV -->
+    <footer class="relative z-20 border-t border-white/10 bg-slate-950/80 px-2 py-2 shrink-0">
+      <nav class="rounded-[24px] border border-white/10 bg-slate-900/80 p-1.5 flex justify-between items-center gap-1 overflow-x-auto no-scrollbar">
+        <a href="#accueil" class="flex-1 flex flex-col items-center justify-center gap-1 py-1.5 px-1 rounded-2xl text-slate-400 hover:text-white transition min-w-[50px]">
+          <i class="fa-solid fa-house text-xs"></i>
+          <span class="text-[8px] sm:text-[9px] font-semibold">Accueil</span>
+        </a>
+        <a href="#plan" class="flex-1 flex flex-col items-center justify-center gap-1 py-1.5 px-1 rounded-2xl bg-emerald-500/15 text-emerald-300 min-w-[50px]">
+          <i class="fa-solid fa-cubes text-xs"></i>
+          <span class="text-[8px] sm:text-[9px] font-semibold">Plan</span>
+        </a>
+        <a href="#taches" class="flex-1 flex flex-col items-center justify-center gap-1 py-1.5 px-1 rounded-2xl text-slate-400 hover:text-white transition min-w-[50px]">
+          <i class="fa-solid fa-check-double text-xs"></i>
+          <span class="text-[8px] sm:text-[9px] font-semibold">Tâches</span>
+        </a>
+        <a href="#depenses" class="flex-1 flex flex-col items-center justify-center gap-1 py-1.5 px-1 rounded-2xl text-slate-400 hover:text-white transition min-w-[50px]">
+          <i class="fa-solid fa-wallet text-xs"></i>
+          <span class="text-[8px] sm:text-[9px] font-semibold">Dépenses</span>
+        </a>
+        <a href="#calendrier" class="flex-1 flex flex-col items-center justify-center gap-1 py-1.5 px-1 rounded-2xl text-slate-400 hover:text-white transition min-w-[50px]">
+          <i class="fa-solid fa-calendar-days text-xs"></i>
+          <span class="text-[8px] sm:text-[9px] font-semibold">Calendrier</span>
+        </a>
+        <a href="#viedufoyer" class="flex-1 flex flex-col items-center justify-center gap-1 py-1.5 px-1 rounded-2xl text-slate-400 hover:text-white transition min-w-[50px]">
+          <i class="fa-solid fa-users text-xs"></i>
+          <span class="text-[8px] sm:text-[9px] font-semibold">Vie du foyer</span>
+        </a>
+      </nav>
+    </footer>
+
+  </div>
+</body>
+</html>

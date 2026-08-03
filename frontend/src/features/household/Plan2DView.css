@@ -26,18 +26,60 @@
   max-width: 480px;
   max-height: 65vh;
   overflow: auto;
-  border-radius: 12px;
-  background: #eef0e9;
   -webkit-overflow-scrolling: touch;
+  /* Centre .plan2d-grid quand il tient dans le cadre (cas normal —
+     demande explicite de Paul). `overflow: auto` reste en filet de
+     sécurité pour un très grand appartement où MIN_CELL_PX (voir
+     Plan2DView.jsx) empêcherait le contenu de rétrécir suffisamment
+     pour tenir entièrement (cas limite, zoom manuel retiré depuis).
+     RÔLE (03/08/2026, demande explicite de Paul — corrige les bandes
+     grises restantes au dézoom max) : ce conteneur ne sert plus qu'à
+     MESURER l'espace disponible (ResizeObserver, dans Plan2DView.jsx) —
+     plus de fond ni de coins arrondis ici, sinon sa taille FIXE (480px/
+     65vh) restait visible autour du plan dès que le ratio largeur/
+     hauteur de l'appartement ne correspondait pas exactement à celui du
+     cadre. Le "carré noir" visible à l'écran est maintenant
+     .plan2d-grid lui-même (voir plus bas), qui colle exactement à la
+     taille réelle du plan (+ le padding d'1 case déjà en place) —
+     aucune bande au-delà de ce padding volontaire, quel que soit le
+     ratio.
+  */
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .plan2d-grid {
   position: relative;
-  display: grid;
-  background: #ffffff;
+  background: #eef0e9;
+  border-radius: 12px;
+  flex-shrink: 0; /* ne pas écraser la grille sous sa taille réelle (filet de sécurité, voir MIN_CELL_PX dans Plan2DView.jsx) */
 }
 
-.plan2d-tile {
+.plan2d-room {
+  position: absolute;
   box-sizing: border-box;
-  border: 0.5px solid rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  text-align: center;
+  padding: 4px;
+  overflow: hidden;
+}
+
+.plan2d-room__name {
+  font-size: 15px;
+  font-weight: 700;
+  color: #ffffff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+  line-height: 1.2;
+}
+
+.plan2d-room__tasks {
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
 }

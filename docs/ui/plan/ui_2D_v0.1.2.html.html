@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="fr" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Chez nous - Plan 2D du logement</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <style>
+    :root { color-scheme: dark; }
+    body { font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    
+    .glass {
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.75), rgba(15, 23, 42, 0.5));
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+    
+    .card-glow::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      padding: 1px;
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.45), rgba(132, 204, 22, 0.2));
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
+    }
+
+    /* Motif de grille subtil pour le sol */
+    .floor-grid {
+      background-size: 24px 24px;
+      background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(16,185,129,0.22),_transparent_36%),linear-gradient(135deg,_#020617_0%,_#0f172a_50%,_#111827_100%)] text-slate-100 flex items-center justify-center px-3 py-4 sm:px-4">
+  
+  <div class="w-full max-w-md h-[100dvh] sm:h-[860px] sm:max-h-[860px] sm:rounded-[32px] border border-white/10 shadow-[0_30px_80px_rgba(0,0,0,0.45)] overflow-hidden flex flex-col bg-slate-950/70 relative">
+
+    <!-- HALOS DE LUMIÈRE DÉCORATIFS -->
+    <div class="absolute inset-0 pointer-events-none">
+      <div class="absolute -top-24 -left-24 w-72 h-72 bg-emerald-500/20 rounded-full blur-[100px]"></div>
+      <div class="absolute bottom-0 right-0 w-64 h-64 bg-sky-500/15 rounded-full blur-[90px]"></div>
+    </div>
+
+    <!-- HEADER GENERAL -->
+    <header class="relative z-20 px-4 pt-4 pb-3 border-b border-white/10 shrink-0">
+      <div class="flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <button class="relative w-10 h-10 rounded-2xl glass border border-white/10 flex items-center justify-center text-emerald-300 shadow-lg shadow-emerald-500/10">
+            <i class="fa-solid fa-house-chimney text-emerald-300"></i>
+          </button>
+          <div>
+            <p class="text-[10px] uppercase tracking-[0.22em] text-slate-400">Foyer actif</p>
+            <button class="flex items-center gap-1.5 text-sm font-semibold text-white">
+              <span>Super Coloc</span>
+              <i class="fa-solid fa-chevron-down text-[10px] text-slate-400"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button class="rounded-2xl border border-amber-500/20 bg-amber-500/10 px-2.5 py-1.5 flex items-center gap-1.5 text-[11px] font-semibold text-amber-300">
+            <i class="fa-solid fa-fire"></i>
+            <span>5</span>
+          </button>
+          <button class="rounded-2xl border border-sky-500/20 bg-sky-500/10 px-2.5 py-1.5 flex items-center gap-1.5 text-[11px] font-semibold text-sky-300">
+            <i class="fa-solid fa-gem"></i>
+            <span>320</span>
+          </button>
+          <div class="relative w-10 h-10 rounded-2xl glass border border-white/10 flex items-center justify-center text-slate-300">
+            <i class="fa-regular fa-user"></i>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- MAIN SCROLLABLE -->
+    <main class="relative z-10 flex-1 overflow-y-auto no-scrollbar px-4 py-3 space-y-3 flex flex-col">
+
+      <!-- BARRE D'ACTIONS DU PLAN -->
+      <section class="flex items-center justify-between gap-2 shrink-0">
+        <div class="flex items-center gap-2">
+          <button class="px-3 py-1.5 rounded-xl bg-white/10 border border-white/15 text-white font-extrabold text-xs shadow-sm">
+            RDC
+          </button>
+          <button class="p-2 rounded-xl bg-white/5 border border-white/10 text-slate-400 hover:text-white text-xs transition">
+            <i class="fa-solid fa-trash"></i>
+          </button>
+        </div>
+
+        <button class="py-1.5 px-3 rounded-xl bg-slate-900 border border-white/10 text-slate-200 hover:bg-slate-800 font-bold text-xs transition flex items-center gap-1.5">
+          <i class="fa-solid fa-pen text-[10px] text-emerald-400"></i>
+          <span>Modifier le plan</span>
+        </button>
+      </section>
+
+      <!-- COMMUTATEUR VUE 2D / VUE 3D -->
+      <section class="bg-slate-950/80 p-1 rounded-2xl flex border border-white/10 shadow-inner shrink-0">
+        <button class="flex-1 py-1.5 text-center text-xs font-extrabold rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 shadow-sm transition flex items-center justify-center gap-1.5">
+          <i class="fa-solid fa-map text-xs"></i>
+          <span>Plan 2D</span>
+        </button>
+        <button class="flex-1 py-1.5 text-center text-xs font-semibold rounded-xl text-slate-400 hover:text-white transition flex items-center justify-center gap-1.5">
+          <i class="fa-solid fa-house text-xs"></i>
+          <span>Vue 3D</span>
+        </button>
+      </section>
+
+      <!-- INDICATEUR / HINT -->
+      <p class="text-[11px] text-slate-400 text-center font-medium shrink-0">
+        Rez-de-chaussée — vue d'ensemble <span class="text-slate-500">(touche une pièce pour vous y rendre en 3D)</span>
+      </p>
+
+      <!-- CANVAS CANVAS PLAN 2D -->
+      <section class="flex-1 min-h-[360px] rounded-[24px] border border-white/10 bg-slate-950/80 floor-grid p-4 relative overflow-hidden flex items-center justify-center shadow-inner">
+        
+        <!-- CONTENEUR DU PLAN INTERACTIF -->
+        <div class="relative w-full max-w-[320px] h-[320px]">
+          
+          <!-- PIÈCE 1 : CUISINE (ROSE/CORAIL) -->
+          <div class="absolute top-4 left-2 w-[140px] h-[130px] rounded-none bg-gradient-to-br from-rose-500/80 to-rose-600/90 border-2 border-white shadow-lg shadow-rose-900/30 p-2 flex flex-col items-center justify-center text-center cursor-pointer hover:scale-[1.02] hover:brightness-110 active:scale-95 transition z-10 group">
+            <span class="text-xs font-extrabold text-white tracking-wide group-hover:underline">Cuisine</span>
+            <span class="text-[10px] text-rose-100/90 font-medium mt-0.5">Aucune tâche</span>
+          </div>
+
+          <!-- PIÈCE 2 : SALON (INDIGO/VIOLET) -->
+          <div class="absolute top-[110px] right-2 w-[170px] h-[180px] rounded-none bg-gradient-to-br from-indigo-500/80 to-violet-600/90 border-2 border-white shadow-lg shadow-indigo-900/30 p-2 flex flex-col items-center justify-center text-center cursor-pointer hover:scale-[1.02] hover:brightness-110 active:scale-95 transition z-10 group">
+            <!-- BADGE TÂCHE PENDING (OPTIONNEL) -->
+            <span class="absolute top-2 right-2 px-1.5 py-0.5 rounded-full bg-amber-400 text-slate-950 text-[9px] font-black flex items-center gap-1 shadow">
+              <i class="fa-solid fa-check"></i> 2
+            </span>
+
+            <span class="text-sm font-extrabold text-white tracking-wide group-hover:underline">Salon</span>
+            <span class="text-[10px] text-indigo-100/90 font-semibold mt-0.5">2 tâches à faire</span>
+          </div>
+
+          <!-- JONCTION / COULOIR SUBTIL (OPTIONNEL) -->
+          <div class="absolute top-[110px] left-[120px] w-[50px] h-[24px] bg-slate-800/80 border-t-2 border-b-2 border-white z-0"></div>
+
+        </div>
+
+      </section>
+
+    </main>
+
+    <!-- FOOTER NAV -->
+    <footer class="relative z-20 border-t border-white/10 bg-slate-950/80 px-2 py-2 shrink-0">
+      <nav class="rounded-[24px] border border-white/10 bg-slate-900/80 p-1.5 flex justify-between items-center gap-1 overflow-x-auto no-scrollbar">
+        <a href="#accueil" class="flex-1 flex flex-col items-center justify-center gap-1 py-1.5 px-1 rounded-2xl text-slate-400 hover:text-white transition min-w-[50px]">
+          <i class="fa-solid fa-house text-xs"></i>
+          <span class="text-[8px] sm:text-[9px] font-semibold">Accueil</span>
+        </a>
+        <a href="#plan" class="flex-1 flex flex-col items-center justify-center gap-1 py-1.5 px-1 rounded-2xl bg-emerald-500/15 text-emerald-300 min-w-[50px]">
+          <i class="fa-solid fa-cubes text-xs"></i>
+          <span class="text-[8px] sm:text-[9px] font-semibold">Plan</span>
+        </a>
+        <a href="#taches" class="flex-1 flex flex-col items-center justify-center gap-1 py-1.5 px-1 rounded-2xl text-slate-400 hover:text-white transition min-w-[50px]">
+          <i class="fa-solid fa-check-double text-xs"></i>
+          <span class="text-[8px] sm:text-[9px] font-semibold">Tâches</span>
+        </a>
+        <a href="#depenses" class="flex-1 flex flex-col items-center justify-center gap-1 py-1.5 px-1 rounded-2xl text-slate-400 hover:text-white transition min-w-[50px]">
+          <i class="fa-solid fa-wallet text-xs"></i>
+          <span class="text-[8px] sm:text-[9px] font-semibold">Dépenses</span>
+        </a>
+        <a href="#calendrier" class="flex-1 flex flex-col items-center justify-center gap-1 py-1.5 px-1 rounded-2xl text-slate-400 hover:text-white transition min-w-[50px]">
+          <i class="fa-solid fa-calendar-days text-xs"></i>
+          <span class="text-[8px] sm:text-[9px] font-semibold">Calendrier</span>
+        </a>
+        <a href="#viedufoyer" class="flex-1 flex flex-col items-center justify-center gap-1 py-1.5 px-1 rounded-2xl text-slate-400 hover:text-white transition min-w-[50px]">
+          <i class="fa-solid fa-users text-xs"></i>
+          <span class="text-[8px] sm:text-[9px] font-semibold">Vie du foyer</span>
+        </a>
+      </nav>
+    </footer>
+
+  </div>
+</body>
+</html>
