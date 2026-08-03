@@ -45,7 +45,7 @@ export const MOCK_FLOORS = [
 ];
 
 // Source de vérité ÉDITABLE de la géométrie : de simples rectangles par
-// pièce. C'est CE tableau que le mode édition (LayoutEditor.jsx) lira et
+// pièce. C'est CE tableau que le mode édition (PlanEditorView.jsx) lira et
 // modifiera — les dalles (murs/portes/sol) sont toujours DÉRIVÉES à
 // partir de lui via generateFloorTiles (features/layout-editor/utils/layoutGeneration.js),
 // jamais éditées directement. Rectangles choisis pour reproduire

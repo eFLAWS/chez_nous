@@ -35,7 +35,7 @@
 //     fonctionnelle (rouvre la tâche), pas juste visuelle.
 //
 // Ce qui reste réel comme avant : nom/type/icône/couleur/surface de la
-// pièce (mêmes données que Plan2DView.jsx/LayoutEditor.jsx), nom de
+// pièce (mêmes données que Plan2DView.jsx/PlanEditorView.jsx), nom de
 // l'étage.
 import { useState } from "react";
 import { ArrowRightIcon, PlusIcon, ChecklistIcon } from "../../components/ui/Icons";

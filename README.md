@@ -61,7 +61,7 @@ Migrations réelles, dans l'ordre, dans `backend/supabase/migrations/` :
 ## Arborescence
 
 ```
-README.md / PROJECT.md / DATAMODEL.md / PRODUCTVISION.md / TODO.md / CLAUDEINSTRUCTIONS.md / CLAUDEMEMORY.md / ROUTINGANDUSERFLOWS.md / USERFLOWONBOARDING.md   # toute la doc .md à la racine depuis le 03/08/2026 (avant : dans docs/, docs/user-flows/)
+README.md / PROJECT.md / DATAMODEL.md / PRODUCTVISION.md / TODO.md / CLAUDE.md / ROUTINGANDUSERFLOWS.md / USERFLOWONBOARDING.md   # toute la doc .md à la racine depuis le 03/08/2026 (avant : dans docs/, docs/user-flows/) — CLAUDEINSTRUCTIONS.md/CLAUDEMEMORY.md remplacés par CLAUDE.md (03/08/2026, Claude Code lit ce nom automatiquement)
 
 backend/                          # ANCIEN système, dormant — gardé pour la migration du plan
   validators.js / auth.js / logger.js / store.js / dataService.js

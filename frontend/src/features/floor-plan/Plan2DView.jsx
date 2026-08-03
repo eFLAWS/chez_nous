@@ -1,12 +1,12 @@
 // src/features/household/Plan2DView.jsx
 // Vue "Plan 2D" : aperçu global, EN LECTURE SEULE, du plan déjà construit
-// — pas d'avatar, pas de déplacement. Distincte de LayoutEditor.jsx (qui
+// — pas d'avatar, pas de déplacement. Distincte de PlanEditorView.jsx (qui
 // sert à CRÉER/MODIFIER le plan, pas à le consulter) et de
 // FloorView3D.jsx (qui est la vue immersive AVEC avatar — pas encore
 // adaptée au modèle mur-arête, voir la conversation).
 //
 // TAILLE DE CELLULE CALCULÉE, PAS FIXE (02/08/2026, demande explicite de
-// Paul, capture d'écran à l'appui — comparée à LayoutEditor.jsx qui,
+// Paul, capture d'écran à l'appui — comparée à PlanEditorView.jsx qui,
 // avec sa cellule fixe plus petite (28px), montrait tout le plan sans
 // recadrage) : une cellule fixe de 40px faisait dépasser le conteneur
 // dès que le plan avait plusieurs pièces (une pièce coupée/illisible en
@@ -31,7 +31,7 @@
 // grille était son propre `<div>` bordé (`.plan2d-tile`), ce qui donnait
 // un quadrillage visible sur TOUTE la surface de chaque pièce — l'effet
 // inverse de ce que Paul voulait (le quadrillage doit être visible dans
-// l'ÉDITEUR, pas ici, voir LayoutEditor.css). Une pièce est maintenant
+// l'ÉDITEUR, pas ici, voir PlanEditorView.css). Une pièce est maintenant
 // UN SEUL rectangle de couleur (directement dérivé de son rectangle
 // `{x, y, width, height}`, plus besoin des dalles pour ça), avec son nom
 // et son nombre de tâches actives affichés dessus, centrés. `tiles`
@@ -97,7 +97,7 @@
 // l'étage (`floor.gridWidth`/`floor.gridHeight`) correspondent à la
 // grille COMPLÈTE disponible pour tracer (souvent bien plus large que
 // les pièces réellement présentes, par ex. DEFAULT_GRID_WIDTH=20 dans
-// LayoutEditor.jsx) — les utiliser pour dimensionner le conteneur
+// PlanEditorView.jsx) — les utiliser pour dimensionner le conteneur
 // laissait un grand bloc vide inutile là où aucune pièce n'existe (visible
 // sur la capture : fond gris à droite des pièces). Le conteneur est
 // maintenant dimensionné sur l'EMPRISE RÉELLE des pièces de l'étage
