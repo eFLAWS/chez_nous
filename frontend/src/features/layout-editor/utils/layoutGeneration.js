@@ -53,6 +53,20 @@
 // Test des composants React (LayoutEditor/Plan2DView) PAS fait ici (pas
 // d'accès réseau pour npm/Vite dans cet environnement) — à vérifier
 // réellement chez toi avant de considérer ce chantier terminé.
+//
+// EXTENSION PORTE/FENÊTRE/PASSAGE (03/08/2026, demande explicite de
+// Paul, prototype ui_plan_editor_v0.3.0.html — refonte de l'éditeur) :
+// le binaire mur/ouverture ci-dessus devient un choix à 3 (`type` sur
+// chaque entrée de `openingEdges`) qui change RÉELLEMENT le rendu, pas
+// juste l'étiquette :
+//   - `door`    : mur retiré (comme l'ancien "opening"), + marqueur visuel.
+//   - `window`  : mur CONSERVÉ (une fenêtre ne supprime pas le mur qui la
+//     porte) + marqueur visuel distinct — nouveau, n'existait pas avant.
+//   - `passage` (ou `type` absent, plans enregistrés avant ce champ) :
+//     mur retiré, aucun marqueur — comportement identique à l'ancien
+//     "opening" binaire, préservé tel quel pour la compatibilité.
+// Voir `computeRoomEdges`/`findOpenableWallSegments` plus bas pour le
+// détail, et `WallEdges.jsx` pour le rendu correspondant.
 
 import { DEFAULT_ROOM_TYPE, findRoomType } from "../roomTypes.js";
 
@@ -89,7 +103,8 @@ export function edgeKey(orientation, x, y) {
  * Pour chaque case occupée par une pièce, on regarde ses 4 voisins :
  *   - voisin absent (vide) -> arête "wall-ext"
  *   - voisin = pièce DIFFÉRENTE -> arête "wall-int", sauf si sa clé
- *     canonique figure dans `openingEdges` -> "opening"
+ *     canonique figure dans `openingEdges` -> son `type` ("door"|
+ *     "window"|"passage", voir plus bas)
  *   - voisin = MÊME pièce -> aucune arête (intérieur, invisible)
  *
  * Clé canonique garantissant qu'une frontière physique n'est calculée
@@ -97,11 +112,21 @@ export function edgeKey(orientation, x, y) {
  * (`edges.has(k)` court-circuite le second passage) — vérifié par test
  * (voir en-tête du fichier) sur une géométrie en L à 3 pièces.
  *
- * `openingEdges` : `[{orientation: 'h'|'v', x, y}, ...]` — les arêtes à
- * traiter comme des OUVERTURES (pan de mur retiré, PAS un objet de
- * porte ajouté — voir en-tête du fichier) plutôt que murs pleins.
+ * `openingEdges` : `[{orientation: 'h'|'v', x, y, type?}, ...]` — les
+ * arêtes marquées comme séparation plutôt que mur plein. `type` :
+ * (03/08/2026, demande explicite de Paul, prototype
+ * ui_plan_editor_v0.3.0.html — le porte/fenêtre/passage doit VRAIMENT
+ * changer le rendu, pas juste l'étiquette) :
+ *   - `'door'`    : mur RETIRÉ (passage possible), marqueur visuel
+ *     (voir WallEdges.jsx).
+ *   - `'window'`  : mur CONSERVÉ (pas de passage, fenêtre dans un mur
+ *     qui reste un mur) + marqueur visuel distinct.
+ *   - `'passage'` (ou absent, compatibilité avec les plans enregistrés
+ *     avant ce champ) : mur retiré, AUCUN marqueur — comportement
+ *     identique à l'ancien "opening" binaire (01/08/2026), inchangé.
  *
- * Retourne `[{key, orientation, x, y, kind, roomIdA, roomIdB}, ...]`.
+ * Retourne `[{key, orientation, x, y, kind, roomIdA, roomIdB}, ...]`,
+ * `kind` ∈ `'wall-ext'|'wall-int'|'door'|'window'|'passage'`.
  * `roomIdB` est `null` pour un mur extérieur. `roomIdA`/`roomIdB` ne
  * sont PAS ordonnés de façon significative (juste "les deux pièces
  * adjacentes à cette arête, ou null côté vide") — ne pas s'appuyer sur
@@ -117,14 +142,16 @@ export function computeRoomEdges(rooms, openingEdges = []) {
     }
   }
 
-  const openingKeySet = new Set(openingEdges.map((d) => edgeKey(d.orientation, d.x, d.y)));
+  const openingTypeByKey = new Map(
+    openingEdges.map((d) => [edgeKey(d.orientation, d.x, d.y), d.type || "passage"])
+  );
   const edges = new Map();
 
   const addEdge = (orientation, ex, ey, roomIdSelf, roomIdNeighbor) => {
     const k = edgeKey(orientation, ex, ey);
     if (edges.has(k)) return; // déjà calculée depuis l'autre côté (clé canonique)
-    const isOpening = openingKeySet.has(k);
-    const kind = isOpening ? "opening" : roomIdNeighbor ? "wall-int" : "wall-ext";
+    const openingType = openingTypeByKey.get(k);
+    const kind = openingType || (roomIdNeighbor ? "wall-int" : "wall-ext");
     edges.set(k, { key: k, orientation, x: ex, y: ey, kind, roomIdA: roomIdSelf, roomIdB: roomIdNeighbor ?? null });
   };
 
@@ -144,20 +171,22 @@ export function computeRoomEdges(rooms, openingEdges = []) {
 }
 
 /**
- * Énumère les arêtes "wall-int" (cloisons entre deux pièces qui se
- * touchent) — ce sont les seuls emplacements où un pan de mur peut être
- * retiré (ouverture). Utilisé par l'outil de retrait manuel
- * (LayoutEditor.jsx) pour afficher tous les segments disponibles le
- * long d'une cloison, pas juste un point central comme l'ancienne
- * auto-détection (retirée, voir en-tête du fichier).
+ * Énumère les arêtes entre deux pièces qui se touchent réellement
+ * (gap=0) — plain "wall-int" OU déjà porte/fenêtre/passage — ce sont
+ * les seuls emplacements qu'une séparation peut occuper. Utilisé par
+ * l'outil "Séparation" (PlanEditorView.jsx) pour afficher tous les
+ * segments disponibles le long d'une cloison, qu'ils portent déjà une
+ * séparation ou non (pour pouvoir la changer/retirer), pas juste les
+ * murs pleins pas encore percés (comportement avant le 03/08/2026,
+ * voir la conversation).
  *
  * Contrairement à l'ancien modèle mur-dalle (écart de 1 case requis),
  * une pièce qui n'est PAS directement adjacente à une autre (gap >= 1)
  * n'offre aucun candidat — il n'existe alors aucune cloison entre
- * elles, donc rien à retirer.
+ * elles, donc rien à percer.
  */
-export function findOpenableWallSegments(rooms) {
-  return computeRoomEdges(rooms).filter((e) => e.kind === "wall-int");
+export function findOpenableWallSegments(rooms, openingEdges = []) {
+  return computeRoomEdges(rooms, openingEdges).filter((e) => e.roomIdB !== null);
 }
 
 /**

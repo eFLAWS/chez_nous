@@ -42,6 +42,20 @@
 // ce chantier — pas de migration automatique écrite pour une seule
 // donnée de test.
 //
+// EXTENSION PORTE/FENÊTRE/PASSAGE (03/08/2026, demande explicite de
+// Paul, prototype ui_plan_editor_v0.3.0.html) : chaque entrée de
+// `doors` porte maintenant un `type` optionnel ('door'|'window'|
+// 'passage', voir layoutGeneration.js) — CONTRAIREMENT à `orientation`
+// ci-dessus, l'absence de `type` reste PARFAITEMENT valide (retombe sur
+// 'passage' par défaut, comportement identique à l'ancien "opening"
+// binaire) : un plan enregistré avant ce champ continue de fonctionner
+// sans réinitialisation. **Bug trouvé et corrigé en même temps** :
+// `fetchHouseholdLayout`/`saveFloorLayout` reconstruisaient chaque porte
+// champ par champ (`{ id, orientation, x, y }`) plutôt que de propager
+// l'objet tel quel — un `type` aurait donc été silencieusement perdu à
+// l'aller-retour Supabase sans ce correctif, malgré une extension
+// correcte du modèle en amont (layoutGeneration.js/validateLayout.js).
+//
 // VERROU OPTIMISTE (floor_plans.version, colonne déjà en base mais
 // jamais utilisée jusqu'ici) : chaque écriture ne réussit que si la
 // version lue juste avant n'a pas changé entre-temps
@@ -90,7 +104,7 @@ export async function fetchHouseholdLayout(householdId) {
   const doorsByFloor = {};
   for (const door of layout.doors) {
     if (!doorsByFloor[door.floorId]) doorsByFloor[door.floorId] = [];
-    doorsByFloor[door.floorId].push({ id: door.id, orientation: door.orientation, x: door.x, y: door.y });
+    doorsByFloor[door.floorId].push({ id: door.id, orientation: door.orientation, x: door.x, y: door.y, type: door.type });
   }
 
   return { floors: layout.floors, rooms: layout.rooms, doors: doorsByFloor };
@@ -129,7 +143,7 @@ export async function saveFloorLayout({
   }
 
   const rooms = [...layout.rooms.filter((r) => r.floorId !== floorId), ...editedRoomRects.map((rect) => ({ ...rect, floorId }))];
-  const newDoors = editedDoors.map((d) => ({ id: crypto.randomUUID(), floorId, orientation: d.orientation, x: d.x, y: d.y }));
+  const newDoors = editedDoors.map((d) => ({ id: crypto.randomUUID(), floorId, orientation: d.orientation, x: d.x, y: d.y, type: d.type }));
   const doors = [...layout.doors.filter((d) => d.floorId !== floorId), ...newDoors];
 
   const editedRooms = rooms.filter((r) => r.floorId === floorId);
@@ -165,7 +179,7 @@ export async function saveFloorLayout({
     success: true,
     floor,
     rooms: editedRooms,
-    doors: newDoors.map((d) => ({ id: d.id, orientation: d.orientation, x: d.x, y: d.y })),
+    doors: newDoors.map((d) => ({ id: d.id, orientation: d.orientation, x: d.x, y: d.y, type: d.type })),
   };
 }
 
@@ -207,7 +221,7 @@ export async function deleteFloor(householdId, floorId) {
 
 /**
  * Réinitialise tout le plan d'un foyer (bouton "Réinitialiser" de
- * LayoutEditor) — remet le blob à vide plutôt que de supprimer étage
+ * PlanEditorView) — remet le blob à vide plutôt que de supprimer étage
  * par étage comme le faisait l'ancien système.
  */
 export async function resetHouseholdLayout(householdId) {

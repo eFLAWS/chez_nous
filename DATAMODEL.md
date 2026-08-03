@@ -308,7 +308,7 @@ Ce document JSON stocke l'intégralité du plan 2D/3D d'un foyer — un seul blo
       "icon": "🛋️", "color": "#f3e6d0", "x": 0, "y": 0, "width": 3, "height": 3 }
   ],
   "doors": [
-    { "id": "uuid", "floorId": "uuid", "orientation": "v", "x": 3, "y": 1 }
+    { "id": "uuid", "floorId": "uuid", "orientation": "v", "x": 3, "y": 1, "type": "door" }
   ],
   "furniture": [],
   "spatialNotes": []
@@ -317,11 +317,16 @@ Ce document JSON stocke l'intégralité du plan 2D/3D d'un foyer — un seul blo
 
 - **`floors`** : un enregistrement par étage. `avatarStart`/`gridWidth`/`gridHeight` sont **recalculés à chaque sauvegarde** à partir des pièces tracées (`saveFloorLayout`), jamais figés indépendamment.
 - **`rooms`** : rectangles pleins `{x, y, width, height}` — **source de vérité éditable**. Toutes les cases d'une pièce sont du sol ; il n'existe pas de forme non rectangulaire (limite assumée, voir §3.2 de `PROJECT.md`).
-- **`doors`** (nom de champ conservé, voir note terminologique ci-dessous) — ⚠️ **modèle mur-arête (introduit 01/08/2026, remplace le modèle précédent)** : chaque entrée identifie une **arête** (bordure entre deux cases), pas une case de grille. `orientation` (`'h'` = bordure horizontale, `'v'` = bordure verticale) + `{x, y}` forment une clé canonique unique (`orientation:x,y`) désignant toujours le même segment physique, qu'on le découvre depuis l'une ou l'autre pièce adjacente. Une entrée ne peut exister que sur la frontière entre deux pièces **qui se touchent réellement** (aucun écart) — voir ci-dessous. `furniture`/`spatialNotes` : présents dès la conception, vides pour l'instant, aucun code ne les lit/écrit encore.
+- **`doors`** (nom de champ conservé, voir note terminologique ci-dessous) — ⚠️ **modèle mur-arête (introduit 01/08/2026)** : chaque entrée identifie une **arête** (bordure entre deux cases), pas une case de grille. `orientation` (`'h'` = bordure horizontale, `'v'` = bordure verticale) + `{x, y}` forment une clé canonique unique (`orientation:x,y`) désignant toujours le même segment physique. Une entrée ne peut exister que sur la frontière entre deux pièces **qui se touchent réellement** (aucun écart) — voir ci-dessous. **`type`** (`'door'`\|`'window'`\|`'passage'`, **NOUVEAU 03/08/2026**, optionnel — voir note ci-dessous) précise la nature de la séparation. `furniture`/`spatialNotes` : présents dès la conception, vides pour l'instant, aucun code ne les lit/écrit encore.
 
-⚠️ **Note terminologique (01/08/2026, demande explicite de Paul)** : le champ reste `doors` dans le blob persisté (aucune migration nécessaire, changement purement conceptuel), mais côté interaction/rendu, il ne s'agit plus de "portes" mais d'**ouvertures** — un pan de mur **retiré**, pas un objet de porte ajouté. Un mur plein reste le comportement par défaut entre deux pièces qui se touchent ; rien n'oblige une frontière à avoir une ouverture.
+⚠️ **Note terminologique (mise à jour le 03/08/2026)** : le champ reste `doors` dans le blob persisté (aucune migration nécessaire). Le vocabulaire a évolué en deux temps :
+- **01/08/2026** : "porte" → "ouverture" (un pan de mur retiré, pas un objet posé) — le binaire mur/ouverture d'alors ne distinguait rien de plus.
+- **03/08/2026 (demande explicite de Paul, `PlanEditorView.jsx`, prototype `ui_plan_editor_v0.3.0.html`)** : le binaire devient un choix RÉEL à 3 via `type`, chacun avec un rendu propre (`WallEdges.jsx`) :
+  - **`door`** (porte) : mur retiré, comme l'ancienne "ouverture" — mais avec un marqueur visuel ambré désormais (la "porte" redevient un concept visible, distinct du passage silencieux).
+  - **`window`** (fenêtre, nouveau concept — n'existait dans aucune partie du schéma avant) : le mur est **CONSERVÉ** (une fenêtre ne supprime pas le mur qui la porte) + un marqueur bleu ciel superposé.
+  - **`passage`** (ou `type` absent, compatibilité avec les plans enregistrés avant ce champ) : mur retiré, **aucun marqueur** — comportement identique à l'ancienne "ouverture" binaire de 01/08, entièrement préservé.
 
-📝 **Note anticipée, non implémentée (03/08/2026)** — vision produit long terme, `PRODUCTVISION.md` §9 : Paul envisage une future "Vue Sécurité" (statut ouvert/fermé par ouverture, éventuellement connecté à des capteurs IoT) et un lien entre tâches et électroménager connecté. **Aucun changement de schéma n'est fait ici** — juste un repère pour plus tard : le modèle actuel de `doors` (une ouverture = un mur retiré, binaire et permanent) ne porte aujourd'hui aucune notion d'état "ouvert/fermé" qui varierait dans le temps, et ne distingue pas un simple passage libre d'une porte/fenêtre réellement installée. Le jour où ce chantier sera lancé, il faudra vraisemblablement un champ `type` (`opening`/`door`/`window`) plutôt qu'un simple `isOpen` ajouté tel quel — les **fenêtres** en particulier n'existent dans aucune partie de ce schéma aujourd'hui, à concevoir de zéro. Voir `PRODUCTVISION.md` §9.1 pour le raisonnement complet. De la même façon, un futur lien tâches ↔ électroménager connecté (§9.2) s'appuierait probablement sur `furniture` (vide, non lu/écrit aujourd'hui) plutôt que sur une nouvelle table — à confirmer le moment venu.
+Un mur plein reste le comportement par défaut entre deux pièces qui se touchent ; rien n'oblige une frontière à avoir une séparation.
 
 ### Modèle mur-arête (calcul des murs, pas de stockage direct)
 
@@ -330,15 +335,17 @@ Les murs eux-mêmes **ne sont jamais stockés** — ni dans ce blob, ni ailleurs
 | Bordure entre... | Résultat |
 | :--- | :--- |
 | une pièce et le vide | `wall-ext` (mur extérieur) |
-| deux pièces **différentes** qui se touchent | `wall-int` (cloison) |
-| deux pièces différentes qui se touchent, **et** l'arête figure dans `doors` | `opening` — **aucun trait dessiné** (`WallEdges.jsx`), mur réellement retiré |
+| deux pièces **différentes** qui se touchent, sans entrée dans `doors` | `wall-int` (cloison pleine) |
+| deux pièces différentes qui se touchent, **et** l'arête figure dans `doors` avec `type: 'door'` | `door` — **aucun trait dessiné**, marqueur ambré |
+| … avec `type: 'window'` | `window` — **trait dessiné comme un mur normal** (mur conservé), marqueur bleu ciel superposé |
+| … avec `type: 'passage'` ou sans `type` | `passage` — **aucun trait dessiné**, aucun marqueur |
 | deux cases de la **même** pièce | rien (invisible, intérieur de la pièce) |
 
 Remplace l'ancien modèle où les murs étaient des **dalles pleines** générées autour de l'empreinte des pièces (1 case de grille par mur) : ce modèle avait deux défauts structurels — un mur consommait un mètre entier de grille, et deux pièces tracées directement collées (sans espace) n'avaient ni mur ni ouverture entre elles (case indisponible pour ça), donc fusionnaient visuellement. Le modèle mur-arête élimine les deux : le mur est un simple trait sur la bordure (aucune case consommée), et il existe **automatiquement** dès que deux pièces se touchent, sans cas particulier.
 
-**Conséquence sur le placement des ouvertures (inverse de l'ancien modèle)** : une ouverture ne peut être créée qu'entre deux pièces **parfaitement adjacentes** (gap = 0) — avant, il fallait au contraire un écart d'exactement 1 case pour l'auto-détection (retirée). Deux pièces avec un espace vide entre elles affichent chacune leur propre mur extérieur indépendant face à ce vide, sans erreur ni fusion.
+**Conséquence sur le placement des séparations (inverse de l'ancien modèle)** : une porte/fenêtre/passage ne peut être créé(e) qu'entre deux pièces **parfaitement adjacentes** (gap = 0) — avant, il fallait au contraire un écart d'exactement 1 case pour l'auto-détection (retirée). Deux pièces avec un espace vide entre elles affichent chacune leur propre mur extérieur indépendant face à ce vide, sans erreur ni fusion.
 
-⚠️ **Compatibilité** : un plan enregistré avant l'ajout de `orientation` a des entrées au format `{id, floorId, x, y}` (sans `orientation`) — non reconnues comme valides par le code actuel (silencieusement ignorées, pas de crash). Un plan de test existant doit être réinitialisé (bouton "🗑️ Réinitialiser cet étage", dans l'éditeur) avant de revalider ce chantier.
+⚠️ **Compatibilité** : un plan enregistré avant l'ajout de `orientation` (01/08/2026) a des entrées au format `{id, floorId, x, y}` — non reconnues comme valides par le code actuel (silencieusement ignorées, pas de crash) ; un plan de test existant doit être réinitialisé avant de revalider ce chantier. **Contrairement à `orientation`, l'ajout de `type` (03/08/2026) est rétrocompatible** : une entrée sans `type` retombe sur `'passage'` (comportement inchangé) — aucune réinitialisation nécessaire pour ce champ précis.
 
 
 ---

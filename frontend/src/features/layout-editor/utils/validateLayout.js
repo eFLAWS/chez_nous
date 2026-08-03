@@ -55,6 +55,10 @@ const doorSchema = z.object({
   orientation: z.enum(['h', 'v'], { errorMap: () => ({ message: "orientation doit être 'h' ou 'v'" }) }),
   x: z.number(),
   y: z.number(),
+  // Optionnel (03/08/2026, extension porte/fenêtre/passage — voir
+  // layoutGeneration.js) : absent = 'passage' par défaut, pour rester
+  // compatible avec les plans exportés avant ce champ.
+  type: z.enum(['door', 'window', 'passage'], { errorMap: () => ({ message: "type doit être 'door', 'window' ou 'passage'" }) }).optional(),
 });
 
 const roomSchema = z.object({

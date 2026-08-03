@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="fr" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Chez nous - Éditeur de Plan 2D v0.3.0</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <style>
+    :root { color-scheme: dark; }
+    body { font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    
+    .glass {
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.85), rgba(15, 23, 42, 0.65));
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+    
+    /* Grille d'architecte stricte 20px x 20px */
+    .editor-grid {
+      background-size: 20px 20px;
+      background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.07) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.07) 1px, transparent 1px);
+      background-position: -1px -1px;
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(16,185,129,0.22),_transparent_36%),linear-gradient(135deg,_#020617_0%,_#0f172a_50%,_#111827_100%)] text-slate-100 flex items-center justify-center px-3 py-4 sm:px-4">
+  
+  <div class="w-full max-w-md h-[100dvh] sm:h-[860px] sm:max-h-[860px] sm:rounded-[32px] border border-white/10 shadow-[0_30px_80px_rgba(0,0,0,0.45)] overflow-hidden flex flex-col bg-slate-950/80 relative">
+
+    <!-- BARRE SUPÉRIEURE DE L'ÉDITEUR -->
+    <header class="relative z-20 px-4 pt-4 pb-3 border-b border-white/10 shrink-0 flex items-center justify-between glass">
+      <button class="px-3 py-1.5 rounded-xl bg-slate-900 border border-white/10 text-xs font-bold text-slate-300 hover:text-white transition flex items-center gap-1.5">
+        <i class="fa-solid fa-xmark text-xs"></i>
+        <span>Annuler</span>
+      </button>
+
+      <div class="text-center">
+        <h1 class="text-xs font-extrabold uppercase tracking-wider text-emerald-400">Éditeur de plan</h1>
+        <p class="text-[9px] text-slate-400 font-medium">Aligné sur grille 20px</p>
+      </div>
+
+      <button class="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-emerald-400 to-teal-400 text-slate-950 font-black text-xs shadow-lg shadow-emerald-500/20 hover:brightness-110 active:scale-95 transition flex items-center gap-1">
+        <i class="fa-solid fa-check text-xs"></i>
+        <span>Sauver</span>
+      </button>
+    </header>
+
+    <!-- MAIN CANVA D'ÉDITION -->
+    <main class="relative z-10 flex-1 overflow-hidden p-3 flex flex-col space-y-2">
+
+      <!-- BARRE D'ACTIONS SECONDAIRES CENTRÉE -->
+      <section class="relative flex items-center justify-between gap-2 shrink-0 z-20">
+        
+        <!-- SÉLECTEUR D'ÉTAGE EN DROPDOWN (RDC, 1er, 2ème, Cave + Ajouter) -->
+        <div class="relative group">
+          <button class="px-3 py-1.5 rounded-xl bg-slate-900/90 border border-white/15 text-white font-extrabold text-xs shadow-sm flex items-center gap-2 hover:bg-slate-800 transition">
+            <i class="fa-solid fa-layer-group text-emerald-400 text-[10px]"></i>
+            <span>RDC</span>
+            <i class="fa-solid fa-chevron-down text-[10px] text-slate-400"></i>
+          </button>
+
+          <!-- MENU DÉROULANT DES ÉTAGES -->
+          <div class="pointer-events-none absolute left-0 top-full mt-1.5 w-44 rounded-2xl border border-white/10 bg-slate-950/95 backdrop-blur-xl shadow-2xl z-40 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition duration-150 p-1.5 space-y-1 text-xs">
+            <button class="w-full text-left px-2.5 py-1.5 rounded-xl bg-emerald-500/15 text-emerald-300 font-bold flex items-center justify-between">
+              <span>RDC</span>
+              <i class="fa-solid fa-check text-[10px]"></i>
+            </button>
+            <button class="w-full text-left px-2.5 py-1.5 rounded-xl text-slate-300 hover:bg-white/5 font-medium">
+              <span>1er Étage</span>
+            </button>
+            <button class="w-full text-left px-2.5 py-1.5 rounded-xl text-slate-300 hover:bg-white/5 font-medium">
+              <span>2ème Étage</span>
+            </button>
+            <button class="w-full text-left px-2.5 py-1.5 rounded-xl text-slate-300 hover:bg-white/5 font-medium">
+              <span>Cave / Sous-sol</span>
+            </button>
+            <div class="h-px bg-white/10 my-1"></div>
+            <button class="w-full text-left px-2.5 py-1.5 rounded-xl text-emerald-400 hover:bg-emerald-500/10 font-bold flex items-center gap-1.5">
+              <i class="fa-solid fa-plus text-[10px]"></i>
+              <span>Ajouter un étage</span>
+            </button>
+            <button class="w-full text-left px-2.5 py-1.5 rounded-xl hover:bg-rose-500/20 text-rose-400 font-semibold flex items-center gap-2">
+              <i class="fa-solid fa-trash-can"></i> Supprimer un étage
+            </button>
+          </div>
+        </div>
+
+        <!-- UNDO / REDO (PARFAITEMENT CENTRÉS SUR L'ÉCRAN) -->
+        <div class="absolute left-1/2 -translate-x-1/2 flex items-center gap-1 bg-slate-900/90 border border-white/10 rounded-xl p-0.5 shadow-md">
+          <button title="Annuler (Undo)" class="w-8 h-7 rounded-lg flex items-center justify-center text-slate-300 hover:text-white hover:bg-white/10 text-xs transition">
+            <i class="fa-solid fa-rotate-left"></i>
+          </button>
+          <div class="w-px h-4 bg-white/10"></div>
+          <button title="Rétablir (Redo)" class="w-8 h-7 rounded-lg flex items-center justify-center text-slate-500 text-xs cursor-not-allowed">
+            <i class="fa-solid fa-rotate-right"></i>
+          </button>
+        </div>
+
+        <!-- MENU OPTIONS AVANCÉES -->
+        <div class="relative group">
+          <button class="w-8 h-8 rounded-xl bg-slate-900/90 border border-white/10 flex items-center justify-center text-slate-300 hover:text-white text-xs transition">
+            <i class="fa-solid fa-ellipsis-vertical"></i>
+          </button>
+          
+          <div class="pointer-events-none absolute right-0 top-full mt-1.5 w-48 rounded-2xl border border-white/10 bg-slate-950/95 backdrop-blur-xl shadow-2xl z-40 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition duration-150 p-1.5 space-y-1 text-xs">
+            <button class="w-full text-left px-2.5 py-1.5 rounded-xl hover:bg-white/5 text-slate-300 flex items-center gap-2">
+              <i class="fa-solid fa-file-export text-slate-400"></i> Exporter (.json)
+            </button>
+            <button class="w-full text-left px-2.5 py-1.5 rounded-xl hover:bg-white/5 text-slate-300 flex items-center gap-2">
+              <i class="fa-solid fa-file-import text-slate-400"></i> Importer un plan
+            </button>
+            <div class="h-px bg-white/10 my-1"></div>
+            <button class="w-full text-left px-2.5 py-1.5 rounded-xl hover:bg-rose-500/20 text-rose-400 font-semibold flex items-center gap-2">
+              <i class="fa-solid fa-trash-can"></i> Réinitialiser le plan
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- CANVAS D'ÉDITION SOURIS / TOUCH -->
+      <section class="flex-1 rounded-[24px] border border-white/15 bg-slate-950/90 editor-grid relative overflow-hidden flex items-center justify-center shadow-inner">
+        
+        <div class="relative w-[360px] h-[320px]">
+          
+          <!-- 1. TOILETTES -->
+          <div class="absolute top-[40px] left-[20px] w-[180px] h-[180px] bg-[#182625]/90 border-2 border-white p-2 flex flex-col items-center justify-center text-center cursor-pointer hover:border-emerald-400 transition z-10 rounded-none">
+            <span class="text-xs font-bold text-white">Toilettes</span>
+            <span class="text-[9px] text-slate-400">18 m²</span>
+          </div>
+
+          <!-- 2. BUREAU (PIÈCE SÉLECTIONNÉE) -->
+          <div class="absolute top-0 left-[200px] w-[80px] h-[160px] bg-[#232d33] border-2 border-emerald-400 p-2 flex flex-col items-center justify-center text-center cursor-move z-20 rounded-none ring-2 ring-emerald-500/30 shadow-2xl">
+            
+            <div class="absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-900 border border-emerald-500/40 rounded-xl px-2 py-1 flex items-center gap-1.5 shadow-xl shrink-0 z-40">
+              <button title="Modifier" class="text-[10px] text-slate-300 hover:text-white p-0.5">
+                <i class="fa-solid fa-pen"></i>
+              </button>
+              <span class="text-[9px] font-bold text-emerald-300">Bureau · 8 m²</span>
+              <button title="Supprimer la pièce" class="text-[10px] text-rose-400 hover:text-rose-300 p-0.5">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            </div>
+
+            <span class="text-xs font-extrabold text-white">Bureau</span>
+
+            <!-- POIGNÉES DE REDIMENSIONNEMENT -->
+            <div class="absolute -top-1.5 -left-1.5 w-3 h-3 bg-emerald-400 border border-slate-950 rounded-full cursor-nwse-resize shadow"></div>
+            <div class="absolute -top-1.5 -right-1.5 w-3 h-3 bg-emerald-400 border border-slate-950 rounded-full cursor-nesw-resize shadow"></div>
+            <div class="absolute -bottom-1.5 -left-1.5 w-3 h-3 bg-emerald-400 border border-slate-950 rounded-full cursor-nesw-resize shadow"></div>
+            <div class="absolute -bottom-1.5 -right-1.5 w-3 h-3 bg-emerald-400 border border-slate-950 rounded-full cursor-nwse-resize shadow"></div>
+          </div>
+
+          <!-- 3. BALCON / TERRASSE -->
+          <div class="absolute top-[220px] left-[100px] w-[100px] h-[100px] bg-[#5865f2]/90 border-2 border-white p-2 flex flex-col items-center justify-center text-center cursor-pointer hover:border-emerald-400 transition z-10 rounded-none">
+            <span class="text-xs font-bold text-white leading-tight">Balcon</span>
+            <span class="text-[9px] text-slate-300">5 m²</span>
+          </div>
+
+          <!-- 4. ENTRÉE / COULOIR -->
+          <div class="absolute top-[160px] left-[200px] w-[160px] h-[160px] bg-[#5c6b82]/90 border-2 border-white p-2 flex flex-col items-center justify-center text-center cursor-pointer hover:border-emerald-400 transition z-10 rounded-none">
+            <span class="text-xs font-bold text-white">Entrée / Couloir</span>
+            <span class="text-[9px] text-slate-300">16 m²</span>
+          </div>
+
+          <!-- SÉPARATIONS VISUELLES SUR LE PLAN (PORTES, FENÊTRES, RETRAIT MUR) -->
+          <!-- PORTE 1 (Bureau / Entrée) -->
+          <div title="Porte" class="absolute top-[156px] left-[225px] w-[30px] h-[8px] bg-amber-400 border border-slate-950 rounded-full z-30 shadow flex items-center justify-center cursor-pointer">
+            <span class="w-1.5 h-1.5 rounded-full bg-slate-950"></span>
+          </div>
+
+          <!-- FENÊTRE (Balcon / Extérieur) -->
+          <div title="Fenêtre" class="absolute top-[316px] left-[135px] w-[30px] h-[8px] bg-sky-400 border border-slate-950 rounded-md z-30 shadow flex items-center justify-center cursor-pointer">
+            <span class="w-4 h-0.5 bg-slate-950"></span>
+          </div>
+
+          <!-- PORTION DE MUR SUPPRIMÉE / OUVERTURE (Toilettes / Entrée) -->
+          <div title="Passage libre (Mur retiré)" class="absolute top-[175px] left-[197px] w-[6px] h-[30px] bg-slate-950 border border-emerald-400/60 z-30 flex items-center justify-center">
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- DOCK ERGONOMIQUE MIS À JOUR -->
+      <section class="glass border border-white/10 rounded-2xl p-2 flex items-center justify-around gap-1 shrink-0 z-20 shadow-xl relative">
+        
+        <!-- 1. AJOUTER UNE PIÈCE -->
+        <button class="flex-1 py-2 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-extrabold text-xs flex flex-col items-center gap-1 hover:bg-emerald-500 hover:text-slate-950 transition">
+          <i class="fa-solid fa-plus text-sm"></i>
+          <span class="text-[10px]">Pièce</span>
+        </button>
+
+        <!-- 2. SÉPARATION (AVEC SOUS-MENU POPUP : PORTE, FENÊTRE, RETIRER MUR) -->
+        <div class="flex-1 relative group">
+          <button class="w-full py-2 rounded-xl bg-slate-900 border border-white/10 text-slate-300 hover:text-white font-bold text-xs flex flex-col items-center gap-1 transition">
+            <i class="fa-solid fa-border-all text-sm text-amber-400"></i>
+            <span class="text-[10px]">Séparation</span>
+          </button>
+
+          <!-- SUB-MENU POPUP SÉPARATION -->
+          <div class="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 rounded-2xl border border-white/10 bg-slate-950/95 backdrop-blur-xl shadow-2xl z-40 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition duration-150 p-1.5 space-y-1 text-xs">
+            <button class="w-full text-left px-2.5 py-1.5 rounded-xl hover:bg-white/5 text-amber-300 font-bold flex items-center gap-2">
+              <i class="fa-solid fa-door-open"></i> Ajouter une porte
+            </button>
+            <button class="w-full text-left px-2.5 py-1.5 rounded-xl hover:bg-white/5 text-sky-300 font-bold flex items-center gap-2">
+              <i class="fa-solid fa-window-maximize"></i> Ajouter une fenêtre
+            </button>
+            <div class="h-px bg-white/10 my-1"></div>
+            <button class="w-full text-left px-2.5 py-1.5 rounded-xl hover:bg-rose-500/20 text-rose-300 font-bold flex items-center gap-2">
+              <i class="fa-solid fa-eraser"></i> Retirer un mur
+            </button>
+          </div>
+        </div>
+
+        <!-- 3. AJUSTER -->
+        <button class="flex-1 py-2 rounded-xl bg-slate-900 border border-white/10 text-slate-300 hover:text-white font-bold text-xs flex flex-col items-center gap-1 transition">
+          <i class="fa-solid fa-up-down-left-right text-sm text-sky-400"></i>
+          <span class="text-[10px]">Ajuster</span>
+        </button>
+
+        <!-- 4. TÂCHES (REMPLACE +ÉTAGE) -->
+        <button class="flex-1 py-2 rounded-xl bg-slate-900 border border-white/10 text-slate-300 hover:text-white font-bold text-xs flex flex-col items-center gap-1 transition">
+          <i class="fa-solid fa-check-double text-sm text-purple-400"></i>
+          <span class="text-[10px]">Tâches</span>
+        </button>
+      </section>
+
+    </main>
+
+  </div>
+</body>
+</html>

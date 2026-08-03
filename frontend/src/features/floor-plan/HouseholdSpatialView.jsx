@@ -1,7 +1,7 @@
 // src/features/household/HouseholdSpatialView.jsx
 // Orchestrateur spatial d'UN foyer. Trois modes :
 //   - "onboarding" : aucun étage/pièce -> écran d'accueil
-//   - "editing"    : Mode Édition (LayoutEditor) -> CRÉE/MODIFIE le plan
+//   - "editing"    : Mode Édition (PlanEditorView) -> CRÉE/MODIFIE le plan
 //   - "app"        : le logement sélectionné, commutateur "Plan 2D" /
 //                    "Vue 3D" — deux façons de LIRE le même plan déjà
 //                    construit, jamais de le modifier (ça, c'est le rôle
@@ -20,7 +20,7 @@
 // automatique à chaque frappe (impossible de toute façon — chaque
 // changement doit passer par des appels API individuels, pas un simple
 // blob écrit en continu). La sauvegarde reste un geste explicite
-// ("Enregistrer le plan" dans LayoutEditor), comme demandé
+// ("Enregistrer le plan" dans PlanEditorView), comme demandé
 // explicitement dans une conversation précédente sur ce sujet.
 //
 // RÉCONCILIATION "supprimer puis recréer" (voir householdLayoutApi.js,
@@ -41,13 +41,13 @@
 // GESTION DES ÉTAGES (01/08/2026, demande explicite de Paul) : "🏢
 // Ajouter un étage" ET "🗑️ Supprimer cet étage" — **tous deux déplacés
 // le 02/08/2026** de l'écran de consultation du plan vers
-// `LayoutEditor.jsx` (ce sont des actions D'ÉDITION, demande explicite
+// `PlanEditorView.jsx` (ce sont des actions D'ÉDITION, demande explicite
 // de Paul, en deux temps : d'abord "Ajouter", puis "Supprimer" par
 // cohérence) : boutons + confirmations vivent maintenant dans
-// LayoutEditor, qui appelle `onAddFloor`/`onDeleteFloor`
+// PlanEditorView, qui appelle `onAddFloor`/`onDeleteFloor`
 // (= `handleStartAddFloor`/`handleDeleteFloor` ci-dessous). `onDeleteFloor`
 // n'est passé que si un étage existant est sélectionné (rien à
-// supprimer sur un étage pas encore enregistré) — LayoutEditor masque
+// supprimer sur un étage pas encore enregistré) — PlanEditorView masque
 // son bouton "Supprimer" si ce prop est absent. `handleStartAddFloor`
 // repart sur un floorId vide, le prochain enregistrement crée un
 // nouvel étage numéroté après ceux déjà présents (voir handleSaveLayout
@@ -55,18 +55,19 @@
 // retombait TOUJOURS sur "Rez-de-chaussée"/RDC/niveau 0, même s'il y en
 // avait déjà un).
 //
-// "🗑️ Réinitialiser cet étage" (dans LayoutEditor.jsx) — **correction
+// "🗑️ Réinitialiser cet étage" (dans PlanEditorView.jsx) — **correction
 // (01/08/2026, "ne fait rien")** : ne passe plus par ce composant du
 // tout. Avant, le bouton appelait `onReset` ici, qui effaçait TOUT LE
 // FOYER côté backend (`resetHouseholdLayout`) puis rechargeait des
-// props vides — sauf que l'état local de LayoutEditor (`useState`) ne
+// props vides — sauf que l'état local de PlanEditorView (`useState`) ne
 // se resynchronise jamais avec des props qui changent sans démontage,
-// donc rien ne changeait à l'écran. LayoutEditor gère maintenant sa
+// donc rien ne changeait à l'écran. PlanEditorView gère maintenant sa
 // réinitialisation entièrement en interne (vide son propre brouillon),
 // sans prop `onReset` ni appel backend — voir ce fichier pour le détail.
 // Le même mécanisme (vider l'état local avant de prévenir le parent)
 // est réutilisé par "Ajouter un étage" ci-dessus.
 import { useState, useMemo, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { MOCK_USER } from "./mockData";
 import { generateFloorTiles, extractRoomRectsFromTiles } from "../layout-editor/utils/layoutGeneration";
 import { downloadLayoutAsJson, readLayoutFile } from "../layout-editor/utils/layoutStorage";
@@ -75,7 +76,7 @@ import { useHouseholdTasks } from "../tasks/useHouseholdTasks";
 import FloorView3D from "./FloorView3D";
 import Plan2DView from "./Plan2DView";
 import RoomDetailView from "./RoomDetailView";
-import LayoutEditor from "../layout-editor/components/LayoutEditor";
+import PlanEditorView from "../layout-editor/components/PlanEditorView";
 import OnboardingScreen from "./OnboardingScreen";
 import "./HouseholdSpatialView.css";
 
@@ -88,6 +89,7 @@ export default function HouseholdSpatialView({
   role = null,
   isOwner = true, // par défaut true : garde le comportement existant pour tout appelant qui ne transmet pas encore le rôle
 }) {
+  const navigate = useNavigate();
   const [floors, setFloors] = useState([]);
   const [rooms, setRooms] = useState([]);
   // { [floorId]: [{id, x, y}, ...] } — l'id de la porte est gardé (pas
@@ -137,7 +139,7 @@ export default function HouseholdSpatialView({
   }, [householdId]);
 
   // floorTiles/floorEdges dérivés, jamais stockés — la SEULE source que
-  // lisent LayoutEditor (via extractRoomRectsFromTiles, tiles
+  // lisent PlanEditorView (via extractRoomRectsFromTiles, tiles
   // uniquement) et Plan2DView (tiles + edges). REFONTE MUR-ARÊTE (voir
   // la conversation) : `tiles` ne contient plus que des dalles de sol,
   // les murs/portes sont maintenant dans `edges` (calculés séparément
@@ -148,7 +150,7 @@ export default function HouseholdSpatialView({
     const result = {};
     for (const floor of floors) {
       const floorRooms = rooms.filter((r) => r.floorId === floor.id);
-      const floorDoors = (doorsWithIds[floor.id] || []).map((d) => ({ orientation: d.orientation, x: d.x, y: d.y }));
+      const floorDoors = (doorsWithIds[floor.id] || []).map((d) => ({ orientation: d.orientation, x: d.x, y: d.y, type: d.type }));
       result[floor.id] = generateFloorTiles(floorRooms, { openingEdges: floorDoors }).tiles;
     }
     return result;
@@ -158,7 +160,7 @@ export default function HouseholdSpatialView({
     const result = {};
     for (const floor of floors) {
       const floorRooms = rooms.filter((r) => r.floorId === floor.id);
-      const floorDoors = (doorsWithIds[floor.id] || []).map((d) => ({ orientation: d.orientation, x: d.x, y: d.y }));
+      const floorDoors = (doorsWithIds[floor.id] || []).map((d) => ({ orientation: d.orientation, x: d.x, y: d.y, type: d.type }));
       result[floor.id] = generateFloorTiles(floorRooms, { openingEdges: floorDoors }).edges;
     }
     return result;
@@ -215,8 +217,8 @@ export default function HouseholdSpatialView({
 
   // "🏢 Ajouter un étage" (01/08/2026, déplacé le 02/08/2026 — demande
   // explicite de Paul : c'est une action D'ÉDITION, elle doit vivre
-  // dans LayoutEditor.jsx, pas dans l'écran de consultation du plan.
-  // Passée en prop `onAddFloor`, appelée par LayoutEditor APRÈS avoir
+  // dans PlanEditorView.jsx, pas dans l'écran de consultation du plan.
+  // Passée en prop `onAddFloor`, appelée par PlanEditorView APRÈS avoir
   // vidé son propre brouillon local, voir ce composant). Repart sur un
   // floorId vide -> handleSaveLayout (ci-dessus) crée un NOUVEL étage à
   // l'enregistrement, numéroté après ceux déjà présents. Ne touche PAS
@@ -228,10 +230,29 @@ export default function HouseholdSpatialView({
     setMode("editing");
   };
 
+  // Changer d'étage SANS quitter l'éditeur (nouveau, 03/08/2026,
+  // PlanEditorView.jsx) — PlanEditorView.jsx a déjà demandé confirmation
+  // si besoin (brouillon non vide) avant d'appeler ceci. Le `key`
+  // posé sur <PlanEditorView> plus bas force un vrai remontage : sans
+  // lui, son `useState(existingRooms)` interne ne se resynchroniserait
+  // jamais avec les nouvelles props (même piège déjà rencontré et
+  // corrigé une fois pour "Réinitialiser", voir le journal).
+  const handleSwitchFloorInEditor = (floorId) => {
+    setSelectedFloorId(floorId);
+  };
+
+  // "Tâches" du dock (PlanEditorView.jsx) — navigue vers l'onglet
+  // Tâches du foyer. Pas encore de filtre par pièce (HouseholdTasksPage
+  // n'accepte pas ce paramètre aujourd'hui) — amélioration possible plus
+  // tard, voir TODO.md.
+  const handleOpenRoomTasks = () => {
+    navigate(`/households/${householdId}/tasks`);
+  };
+
   const editorInitialRooms = mode === "editing" && selectedFloorId ? extractRoomRectsFromTiles(selectedFloorTiles, roomsOnSelectedFloor) : [];
   const editorInitialDoors =
     mode === "editing" && selectedFloorId
-      ? (doorsWithIds[selectedFloorId] || []).map((d) => ({ orientation: d.orientation, x: d.x, y: d.y }))
+      ? (doorsWithIds[selectedFloorId] || []).map((d) => ({ orientation: d.orientation, x: d.x, y: d.y, type: d.type }))
       : [];
 
   const handleSaveLayout = async (editedRoomRects, editedDoors) => {
@@ -266,7 +287,7 @@ export default function HouseholdSpatialView({
 
     if (!result.success) {
       setSaveError(result.error);
-      return; // reste en mode édition, rien n'est perdu côté brouillon local de LayoutEditor
+      return; // reste en mode édition, rien n'est perdu côté brouillon local de PlanEditorView
     }
 
     const floorId = result.floor.id;
@@ -301,10 +322,10 @@ export default function HouseholdSpatialView({
   };
 
   // "🗑️ Supprimer cet étage" (01/08/2026, déplacé le 02/08/2026 dans
-  // LayoutEditor.jsx — demande explicite de Paul, même raison que "+
+  // PlanEditorView.jsx — demande explicite de Paul, même raison que "+
   // Ajouter un étage" : une action destructrice sur LE PLAN doit vivre
   // dans l'éditeur, pas dans l'écran de consultation). Appelée
-  // désormais toujours avec `floorId === selectedFloorId` (LayoutEditor
+  // désormais toujours avec `floorId === selectedFloorId` (PlanEditorView
   // n'opère que sur l'étage en cours), après confirmation gérée par
   // l'éditeur lui-même. Sort du Mode Édition en conséquence : vers la
   // vue si un autre étage reste, vers l'accueil sinon.
@@ -336,7 +357,7 @@ export default function HouseholdSpatialView({
       floors,
       rooms,
       doors: Object.fromEntries(
-        Object.entries(doorsWithIds).map(([floorId, list]) => [floorId, list.map((d) => ({ orientation: d.orientation, x: d.x, y: d.y }))])
+        Object.entries(doorsWithIds).map(([floorId, list]) => [floorId, list.map((d) => ({ orientation: d.orientation, x: d.x, y: d.y, type: d.type }))])
       ),
     });
   };
@@ -368,7 +389,7 @@ export default function HouseholdSpatialView({
 
     for (const floor of imported.floors) {
       const roomsForFloor = imported.rooms.filter((r) => r.floorId === floor.id);
-      const doorsForFloor = (imported.doors[floor.id] || []).map((d) => ({ orientation: d.orientation, x: d.x, y: d.y }));
+      const doorsForFloor = (imported.doors[floor.id] || []).map((d) => ({ orientation: d.orientation, x: d.x, y: d.y, type: d.type }));
       const saveRes = await saveFloorLayout({
         householdId,
         floorId: null, // toujours recréé, jamais reconcilié avec un id importé
@@ -421,15 +442,19 @@ export default function HouseholdSpatialView({
 
   if (mode === "editing") {
     return (
-      <LayoutEditor
+      <PlanEditorView
+        key={selectedFloorId || "new-floor"}
         existingRooms={editorInitialRooms}
         existingDoors={editorInitialDoors}
         floorName={selectedFloor?.name}
+        floors={floors}
+        currentFloorId={selectedFloorId}
         onSave={handleSaveLayout}
         saving={saving}
         onCancel={handleCancelEdit}
         onAddFloor={handleStartAddFloor}
         onDeleteFloor={selectedFloorId ? () => handleDeleteFloor(selectedFloorId) : undefined}
+        onSwitchFloor={handleSwitchFloorInEditor}
         onExport={handleExportLayout}
         onImport={handleImportLayout}
         importError={importError || saveError}
@@ -437,6 +462,7 @@ export default function HouseholdSpatialView({
           setImportError(null);
           setSaveError(null);
         }}
+        onOpenRoomTasks={handleOpenRoomTasks}
       />
     );
   }

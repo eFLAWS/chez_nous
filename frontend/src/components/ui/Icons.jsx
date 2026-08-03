@@ -472,3 +472,143 @@ export function CheckCircleIcon({ size = 16, className }) {
     </svg>
   );
 }
+
+// ---------------------------------------------------------------------
+// 13 icônes ajoutées le 03/08/2026 pour PlanEditorView.jsx (refonte de
+// l'éditeur de plan, prototype ui_plan_editor_v0.3.0.html) — même
+// convention que le reste du fichier (formes pleines originales, esprit
+// "solid" sans recopier les tracés FontAwesome). Non vérifiées
+// visuellement dans un navigateur réel (pas d'accès réseau dans cet
+// environnement) — à confirmer chez Paul, même limite que le reste du
+// fichier lors de sa réécriture le 02/08/2026.
+// ---------------------------------------------------------------------
+
+/** Coche pleine, sans cercle — bouton "Sauver" du header d'éditeur. */
+export function CheckIcon({ size = 16, className }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" className={className} {...base}>
+      <path d="M20.6 6.6a1 1 0 0 1 0 1.4l-9.2 9.2a1 1 0 0 1-1.4 0L4.9 12a1 1 0 1 1 1.4-1.4l4.3 4.3 8.5-8.5a1 1 0 0 1 1.5.2Z" />
+    </svg>
+  );
+}
+
+/** Deux cartes empilées — sélecteur d'étage. */
+export function LayerGroupIcon({ size = 16, className }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" className={className} {...base}>
+      <rect x="3" y="3" width="14" height="14" rx="3" opacity="0.45" />
+      <rect x="7" y="7" width="14" height="14" rx="3" />
+    </svg>
+  );
+}
+
+/** Flèche circulaire — Annuler (Undo). Retournée en CSS (scaleX(-1),
+ * même technique que ArrowRightIcon pour RoomDetailView) pour Rétablir
+ * (Redo) — pas besoin d'une seconde icône dédiée. */
+export function RotateLeftIcon({ size = 16, className }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" className={className} {...base} fillRule="evenodd">
+      <path d="M17.66 17.66A8 8 0 1 0 17.66 6.34L15.54 8.46A5 5 0 1 1 15.54 15.54Z" />
+      <path d="M14 3.5 20.5 6.8 15.3 10.2Z" />
+    </svg>
+  );
+}
+
+/** Trois points verticaux — menu options (export/import/réinitialiser). */
+export function EllipsisVerticalIcon({ size = 16, className }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" className={className} {...base}>
+      <circle cx="12" cy="5" r="2" />
+      <circle cx="12" cy="12" r="2" />
+      <circle cx="12" cy="19" r="2" />
+    </svg>
+  );
+}
+
+/** Flèche sortante au-dessus d'un plateau — Exporter (.json). */
+export function FileExportIcon({ size = 16, className }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" className={className} {...base}>
+      <path d="M11 5a1 1 0 0 1 2 0v8.6a1 1 0 1 1-2 0V5Z" />
+      <path d="M7.3 8.7a1 1 0 0 1 0-1.4l4-4a1 1 0 0 1 1.4 0l4 4a1 1 0 0 1-1.4 1.4L12 5.4 8.7 8.7a1 1 0 0 1-1.4 0Z" />
+      <path d="M4 16a1 1 0 0 1 1 1v2h14v-2a1 1 0 1 1 2 0v3a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1Z" />
+    </svg>
+  );
+}
+
+/** Flèche entrante vers un plateau — Importer un plan. */
+export function FileImportIcon({ size = 16, className }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" className={className} {...base}>
+      <path d="M11 4.4a1 1 0 1 1 2 0V13a1 1 0 1 1-2 0V4.4Z" />
+      <path d="M7.3 11.3a1 1 0 0 1 1.4 0L12 14.6l3.3-3.3a1 1 0 1 1 1.4 1.4l-4 4a1 1 0 0 1-1.4 0l-4-4a1 1 0 0 1 0-1.4Z" />
+      <path d="M4 16a1 1 0 0 1 1 1v2h14v-2a1 1 0 1 1 2 0v3a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1Z" />
+    </svg>
+  );
+}
+
+/** Stylo diagonal — "Modifier" (pilule contextuelle de la pièce sélectionnée). */
+export function PenIcon({ size = 16, className }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" className={className} {...base}>
+      <path d="M15.7 3.3a2 2 0 0 1 2.8 0l2.2 2.2a2 2 0 0 1 0 2.8L9.5 19.5l-5.3 1.3a.8.8 0 0 1-1-1l1.3-5.3Z" />
+    </svg>
+  );
+}
+
+/** Poubelle — "Supprimer" (pièce ou étage). */
+export function TrashIcon({ size = 16, className }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" className={className} {...base} fillRule="evenodd">
+      <path d="M9 2.5h6a1 1 0 0 1 1 1V4h4a1 1 0 1 1 0 2h-1.1l-1 14a2 2 0 0 1-2 1.9H8.1a2 2 0 0 1-2-1.9l-1-14H4a1 1 0 1 1 0-2h4v-.5a1 1 0 0 1 1-1Zm-.2 6.5a1 1 0 0 1 1 .9l.5 8a1 1 0 1 1-2 .1l-.5-8a1 1 0 0 1 1-1Zm6.4 0a1 1 0 0 1 1 1l-.5 8a1 1 0 1 1-2-.1l.5-8a1 1 0 0 1 1-.9Z" />
+    </svg>
+  );
+}
+
+/** Porte entrouverte — option "Ajouter une porte" du sous-menu Séparation. */
+export function DoorOpenIcon({ size = 16, className }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" className={className} {...base} fillRule="evenodd">
+      <path d="M3 20a1 1 0 1 1 0-2h1V4a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1v14h1a1 1 0 1 1 0 2Zm5-9a1 1 0 1 0 0 2 1 1 0 0 0 0-2Z" />
+      <path d="M14 20V6.4a1 1 0 0 1 1.4-.9l5 2.3a1 1 0 0 1 .6.9V18a1 1 0 0 1-1 1h-1v1a1 1 0 1 1-2 0v-1Z" />
+    </svg>
+  );
+}
+
+/** Fenêtre à croisillons — option "Ajouter une fenêtre" du sous-menu Séparation. */
+export function WindowIcon({ size = 16, className }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" className={className} {...base} fillRule="evenodd">
+      <path d="M4 3h16a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Zm1 2v6.5h6V5Zm8 0v6.5h6V5ZM5 13.5V19h6v-5.5Zm8 0V19h6v-5.5Z" />
+    </svg>
+  );
+}
+
+/** Gomme inclinée — option "Retirer un mur / Passage libre". */
+export function EraserIcon({ size = 16, className }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" className={className} {...base}>
+      <path d="M14.8 3.3a2 2 0 0 1 2.8 0l3.1 3.1a2 2 0 0 1 0 2.8L12 18.5H7l-3.3-3.3a2 2 0 0 1 0-2.8Z" />
+      <path d="M4 20h9a1 1 0 1 1 0 2H4a1 1 0 1 1 0-2Z" />
+    </svg>
+  );
+}
+
+/** 4 flèches en croix — outil "Ajuster" (mode édition global, remplace
+ * le cadenas par pièce). */
+export function AdjustIcon({ size = 16, className }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" className={className} {...base}>
+      <path d="M12 2.3a1 1 0 0 1 .7.3l3 3a1 1 0 1 1-1.4 1.4L13 5.7V10h4.3l-1.3-1.3a1 1 0 1 1 1.4-1.4l3 3a1 1 0 0 1 0 1.4l-3 3a1 1 0 1 1-1.4-1.4l1.3-1.3H13v4.3l1.3-1.3a1 1 0 1 1 1.4 1.4l-3 3a1 1 0 0 1-1.4 0l-3-3a1 1 0 1 1 1.4-1.4l1.3 1.3V13H6.7l1.3 1.3a1 1 0 1 1-1.4 1.4l-3-3a1 1 0 0 1 0-1.4l3-3a1 1 0 1 1 1.4 1.4L6.7 10H11V5.7L9.7 7a1 1 0 0 1-1.4-1.4l3-3a1 1 0 0 1 .7-.3Z" />
+    </svg>
+  );
+}
+
+/** Mur en briques — bouton "Séparation" du dock. */
+export function WallIcon({ size = 16, className }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" className={className} {...base} fillRule="evenodd">
+      <path d="M3 3h18a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Zm1 2v4h7V5Zm9 0v4h7V5ZM4 11v4h4.5v-4Zm6.5 0v4h7v-4ZM4 17v3h7v-3Zm9 0v3h7v-3Z" />
+    </svg>
+  );
+}

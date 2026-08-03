@@ -99,7 +99,7 @@ export default function HouseholdHomePage() {
   const homeFloorRooms = homeFloor ? rooms.filter((r) => r.floorId === homeFloor.id) : [];
   const homeFloorEdges = homeFloor
     ? generateFloorTiles(homeFloorRooms, {
-        openingEdges: (doorsByFloor[homeFloor.id] || []).map((d) => ({ orientation: d.orientation, x: d.x, y: d.y })),
+        openingEdges: (doorsByFloor[homeFloor.id] || []).map((d) => ({ orientation: d.orientation, x: d.x, y: d.y, type: d.type })),
       }).edges
     : [];
 
