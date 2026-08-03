@@ -1,7 +1,7 @@
 # 📄 User Flow — Onboarding & Rattachement Foyer
 
 > **Projet :** Chez Nous 
-> **Fichier :** `docs/user-flows/USER_FLOW_ONBOARDING.md`  
+> **Fichier :** `USERFLOWONBOARDING.md`  
 > **Composant :** Auth & Onboarding  
 > **Dernière mise à jour :** Juillet 2026  
 

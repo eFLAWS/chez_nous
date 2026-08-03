@@ -2,7 +2,7 @@
 
 ## Vision
 
-SaaS de gestion de foyer centralisée, organisée autour du **plan 2D/3D réel du logement** — pas une liste de tâches déconnectée du contexte spatial. Cibles : colocations, familles, couples, et potentiellement location courte durée (encore exploratoire, voir `docs/VISION_PRODUIT.md` §7). Détail complet et questions ouvertes : `docs/VISION_PRODUIT.md`.
+SaaS de gestion de foyer centralisée, organisée autour du **plan 2D/3D réel du logement** — pas une liste de tâches déconnectée du contexte spatial. Cibles : colocations, familles, couples, et potentiellement location courte durée (encore exploratoire, voir `PRODUCTVISION.md` §7). Détail complet et questions ouvertes : `PRODUCTVISION.md`.
 
 ## Valeurs UX non négociables
 
@@ -33,10 +33,10 @@ SaaS de gestion de foyer centralisée, organisée autour du **plan 2D/3D réel d
 
 ## Questions produit encore ouvertes
 
-Dette de ménage (portée : utilisateur ou foyer ?), canal de notification (in-app/push/email), distinction Courses vs Dépenses (probablement deux modèles de données distincts), portée exacte du multi-foyer, invités/location courte durée (le plus flou — statut simplifié ou vraie fonctionnalité de réservation ?), ce que voit un compte qui "passe" l'onboarding. Détail : `docs/VISION_PRODUIT.md` §10.
+Dette de ménage (portée : utilisateur ou foyer ?), canal de notification (in-app/push/email), distinction Courses vs Dépenses (probablement deux modèles de données distincts), portée exacte du multi-foyer, invités/location courte durée (le plus flou — statut simplifié ou vraie fonctionnalité de réservation ?), ce que voit un compte qui "passe" l'onboarding. Détail : `PRODUCTVISION.md` §10.
 
 ## Documents de référence (source de vérité, pas cette mémoire)
 
-`README.md`, `docs/PROJET.md` (anciennement `CHEZ_NOUS_SUIVI_PROJET.md`), `docs/DATA_MODEL.md`, `docs/VISION_PRODUIT.md`, `docs/TO_DO.md`.
+`README.md`, `PROJECT.md` (anciennement `CHEZ_NOUS_SUIVI_PROJET.md`), `DATAMODEL.md`, `PRODUCTVISION.md`, `TODO.md`.
 
 **En cas de contradiction entre cette mémoire et ces fichiers, les fichiers l'emportent** — ils peuvent avoir été mis à jour par un autre fil de conversation depuis la dernière synchronisation de cette mémoire.

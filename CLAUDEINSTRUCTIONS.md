@@ -5,20 +5,20 @@
 Avant de travailler sur ce projet (nouveau fil ou reprise), lire les fichiers suivants (fournis en project knowledge ou dans le zip du projet) — ils font foi, pas un résumé de mémoire qui peut avoir du retard ou venir d'un autre fil de conversation :
 
 - `README.md` — état du code, arborescence, comment lancer le projet
-- `docs/PROJET.md` — avancement détaillé par phases/chantiers (anciennement `CHEZ_NOUS_SUIVI_PROJET.md`, renommé)
-- `docs/DATA_MODEL.md` — schéma Postgres/Supabase réel
-- `docs/VISION_PRODUIT.md` — objectifs produit, questions ouvertes à trancher
-- `docs/TO_DO.md` — carnet du quotidien : bugs connus, petites améliorations UI/UX
+- `PROJECT.md` — avancement détaillé par phases/chantiers (anciennement `CHEZ_NOUS_SUIVI_PROJET.md`, renommé)
+- `DATAMODEL.md` — schéma Postgres/Supabase réel
+- `PRODUCTVISION.md` — objectifs produit, questions ouvertes à trancher
+- `TODO.md` — carnet du quotidien : bugs connus, petites améliorations UI/UX
 
 ## Mise à jour proactive de la documentation
 
 À chaque avancée notable (code, décision produit, correctif) faite pendant une session, mettre à jour les documents concernés **sans attendre qu'on le demande explicitement** :
 
-- `docs/PROJET.md` — état du code, chantiers/roadmap
+- `PROJECT.md` — état du code, chantiers/roadmap
 - `README.md` — si pertinent (architecture, arborescence, statut de migration)
-- `docs/TO_DO.md` — dès qu'un bug ou une petite amélioration UI est identifié, par Claude ou signalé par l'utilisateur
-- `docs/VISION_PRODUIT.md` — si la vision produit évolue
-- `docs/DATA_MODEL.md` — corriger toute incohérence trouvée avec le schéma Postgres réel
+- `TODO.md` — dès qu'un bug ou une petite amélioration UI est identifié, par Claude ou signalé par l'utilisateur
+- `PRODUCTVISION.md` — si la vision produit évolue
+- `DATAMODEL.md` — corriger toute incohérence trouvée avec le schéma Postgres réel
 
 ## Livraison de fichiers modifiés
 
@@ -42,4 +42,4 @@ Paul prototype avec Tailwind (CDN) de son côté et fournit parfois un fichier H
 
 ## Multi-fil de conversation
 
-Chaque nouvelle conversation peut être un fil de travail différent sur ce même projet, mené par une instance différente de Claude. Les fichiers `.md` de `docs/` (+ `README.md`) sont la source de vérité **partagée entre fils** — pas les résumés de mémoire, qui peuvent être incomplets ou en retard sur ce qu'un autre fil a fait.
+Chaque nouvelle conversation peut être un fil de travail différent sur ce même projet, mené par une instance différente de Claude. Les fichiers `.md` à la racine du projet (`README.md`, `PROJECT.md`, `DATAMODEL.md`, `PRODUCTVISION.md`, `TODO.md`) sont la source de vérité **partagée entre fils** — pas les résumés de mémoire, qui peuvent être incomplets ou en retard sur ce qu'un autre fil a fait.

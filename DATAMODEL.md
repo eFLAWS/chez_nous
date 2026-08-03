@@ -1,7 +1,7 @@
 # 🗄️ Modèle de Données — Chez Nous
 
 > **Projet :** Chez Nous  
-> **Fichier :** `docs/DATA_MODEL.md`  
+> **Fichier :** `DATAMODEL.md`  
 > **Type :** Spécification Base de Données Relational, RLS & Schémas JSON  
 > **Portée :** Utilisateurs, Foyers, Rôles (Propriétaire/Locataire), Tâches, Dépenses et Éditeur Spatial  
 > **Dernière mise à jour :** 1er août 2026  
@@ -237,7 +237,7 @@ Ce document JSON stocke l'intégralité du plan 2D/3D d'un foyer — un seul blo
 ```
 
 - **`floors`** : un enregistrement par étage. `avatarStart`/`gridWidth`/`gridHeight` sont **recalculés à chaque sauvegarde** à partir des pièces tracées (`saveFloorLayout`), jamais figés indépendamment.
-- **`rooms`** : rectangles pleins `{x, y, width, height}` — **source de vérité éditable**. Toutes les cases d'une pièce sont du sol ; il n'existe pas de forme non rectangulaire (limite assumée, voir §3.2 de `PROJET.md`).
+- **`rooms`** : rectangles pleins `{x, y, width, height}` — **source de vérité éditable**. Toutes les cases d'une pièce sont du sol ; il n'existe pas de forme non rectangulaire (limite assumée, voir §3.2 de `PROJECT.md`).
 - **`doors`** (nom de champ conservé, voir note terminologique ci-dessous) — ⚠️ **modèle mur-arête (introduit 01/08/2026, remplace le modèle précédent)** : chaque entrée identifie une **arête** (bordure entre deux cases), pas une case de grille. `orientation` (`'h'` = bordure horizontale, `'v'` = bordure verticale) + `{x, y}` forment une clé canonique unique (`orientation:x,y`) désignant toujours le même segment physique, qu'on le découvre depuis l'une ou l'autre pièce adjacente. Une entrée ne peut exister que sur la frontière entre deux pièces **qui se touchent réellement** (aucun écart) — voir ci-dessous. `furniture`/`spatialNotes` : présents dès la conception, vides pour l'instant, aucun code ne les lit/écrit encore.
 
 ⚠️ **Note terminologique (01/08/2026, demande explicite de Paul)** : le champ reste `doors` dans le blob persisté (aucune migration nécessaire, changement purement conceptuel), mais côté interaction/rendu, il ne s'agit plus de "portes" mais d'**ouvertures** — un pan de mur **retiré**, pas un objet de porte ajouté. Un mur plein reste le comportement par défaut entre deux pièces qui se touchent ; rien n'oblige une frontière à avoir une ouverture.

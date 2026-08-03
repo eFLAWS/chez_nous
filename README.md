@@ -23,11 +23,11 @@ Le projet reste **en transition** entre deux architectures, mais la bascule a ne
 
 **Le flux réel aujourd'hui :** inscription/connexion (Supabase Auth) → si aucun foyer, `/onboarding` (création réelle sur Supabase) → si un seul foyer, redirection directe vers `/households/:id` (Accueil) ; sinon `/households` (liste, ou `?manage=1` pour la gérer explicitement) → `AppLayout` (header avec switcher de foyer + menu profil, 6 onglets : Accueil, Plan, Tâches, Dépenses, Calendrier, Vie du foyer). **Le plan 2D/3D est monté sur `/spatial`, connecté à Supabase, et testé en conditions réelles — fonctionne** (créer un plan, sauvegarder, recharger). Depuis le menu profil (header), "Profil" et "Réglages" mènent vers `/profile` et `/settings` (pages plein écran autonomes, pas des onglets du foyer) ; "Notifications et Préférences" dans Réglages mène vers `/settings/preferences`.
 
-⚠️ **Note historique (voir `docs/PROJET.md` §2, journal) :** une version antérieure de ce README laissait entendre que rien côté données métier n'était sur Supabase — c'est faux pour les foyers, vérifié en lisant `householdService.js`. Le goulot d'étranglement identifié à l'époque (le plan 2D/3D, alors branché sur l'ancien backend et pas monté dans le routing) est **résolu depuis** : reconnecté à Supabase et testé en conditions réelles (voir plus haut).
+⚠️ **Note historique (voir `PROJECT.md` §2, journal) :** une version antérieure de ce README laissait entendre que rien côté données métier n'était sur Supabase — c'est faux pour les foyers, vérifié en lisant `householdService.js`. Le goulot d'étranglement identifié à l'époque (le plan 2D/3D, alors branché sur l'ancien backend et pas monté dans le routing) est **résolu depuis** : reconnecté à Supabase et testé en conditions réelles (voir plus haut).
 
 ⚠️ **Correction (cette révision, 01/08/2026) :** `layout-editor/` (`LayoutEditor.jsx` et toute sa chaîne d'utilitaires) **n'est pas dormant** — c'est le Mode Édition réellement monté par `HouseholdSpatialView.jsx` (actif, routé sur `/spatial`), au même titre que `FloorView3D.jsx`, `Plan2DView.jsx`, `OnboardingScreen.jsx` et `features/household/utils/pathfinding.js`, tous importés par lui et donc actifs eux aussi. Seuls restent réellement dormants (aucun importeur actif depuis `AppRouter.jsx`) : `HouseholdRoot.jsx`, `HousingDashboard.jsx`, `CreateHousingScreen.jsx`, `JoinHousingModal.jsx`, `ScanPlanModal.jsx`, les anciens formulaires d'auth, `App.jsx`, `api.js` et `householdLayoutApi.js`. Détail corrigé dans l'arborescence ci-dessous.
 
-📝 **Renommage (01/08/2026, demande explicite de Paul)** : `ApartmentSpatialMvp.jsx`/`.css` → **`HouseholdSpatialView.jsx`/`.css`** (n'était plus un prototype "MVP" depuis longtemps ; "Apartment" retiré, l'app cible des logements en général) et `FloorView2D.jsx`/`.css` → **`FloorView3D.jsx`/`.css`** (le vocabulaire "vue 2.5D" devient "vue 3D" partout — plus clair pour les utilisateurs). Changement de nom et de vocabulaire uniquement : le rendu de `FloorView3D` reste une grille CSS vue de dessus avec avatar, pas un moteur isométrique/WebGL. Appliqué rétroactivement partout, y compris dans les entrées déjà datées du journal de `docs/PROJET.md` — même logique que le renommage antérieur de `CHEZ_NOUS_SUIVI_PROJET.md` : le nom courant partout plutôt qu'un mélange ancien/nouveau selon la date.
+📝 **Renommage (01/08/2026, demande explicite de Paul)** : `ApartmentSpatialMvp.jsx`/`.css` → **`HouseholdSpatialView.jsx`/`.css`** (n'était plus un prototype "MVP" depuis longtemps ; "Apartment" retiré, l'app cible des logements en général) et `FloorView2D.jsx`/`.css` → **`FloorView3D.jsx`/`.css`** (le vocabulaire "vue 2.5D" devient "vue 3D" partout — plus clair pour les utilisateurs). Changement de nom et de vocabulaire uniquement : le rendu de `FloorView3D` reste une grille CSS vue de dessus avec avatar, pas un moteur isométrique/WebGL. Appliqué rétroactivement partout, y compris dans les entrées déjà datées du journal de `PROJECT.md` — même logique que le renommage antérieur de `CHEZ_NOUS_SUIVI_PROJET.md` : le nom courant partout plutôt qu'un mélange ancien/nouveau selon la date.
 
 ---
 
@@ -42,25 +42,27 @@ Le projet reste **en transition** entre deux architectures, mais la bascule a ne
 
 ## Schéma de données
 
-**Référence canonique : [`docs/DATA_MODEL.md`](docs/DATA_MODEL.md)** — schéma Postgres complet, matrice de droits RLS (PROPRIETAIRE/LOCATAIRE), logique de transfert de propriété. Extensions conservées (table `occupants`, assignation de tâche à un occupant non-utilisateur) documentées en section 6.
+**Référence canonique : [`DATAMODEL.md`](DATAMODEL.md)** — schéma Postgres complet, matrice de droits RLS (PROPRIETAIRE/LOCATAIRE), logique de transfert de propriété. Extensions conservées (table `occupants`, assignation de tâche à un occupant non-utilisateur) documentées en section 6.
 
 Migrations réelles, dans l'ordre, dans `backend/supabase/migrations/` :
 1. `01_schema_and_rls.sql` — schéma initial
-2. `02_reconcile_with_data_model.sql` — aligne le schéma sur `docs/DATA_MODEL.md` (`invite_code`, `version`, noms de colonnes)
+2. `02_reconcile_with_data_model.sql` — aligne le schéma sur `DATAMODEL.md` (`invite_code`, `version`, noms de colonnes)
 3. `03_fix_households_select_bootstrap.sql` — corrige un piège RLS : `.insert().select()` relit la ligne créée, soumise à la policy de SELECT — qui échouait au tout premier foyer d'un compte (aucune ligne `household_members` n'existe encore à cet instant précis). Policy `households_select_own_on_create` ajoutée pour couvrir ce cas.
 
-**Palette de couleurs officielle** : [`docs/ui/code_couelur.md`](docs/ui/code_couelur.md). **Maquettes** : `docs/ui/` (`login/`, `signup/`, `new/`, `home/`). **Flow d'onboarding** : [`docs/user-flows/USER-FLOW_ONBOARDING.md`](docs/user-flows/USER-FLOW_ONBOARDING.md). **Routing détaillé (guards, arborescence des routes) :** [`docs/user-flows/ROUTING_AND_USER_FLOWS.md`](docs/user-flows/ROUTING_AND_USER_FLOWS.md) *(⚠️ toujours à 5 onglets documentés, le code réel en a 6 — pas encore mis à jour)*.
+**Palette de couleurs officielle** : [`docs/ui/code_couelur.md`](docs/ui/code_couelur.md). **Maquettes** : `docs/ui/` (`login/`, `signup/`, `new/`, `home/`). **Flow d'onboarding** : [`USERFLOWONBOARDING.md`](USERFLOWONBOARDING.md). **Routing détaillé (guards, arborescence des routes) :** [`ROUTINGANDUSERFLOWS.md`](ROUTINGANDUSERFLOWS.md) *(⚠️ toujours à 5 onglets documentés, le code réel en a 6 — pas encore mis à jour)*.
 
 **Suivi & vision produit** — trois documents compagnons, mis à jour à chaque avancée :
-- [`docs/PROJET.md`](docs/PROJET.md) *(anciennement `CHEZ_NOUS_SUIVI_PROJET.md`, renommé)* — état du code, chantiers restants par phase, jusqu'à la commercialisation.
-- [`docs/VISION_PRODUIT.md`](docs/VISION_PRODUIT.md) — objectifs et fonctionnalités visées, questions ouvertes à trancher.
-- [`docs/TO_DO.md`](docs/TO_DO.md) — carnet du quotidien : bugs connus, petites améliorations UI/UX, distinct de `PROJET.md` (qui garde la vue d'ensemble architecture/roadmap).
+- [`PROJECT.md`](PROJECT.md) *(anciennement `CHEZ_NOUS_SUIVI_PROJET.md`, renommé)* — état du code, chantiers restants par phase, jusqu'à la commercialisation.
+- [`PRODUCTVISION.md`](PRODUCTVISION.md) — objectifs et fonctionnalités visées, questions ouvertes à trancher.
+- [`TODO.md`](TODO.md) — carnet du quotidien : bugs connus, petites améliorations UI/UX, distinct de `PROJECT.md` (qui garde la vue d'ensemble architecture/roadmap).
 
 ---
 
 ## Arborescence
 
 ```
+README.md / PROJECT.md / DATAMODEL.md / PRODUCTVISION.md / TODO.md / CLAUDEINSTRUCTIONS.md / CLAUDEMEMORY.md / ROUTINGANDUSERFLOWS.md / USERFLOWONBOARDING.md   # toute la doc .md à la racine depuis le 03/08/2026 (avant : dans docs/, docs/user-flows/)
+
 backend/                          # ANCIEN système, dormant — gardé pour la migration du plan
   validators.js / auth.js / logger.js / store.js / dataService.js
   core/storageUtils.js
@@ -72,9 +74,7 @@ backend/                          # ANCIEN système, dormant — gardé pour la 
     02_reconcile_with_data_model.sql
     03_fix_households_select_bootstrap.sql
 
-docs/
-  DATA_MODEL.md
-  user-flows/USER-FLOW_ONBOARDING.md
+docs/                              # ne contient plus que les maquettes depuis le déplacement des .md à la racine (03/08/2026, décision de Paul)
   ui/ (code_couelur.md, login/, signup/, new/, home/)
 
 frontend/
@@ -119,7 +119,7 @@ frontend/
         utils/pathfinding.js              # ACTIF — recherche de chemin de l'avatar, utilisé par FloorView3D.jsx
         utils/householdLayoutApi.js       # ANCIEN, dormant — confirmé sans plus aucun importeur actif
 
-      layout-editor/    # ⚠️ ACTIF, PAS dormant (corrigé cette révision) — LayoutEditor.jsx est le Mode Édition réellement monté par HouseholdSpatialView.jsx (tracé/déplacement/portes/aimantage, voir PROJET.md §3.2). RoomInspector.jsx, RoomNameModal.jsx, layoutGeneration.js, roomCollision.js, layoutStorage.js, validateLayout.js, roomTypes.js : tous dans sa chaîne d'import, donc actifs aussi.
+      layout-editor/    # ⚠️ ACTIF, PAS dormant (corrigé cette révision) — LayoutEditor.jsx est le Mode Édition réellement monté par HouseholdSpatialView.jsx (tracé/déplacement/portes/aimantage, voir PROJECT.md §3.2). RoomInspector.jsx, RoomNameModal.jsx, layoutGeneration.js, roomCollision.js, layoutStorage.js, validateLayout.js, roomTypes.js : tous dans sa chaîne d'import, donc actifs aussi.
 
     components/
       ui/ (Toast, Spinner, Skeleton, StatusBadge, ProgressBar, ItemCard, ItemForm, ItemGrid, Icons)   # génériques, toujours utilisés
