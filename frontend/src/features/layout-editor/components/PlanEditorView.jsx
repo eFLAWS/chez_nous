@@ -51,6 +51,53 @@
 //   - Ajout/suppression d'étage restent des actions D'ÉDITION (déjà
 //     déplacées ici le 02/08/2026), juste regroupées différemment dans
 //     l'UI (dropdown plutôt que rangée de boutons).
+// CORRECTIONS APRÈS PREMIER TEST RÉEL (03/08/2026, retour de Paul) :
+//   - "Ajuster" et "Pièce" sont désormais deux OUTILS EXCLUSIFS
+//     (`activeTool: null|'adjust'|'piece'`, remplace le booléen
+//     `editMode` + un tracé toujours possible en arrière-plan) :
+//     "Ajuster" bloque maintenant le tracé d'une nouvelle pièce (avant,
+//     dessiner restait possible même en Ajuster — source de gestes
+//     accidentels) ; "Pièce" est un vrai toggle (avant, cliquer dessus
+//     ne faisait qu'activer `editMode`, sans état "actif" propre).
+//   - Zoom (+ / − / reset), sur `effectiveCellPx` (= CELL_PX × zoomScale)
+//     plutôt qu'un `transform: scale()` CSS — reste fiable avec le
+//     défilement natif `overflow: auto` du conteneur.
+//   - `touch-action` dynamique sur la grille et les pièces : le pan
+//     tactile natif du plan est désormais possible dès que "Pièce"
+//     n'est PAS l'outil actif (avant, `touch-action: none` était posé
+//     en dur sur la grille, bloquant tout pan tactile en permanence —
+//     Paul butait contre les bords du conteneur en ajoutant des pièces).
+//     Une pièce ne bloque le pan que pendant "Ajuster" (rôle actif :
+//     sélection/glisser) ; en lecture seule ou en "Pièce", elle laisse
+//     passer le geste de pan.
+//
+// 2E ROUND DE CORRECTIONS (même jour, 2e test réel de Paul) :
+//   - "Séparation" devient un 4e outil AUTONOME (`activeTool` peut
+//     valoir `'separation'`) — ne dépendait plus à raison de "Ajuster"
+//     (erreur du 1er jet : Paul avait initialement demandé qu'"Ajuster"
+//     déverrouille "pièces ET séparations" ensemble, mais à l'usage ça
+//     n'avait pas de sens — Séparation est un outil de nature différente
+//     de la sélection/déplacement de pièces).
+//   - **Bug trouvé en relisant le CSS, pas juste supposé** : deux règles
+//     `touch-action: none` STATIQUES étaient restées dans
+//     `PlanEditorView.css` (`.plan-editor-view__grid` et `__room`),
+//     écrites lors du premier jet puis jamais retirées quand le
+//     `touch-action` dynamique a été ajouté en style inline — une
+//     incohérence entre le CSS et le JSX, seul le second corrigé au
+//     tour précédent. Retirées : `touch-action` est maintenant piloté
+//     UNIQUEMENT par l'inline (une seule source de vérité).
+//   - `.plan-editor-view__canvas-wrap` ne centre plus son contenu en
+//     flex (`align-items`/`justify-content: center` retirés, remplacés
+//     par un simple `padding`) — un conteneur flex centré + `overflow:
+//     auto` a un comportement de défilement peu fiable selon les
+//     navigateurs quand son contenu déborde (bug CSS documenté,
+//     potentiellement responsable du pan encore bloqué malgré le
+//     premier correctif touch-action).
+//   - Quadrillage de fond rendu plus visible : opacité des traits
+//     doublée (`rgba(255,255,255,0.07)` → `0.15`) — même ajustement que
+//     l'ancien `LayoutEditor.css` avait déjà dû faire une fois (`0.12`
+//     → `0.22`), un quadrillage d'éditeur a besoin d'être nettement
+//     plus visible qu'un simple motif décoratif.
 import { useState, useRef } from "react";
 import RoomCreateModal from "./RoomCreateModal";
 import RoomInspector from "./RoomInspector";
@@ -187,12 +234,23 @@ export default function PlanEditorView({
     setSelectedRoomId(null);
   }
 
-  // "Ajuster" (03/08/2026, remplace le cadenas par pièce, demande
-  // explicite de Paul) : off = tout en lecture seule ; on = tape une
-  // pièce pour la sélectionner (poignées + pilule), tape une cloison
-  // (avec un outil Séparation choisi) pour la modifier. Sortir
-  // désélectionne et referme les outils.
-  const [editMode, setEditMode] = useState(false);
+  // "Ajuster", "Pièce" et "Séparation" sont trois OUTILS EXCLUSIFS
+  // (03/08/2026, deux retours de Paul après tests réels successifs —
+  // corrige (1) "Pièce" qui n'était pas un vrai toggle et "Ajuster" qui
+  // ne bloquait pas le tracé, puis (2) "Séparation" qui dépendait à tort
+  // de "Ajuster" au lieu d'être son propre outil) : `activeTool` unique
+  // plutôt que des booléens/dépendances indépendants.
+  //   - null         : lecture seule — pièces en nom+surface, le geste
+  //     tactile sur la grille PAN nativement (voir touch-action plus bas).
+  //   - 'adjust'     : tape une pièce pour la sélectionner (poignées +
+  //     pilule). Bloque le tracé d'une nouvelle pièce.
+  //   - 'piece'      : glisser sur la grille trace une nouvelle pièce.
+  //     Bloque la sélection/déplacement des pièces existantes.
+  //   - 'separation' : tape une cloison pour poser/retirer une porte,
+  //     fenêtre ou un passage — indépendant de "Ajuster", accessible
+  //     directement (voir SEPARATION_TOOLS plus bas).
+  // Activer l'un désactive les autres (jamais deux en même temps).
+  const [activeTool, setActiveTool] = useState(null);
   const [selectedRoomId, setSelectedRoomId] = useState(null);
 
   const [dragStart, setDragStart] = useState(null);
@@ -201,21 +259,43 @@ export default function PlanEditorView({
   const [message, setMessage] = useState(null);
   const [inspectedRoomId, setInspectedRoomId] = useState(null);
 
-  const [separationMode, setSeparationMode] = useState(null); // null | 'door' | 'window' | 'passage'
+  const [separationMode, setSeparationMode] = useState(null); // null | 'door' | 'window' | 'passage' — significatif quand activeTool === 'separation' (outil autonome depuis le 03/08/2026, ne dépend plus de 'adjust')
   const [separationMenuOpen, setSeparationMenuOpen] = useState(false);
   const [floorMenuOpen, setFloorMenuOpen] = useState(false);
   const [optionsMenuOpen, setOptionsMenuOpen] = useState(false);
+
+  // Zoom (03/08/2026, nouveau — Paul butait contre les bords du
+  // conteneur en ajoutant des pièces). Applique un facteur sur la
+  // taille de case EFFECTIVE (`effectiveCellPx` plus bas) plutôt qu'un
+  // `transform: scale()` CSS — reste fiable avec le défilement natif
+  // `overflow: auto` du conteneur (un transform CSS a un comportement
+  // parfois incohérent avec scrollWidth/scrollHeight selon les
+  // navigateurs, pas vérifiable ici sans accès réseau).
+  const [zoomScale, setZoomScale] = useState(1);
+  const ZOOM_MIN = 0.5;
+  const ZOOM_MAX = 2;
+  const ZOOM_STEP = 0.25;
+  const effectiveCellPx = CELL_PX * zoomScale;
+  const zoomIn = () => setZoomScale((z) => Math.min(ZOOM_MAX, Math.round((z + ZOOM_STEP) * 100) / 100));
+  const zoomOut = () => setZoomScale((z) => Math.max(ZOOM_MIN, Math.round((z - ZOOM_STEP) * 100) / 100));
+  const zoomReset = () => setZoomScale(1);
 
   const [resetConfirmOpen, setResetConfirmOpen] = useState(false);
   const [addFloorConfirmOpen, setAddFloorConfirmOpen] = useState(false);
   const [deleteFloorConfirmOpen, setDeleteFloorConfirmOpen] = useState(false);
   const [switchFloorTarget, setSwitchFloorTarget] = useState(null); // floorId en attente de confirmation
 
-  const toggleEditMode = () => {
-    setEditMode((v) => !v);
+  // Bascule un outil : le retaper l'éteint (retour à null), en taper un
+  // autre l'active et éteint automatiquement celui qui tournait avant
+  // (jamais deux outils actifs en même temps). Nettoie les états
+  // transitoires au passage pour ne jamais rester dans un demi-état.
+  const handleToggleTool = (tool) => {
+    setActiveTool((prev) => (prev === tool ? null : tool));
     setSelectedRoomId(null);
     setSeparationMode(null);
     setSeparationMenuOpen(false);
+    setDragStart(null);
+    setDragCurrent(null);
   };
 
   /* --------------------------- Réinitialiser / étages --------------------------- */
@@ -224,7 +304,7 @@ export default function PlanEditorView({
     setResetConfirmOpen(false);
     resetHistory([], []);
     setSelectedRoomId(null);
-    setEditMode(false);
+    setActiveTool(null);
     setSeparationMode(null);
     setPendingRect(null);
     setDragStart(null);
@@ -248,7 +328,7 @@ export default function PlanEditorView({
     setAddFloorConfirmOpen(false);
     resetHistory([], []);
     setSelectedRoomId(null);
-    setEditMode(false);
+    setActiveTool(null);
     onAddFloor?.();
   };
 
@@ -302,21 +382,23 @@ export default function PlanEditorView({
 
   const cellFromPointer = (e) => {
     const rect = gridRef.current.getBoundingClientRect();
-    const x = Math.floor((e.clientX - rect.left) / CELL_PX);
-    const y = Math.floor((e.clientY - rect.top) / CELL_PX);
+    const x = Math.floor((e.clientX - rect.left) / effectiveCellPx);
+    const y = Math.floor((e.clientY - rect.top) / effectiveCellPx);
     return { x: Math.max(0, Math.min(gridWidth - 1, x)), y: Math.max(0, Math.min(gridHeight - 1, y)) };
   };
 
   /* ------------------------------ Tracé (nouvelle pièce) ------------------------------ */
 
   const handleGridPointerDown = (e) => {
-    if (separationMode || pendingRect || movingRoomId || resizingRoomId) return;
+    // Le tracé n'est possible QUE si l'outil "Pièce" est actif (03/08/2026,
+    // retour de Paul : avant, on pouvait dessiner n'importe quand, y
+    // compris pendant "Ajuster" — source de gestes accidentels).
+    if (activeTool !== "piece" || pendingRect || movingRoomId || resizingRoomId) return;
     e.currentTarget.setPointerCapture?.(e.pointerId);
     const cell = cellFromPointer(e);
     setDragStart(cell);
     setDragCurrent(cell);
     setMessage(null);
-    setSelectedRoomId(null);
   };
 
   /* -------------------------------- Sélection / déplacement de pièce ------------------------ */
@@ -328,9 +410,8 @@ export default function PlanEditorView({
   };
 
   const handleRoomPointerDown = (room, e) => {
-    if (separationMode) return; // en mode séparation, les pièces ne se sélectionnent/déplacent pas
+    if (activeTool !== "adjust") return; // sélection/déplacement réservés à l'outil "Ajuster"
     e.stopPropagation();
-    if (!editMode) return; // lecture seule tant qu'"Ajuster" n'est pas activé
     if (room.id !== selectedRoomId) {
       setSelectedRoomId(room.id); // simple tap : sélectionne cette pièce (pas de déplacement)
       return;
@@ -470,8 +551,11 @@ export default function PlanEditorView({
     const nextRooms = [...rooms, { ...pendingRect, id, name, type, icon, color }];
     commit(nextRooms, doors);
     setPendingRect(null);
-    setSelectedRoomId(id); // prête à être repositionnée/redimensionnée immédiatement si besoin
-    setEditMode(true);
+    // Bascule sur "Ajuster" avec la pièce fraîchement créée déjà
+    // sélectionnée — prête à être repositionnée/redimensionnée
+    // immédiatement si besoin, sans retaper "Pièce" par erreur.
+    setActiveTool("adjust");
+    setSelectedRoomId(id);
   };
   const handleNameCancel = () => setPendingRect(null);
 
@@ -502,7 +586,7 @@ export default function PlanEditorView({
           type="button"
           className="plan-editor-view__header-btn plan-editor-view__header-btn--primary"
           onClick={() => {
-            setEditMode(false);
+            setActiveTool(null);
             setSelectedRoomId(null);
             onSave(rooms, doors);
           }}
@@ -635,11 +719,32 @@ export default function PlanEditorView({
         </div>
       </div>
 
-      <div className="plan-editor-view__canvas-wrap">
+      <div className="plan-editor-view__canvas-outer">
+        <div className="plan-editor-view__zoom-controls">
+          <button type="button" title="Dézoomer" className="plan-editor-view__zoom-btn" onClick={zoomOut} disabled={zoomScale <= ZOOM_MIN}>
+            −
+          </button>
+          <button type="button" title="Réinitialiser le zoom" className="plan-editor-view__zoom-value" onClick={zoomReset}>
+            {Math.round(zoomScale * 100)}%
+          </button>
+          <button type="button" title="Zoomer" className="plan-editor-view__zoom-btn" onClick={zoomIn} disabled={zoomScale >= ZOOM_MAX}>
+            +
+          </button>
+        </div>
+        <div className="plan-editor-view__canvas-wrap">
         <div
           ref={gridRef}
           className="plan-editor-view__grid"
-          style={{ width: gridWidth * CELL_PX, height: gridHeight * CELL_PX, backgroundSize: `${CELL_PX}px ${CELL_PX}px` }}
+          style={{
+            width: gridWidth * effectiveCellPx,
+            height: gridHeight * effectiveCellPx,
+            backgroundSize: `${effectiveCellPx}px ${effectiveCellPx}px`,
+            // Pan tactile natif du conteneur SAUF pendant le tracé d'une
+            // nouvelle pièce (03/08/2026, retour de Paul) : "Pièce" a
+            // besoin du geste de glissé pour lui seul (touch-action:none),
+            // sinon on laisse le navigateur gérer le défilement/pan.
+            touchAction: activeTool === "piece" ? "none" : "pan-x pan-y",
+          }}
           onPointerDown={handleGridPointerDown}
           onPointerMove={handleGridPointerMove}
           onPointerUp={handleGridPointerUp}
@@ -652,17 +757,23 @@ export default function PlanEditorView({
             const overlapping = (isMoving || isResizing) && rooms.some((r) => r.id !== room.id && rectsOverlap(displayRect, r));
             const roomType = findRoomType(room.type);
             const { surfaceM2 } = computeRoomSurface(displayRect);
-            const isSelected = editMode && room.id === selectedRoomId;
+            const isSelected = activeTool === "adjust" && room.id === selectedRoomId;
             return (
               <div
                 key={room.id}
                 className={`plan-editor-view__room${isMoving || isResizing ? " plan-editor-view__room--moving" : ""}${overlapping ? " plan-editor-view__room--invalid" : ""}${isSelected ? " plan-editor-view__room--selected" : ""}`}
                 style={{
-                  left: displayRect.x * CELL_PX,
-                  top: displayRect.y * CELL_PX,
-                  width: displayRect.width * CELL_PX,
-                  height: displayRect.height * CELL_PX,
+                  left: displayRect.x * effectiveCellPx,
+                  top: displayRect.y * effectiveCellPx,
+                  width: displayRect.width * effectiveCellPx,
+                  height: displayRect.height * effectiveCellPx,
                   background: room.color,
+                  // Une pièce ne bloque le pan natif que pendant "Ajuster"
+                  // (elle y a un rôle actif : sélection/glisser) — sinon
+                  // (lecture seule ou outil "Pièce") elle laisse passer le
+                  // pan, sans quoi on ne pourrait déplacer la caméra que
+                  // dans les interstices entre les pièces.
+                  touchAction: activeTool === "adjust" ? "none" : "pan-x pan-y",
                 }}
                 onPointerDown={(e) => handleRoomPointerDown(room, e)}
                 onPointerUp={clearLongPress}
@@ -708,16 +819,16 @@ export default function PlanEditorView({
             );
           })}
 
-          <WallEdges edges={liveEdges} cellPx={CELL_PX} width={gridWidth * CELL_PX} height={gridHeight * CELL_PX} wallThickness={3} />
+          <WallEdges edges={liveEdges} cellPx={effectiveCellPx} width={gridWidth * effectiveCellPx} height={gridHeight * effectiveCellPx} wallThickness={3} />
 
           {previewRect && (
             <div
               className="plan-editor-view__preview"
               style={{
-                left: previewRect.x * CELL_PX,
-                top: previewRect.y * CELL_PX,
-                width: previewRect.width * CELL_PX,
-                height: previewRect.height * CELL_PX,
+                left: previewRect.x * effectiveCellPx,
+                top: previewRect.y * effectiveCellPx,
+                width: previewRect.width * effectiveCellPx,
+                height: previewRect.height * effectiveCellPx,
               }}
             />
           )}
@@ -727,8 +838,8 @@ export default function PlanEditorView({
               const isThisType = seg.kind === separationMode;
               const isHorizontal = seg.orientation === "h";
               const style = isHorizontal
-                ? { left: seg.x * CELL_PX, top: seg.y * CELL_PX - DOOR_HIT_THICKNESS_PX / 2, width: CELL_PX, height: DOOR_HIT_THICKNESS_PX }
-                : { left: seg.x * CELL_PX - DOOR_HIT_THICKNESS_PX / 2, top: seg.y * CELL_PX, width: DOOR_HIT_THICKNESS_PX, height: CELL_PX };
+                ? { left: seg.x * effectiveCellPx, top: seg.y * effectiveCellPx - DOOR_HIT_THICKNESS_PX / 2, width: effectiveCellPx, height: DOOR_HIT_THICKNESS_PX }
+                : { left: seg.x * effectiveCellPx - DOOR_HIT_THICKNESS_PX / 2, top: seg.y * effectiveCellPx, width: DOOR_HIT_THICKNESS_PX, height: effectiveCellPx };
               return (
                 <button
                   type="button"
@@ -744,19 +855,18 @@ export default function PlanEditorView({
             })}
         </div>
       </div>
+      </div>
 
       {/* Dock d'outils inférieur */}
       <div className="plan-editor-view__dock">
         <button
           type="button"
-          className="plan-editor-view__dock-btn plan-editor-view__dock-btn--accent"
-          onClick={() => {
-            setSeparationMode(null);
-            setSeparationMenuOpen(false);
-            setEditMode(true);
-            setSelectedRoomId(null);
-            setDragStart(null);
-          }}
+          className={
+            activeTool === "piece"
+              ? "plan-editor-view__dock-btn plan-editor-view__dock-btn--accent plan-editor-view__dock-btn--active"
+              : "plan-editor-view__dock-btn plan-editor-view__dock-btn--accent"
+          }
+          onClick={() => handleToggleTool("piece")}
         >
           <PlusIcon size={16} />
           <span>Pièce</span>
@@ -766,10 +876,11 @@ export default function PlanEditorView({
           <button
             type="button"
             className={separationMode ? "plan-editor-view__dock-btn plan-editor-view__dock-btn--active" : "plan-editor-view__dock-btn"}
-            disabled={!editMode}
             onClick={() => {
               if (separationMode) {
-                setSeparationMode(null); // ré-appui pendant qu'un outil est actif -> en sortir
+                // ré-appui pendant qu'un type est actif -> en sortir entièrement
+                setSeparationMode(null);
+                setActiveTool(null);
               } else {
                 setSeparationMenuOpen((v) => !v);
               }
@@ -788,6 +899,12 @@ export default function PlanEditorView({
                     type="button"
                     className={`plan-editor-view__menu-item plan-editor-view__menu-item--${tool.tone}`}
                     onClick={() => {
+                      // "Séparation" est un outil autonome (03/08/2026,
+                      // retour de Paul — ne dépendait de "Ajuster" que
+                      // par erreur) : le choix d'un type l'active
+                      // directement, sans exiger "Ajuster" au préalable.
+                      setActiveTool("separation");
+                      setSelectedRoomId(null);
                       setSeparationMode(tool.type);
                       setSeparationMenuOpen(false);
                     }}
@@ -803,8 +920,8 @@ export default function PlanEditorView({
 
         <button
           type="button"
-          className={editMode ? "plan-editor-view__dock-btn plan-editor-view__dock-btn--active" : "plan-editor-view__dock-btn"}
-          onClick={toggleEditMode}
+          className={activeTool === "adjust" ? "plan-editor-view__dock-btn plan-editor-view__dock-btn--active" : "plan-editor-view__dock-btn"}
+          onClick={() => handleToggleTool("adjust")}
         >
           <AdjustIcon size={16} />
           <span>Ajuster</span>

@@ -264,6 +264,65 @@
 
 /* ------------------------------ Canvas d'édition ------------------------------ */
 
+.plan-editor-view__canvas-outer {
+  position: relative;
+  flex: 1;
+  display: flex;
+  min-height: 0; /* laisse canvas-wrap (flex:1 dedans) vraiment rétrécir dans un parent flex-column */
+}
+
+.plan-editor-view__zoom-controls {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  z-index: 45; /* au-dessus du contenu du plan, reste fixe même quand canvas-wrap défile (hors de son flux scrollable) */
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: rgba(9, 13, 22, 0.9);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 3px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+}
+.plan-editor-view__zoom-btn {
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: none;
+  color: var(--text-primary);
+  font-size: 16px;
+  font-weight: 800;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.plan-editor-view__zoom-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.plan-editor-view__zoom-btn:not(:disabled):hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+.plan-editor-view__zoom-value {
+  min-width: 42px;
+  height: 28px;
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  border-radius: 8px;
+}
+.plan-editor-view__zoom-value:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
+}
+
 .plan-editor-view__canvas-wrap {
   flex: 1;
   border-radius: 24px;
@@ -271,18 +330,28 @@
   background: rgba(2, 6, 23, 0.6);
   overflow: auto;
   -webkit-overflow-scrolling: touch;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  /* PAS de centrage flex ici (03/08/2026, retour de Paul : le pan
+     tactile ne fonctionnait toujours pas en lecture seule) — un
+     conteneur flex avec align-items/justify-content:center ET
+     overflow:auto a un comportement de défilement peu fiable selon
+     les navigateurs quand son contenu dépasse (la partie qui déborde
+     "avant" le centrage peut devenir inatteignable au scroll, bug
+     CSS connu). Simple padding à la place : comportement de
+     défilement standard, sans particularité. */
+  padding: 24px;
+  box-sizing: border-box;
   box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.4);
 }
 
 .plan-editor-view__grid {
   position: relative;
-  background-image: linear-gradient(to right, rgba(255, 255, 255, 0.07) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.07) 1px, transparent 1px);
+  background-image: linear-gradient(to right, rgba(255, 255, 255, 0.15) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.15) 1px, transparent 1px);
   background-position: -1px -1px;
-  touch-action: none;
+  /* touch-action piloté dynamiquement en JSX (style inline selon
+     l'outil actif) — PAS ici. Une règle statique laissée par erreur
+     ici (touch-action: none) contredisait l'inline et a été retirée
+     le 03/08/2026 (retour de Paul : le pan ne marchait toujours pas). */
   cursor: crosshair;
   flex-shrink: 0;
 }
@@ -294,7 +363,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  touch-action: none;
+  /* touch-action piloté dynamiquement en JSX (style inline selon
+     l'outil actif) — voir la note sur .plan-editor-view__grid. */
 }
 .plan-editor-view__room--moving {
   opacity: 0.7;
